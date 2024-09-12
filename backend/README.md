@@ -1,4 +1,4 @@
-# URL Shortener Back-end
+# IS212 T7 Back-end
 
 ## Tech Stack
 
