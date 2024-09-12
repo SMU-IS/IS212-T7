@@ -1,11 +1,11 @@
-import UrlService from "@/services/UrlService";
+import UserService from "@/services/UserService";
 
 class UserController {
-  private urlService = new UrlService();
+  private userService = new UserService();
 
-  public async addName(ctx: any) {
-    const { name } = ctx.request.body;
-    const result = await this.urlService.addName(name);
+  public async getUser(ctx: any) {
+    const { email } = ctx.request.body;
+    const result = await this.userService.getUser(email);
     ctx.body = result;
   }
 }

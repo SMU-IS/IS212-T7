@@ -1,13 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import mongoose from "mongoose";
 
-@Entity()
-export default class User {
-  @PrimaryGeneratedColumn("uuid")
-  id: number;
+const Schema = mongoose.Schema;
+const UserSchema = new Schema({
+  username: String,
+  email: String,
+});
 
-  @Column()
-  name: string;
-
-  @Column()
-  age: number;
-}
+export default mongoose.model("User", UserSchema);
