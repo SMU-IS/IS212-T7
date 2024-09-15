@@ -8,7 +8,7 @@ interface IEmployee {
   position: string;
   country: string;
   email: string;
-  reportingManager: mongoose.Schema.Types.ObjectId | null;
+  reportingManager: number | null;
   role: number;
 }
 
@@ -22,7 +22,7 @@ const EmployeeSchema = new Schema<IEmployee>({
   country: { type: String, required: true },
   email: { type: String, required: true },
   reportingManager: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Number,
     ref: "Employee",
     required: false,
   },
