@@ -1,4 +1,4 @@
-import UserController from "@/controllers/UserController";
+import EmployeeController from "@/controllers/EmployeeController";
 import Router from "koa-router";
 
 const router = new Router();
@@ -10,6 +10,6 @@ router.get("/", async (ctx: any) => {
 
 // Can add middleware here to intercept the request
 
-router.post("/getUser", (ctx) => UserController.getUser(ctx));
+router.get("/getEmployee", (ctx) => EmployeeController.getEmployee(ctx));
 
 export default router;

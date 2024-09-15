@@ -1,6 +1,6 @@
-import { initDB } from "@/config";
 import cors from "@koa/cors";
 import { app } from "./index";
+import { initDB } from "./config";
 
 const PORT = process.env.PORT || 3001;
 
