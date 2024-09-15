@@ -1,9 +1,9 @@
-// import { AppDataSource } from "@/config";
+import User from "@/entities/User";
 
 class UserDb {
-  public async saveNameToDb(name: string) {
-    // Sample Update to Db
-    // return AppDataSource.manager.save(name);
+  public async getUser(email: string) {
+    const user = await User.findOne({ email });
+    return user;
   }
 }
 

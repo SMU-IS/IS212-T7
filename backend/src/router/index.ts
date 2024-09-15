@@ -10,6 +10,6 @@ router.get("/", async (ctx: any) => {
 
 // Can add middleware here to intercept the request
 
-router.post("/addName", (ctx) => UserController.addName(ctx));
+router.post("/getUser", (ctx) => UserController.getUser(ctx));
 
 export default router;

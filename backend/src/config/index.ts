@@ -1,25 +1,12 @@
-import User from "@/entities/User";
-import { DatabaseType, DataSource } from "typeorm";
+import mongoose from "mongoose";
 
-const progresDatabase: DatabaseType = "postgres";
+const initDB = () => {
+  mongoose.connect(String(process.env.CONNECTION_STRING));
+  mongoose.connection.once("open", () => {
+    console.log("Connected to database");
+  });
 
-const AppDataSource = new DataSource({
-  type: progresDatabase,
-  host: process.env.HOST,
-  port: Number(process.env.DB_PORT),
-  username: process.env.USERNAME,
-  password: process.env.PASSWORD,
-  database: progresDatabase,
-  entities: [User],
-  synchronize: true,
-});
+  mongoose.connection.on("error", console.error);
+};
 
-async function ConnectDatabase() {
-  try {
-    await AppDataSource.initialize();
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-export { AppDataSource, ConnectDatabase };
+export { initDB };

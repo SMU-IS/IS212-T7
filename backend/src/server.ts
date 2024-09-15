@@ -1,4 +1,4 @@
-import { ConnectDatabase } from "@/config";
+import { initDB } from "@/config";
 import cors from "@koa/cors";
 import { app } from "./index";
 
@@ -10,4 +10,4 @@ app.listen(PORT, () => {
   console.log(`🚀 Server listening on localhost:${PORT} 🚀`);
 });
 
-ConnectDatabase();
+initDB();
