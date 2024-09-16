@@ -5,7 +5,7 @@ enum Role {
 }
 
 enum errMsg {
-  MISSING_PARAMETERS = "Missing Parameters",
+  MISSING_PARAMETERS = "Missing parameters",
   UNAUTHORISED = "User is not authorised to perform this role.",
   INVALID_ROLE_ID = "Invalid roleId, it should only be 1, 2, 3",
 }
@@ -22,4 +22,32 @@ const PERMISSIONS: Record<string, string[]> = {
   3: [AccessControl.VIEW_OWN_SCHEDULE, AccessControl.VIEW_OVERALL_SCHEDULE],
 };
 
-export { AccessControl, PERMISSIONS, Role, errMsg };
+enum RequestType {
+  ADHOC = "ADHOC",
+  WEEKLY = "WEEKLY",
+  MONTH = "MONTHLY",
+}
+
+enum RequestDay {
+  MONDAY = "MONDAY",
+  TUESDAY = "TUESDAY",
+  WEDNESDAY = "WEDNESDAY",
+  THURSDAY = "THURSDAY",
+  FRIDAY = "FRIDAY",
+}
+
+enum Status {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+}
+
+export {
+  AccessControl,
+  PERMISSIONS,
+  RequestDay,
+  RequestType,
+  Role,
+  Status,
+  errMsg,
+};

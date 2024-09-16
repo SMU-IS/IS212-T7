@@ -7,18 +7,18 @@ export const checkUserRolePermission = (action: AccessControl) => {
     const { roleId } = ctx.request.query;
     const { success, data } = roleIdSchema.safeParse(roleId);
 
-    if (!success) {
-      ctx.status = 400;
-      ctx.body = {
-        error: errMsg.INVALID_ROLE_ID,
-      };
-      return;
-    }
-
     if (!roleId) {
       ctx.status = 404;
       ctx.body = {
         error: errMsg.MISSING_PARAMETERS,
+      };
+      return;
+    }
+
+    if (!success) {
+      ctx.status = 400;
+      ctx.body = {
+        error: errMsg.INVALID_ROLE_ID,
       };
       return;
     }
