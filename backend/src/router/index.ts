@@ -13,7 +13,7 @@ router.get("/", async (ctx: any) => {
 // EXAMPLE ONLY
 // checkUserRolePermission() is a middleware that checks whether the user has access rights based on roleId
 // Pass in the parameter, an action that the user is undertaking
-// {{base_url}}/api/v1/getEmployee?roleId=1&staffId=130002
+// {{base_url}}/api/v1/getEmployee?staffId=130002
 
 router.get(
   "/getEmployee",
