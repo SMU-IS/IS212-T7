@@ -3,7 +3,7 @@ import { AuthProvider } from "@refinedev/core";
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
     // Replace with your actual authentication logic
-    if (email === "shawnfearless@gmail.com" && password === "password") {
+    if (email === "user@gmail.com" && password === "password") {
       console.log("success");
       localStorage.setItem("auth", JSON.stringify({ email }));
       return {
