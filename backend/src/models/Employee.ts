@@ -1,4 +1,4 @@
-import { ROLE } from "@/helpers";
+import { Role } from "@/helpers";
 import mongoose from "mongoose";
 
 interface IEmployee {
@@ -10,7 +10,7 @@ interface IEmployee {
   country: string;
   email: string;
   reportingManager: number | null;
-  role: ROLE;
+  role: Role;
 }
 
 const Schema = mongoose.Schema;

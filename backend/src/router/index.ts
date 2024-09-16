@@ -1,4 +1,6 @@
 import EmployeeController from "@/controllers/EmployeeController";
+import { AccessControl } from "@/helpers";
+import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import Router from "koa-router";
 
 const router = new Router();
@@ -8,8 +10,15 @@ router.get("/", async (ctx: any) => {
   ctx.body = `Server is Running! 💨`;
 });
 
-// Can add middleware here to intercept the request
+// EXAMPLE ONLY
+// checkUserRolePermission() is a middleware that checks whether the user has access rights based on roleId
+// Pass in the parameter, an action that the user is undertaking
+// {{base_url}}/api/v1/getEmployee?roleId=1&staffId=130002
 
-router.get("/getEmployee", (ctx) => EmployeeController.getEmployee(ctx));
+router.get(
+  "/getEmployee",
+  checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
+  (ctx) => EmployeeController.getEmployee(ctx)
+);
 
 export default router;
