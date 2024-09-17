@@ -38,40 +38,46 @@ export const ScheduleList = () => {
   const { mode } = useContext(ColorModeContext);
   const calendarTheme = mode === "dark" ? "dark" : "light";
   const calendarRef = useRef<Calendar | null>(null);
-  
+  const eventData = [
+    {
+      id: '1',
+      title: 'WORK FROM HOME (AM)',
+      description: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eligendi tempora temporibus, eveniet delectus, explicabo quibusdam sed inventore iure repellat cupiditate nisi. Reprehenderit, repudiandae.",
+      // people: ["John"],
+      calendarId: "personal",
+      start: '2024-09-18 08:00',
+      end: '2024-09-18 13:00',
+    },
+    {
+      id: '2',
+      title: 'WORK FROM HOME',
+      description: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eligendi tempora temporibus, eveniet delectus, explicabo quibusdam sed inventore iure repellat cupiditate nisi. Reprehenderit, repudiandae.",
+      start: '2024-09-17',
+      end: '2024-09-17',
+    },
+    {
+      id: '3',
+      title: 'WORK FROM HOME',
+      description: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eligendi tempora temporibus, eveniet delectus, explicabo quibusdam sed inventore iure repellat cupiditate nisi. Reprehenderit, repudiandae.",
+      start: '2024-09-19',
+      end: '2024-09-20',
+    },
+  ]
   useEffect(() => {
     const newCalendar = createCalendar({
-      views: [createViewMonthGrid(), createViewMonthAgenda()],
-      events: [
-        {
-          id: '1',
-          title: 'John - WORK FROM HOME',
-          description: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eligendi tempora temporibus, eveniet delectus, explicabo quibusdam sed inventore iure repellat cupiditate nisi. Reprehenderit, repudiandae. Dignissimos praesentium ducimus aperiam non cumque rerum!",
-          people: ["John"],
-          calendarId: "personal",
-          start: '2024-09-18',
-          end: '2024-09-18',
-        },
-        {
-          id: '2',
-          title: 'WORK FROM HOME',
-          start: '2024-09-17',
-          end: '2024-09-17',
-        },
-        {
-          id: '3',
-          title: 'WORK FROM HOME',
-          start: '2024-09-17',
-          end: '2024-09-17',
-        },
-        {
-          id: '4',
-          title: 'WORK FROM HOME',
-          start: '2024-09-17',
-          end: '2024-09-17',
-        },
-      ],
+      views: [createViewWeek(), createViewMonthGrid(), createViewMonthAgenda()],
+      events: eventData,
       isDark: calendarTheme === "dark", // Dynamically set the dark mode
+      defaultView: viewMonthGrid.name,
+      weekOptions: {
+        gridHeight: 500,
+        nDays: 5,
+        timeAxisFormatOptions: { hour: '2-digit', minute: '2-digit' },
+      },
+      dayBoundaries: {
+        start: '08:00',
+        end: '18:00',
+      },
       plugins: [createEventModalPlugin()],
     });
 
