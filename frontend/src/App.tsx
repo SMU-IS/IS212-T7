@@ -40,6 +40,9 @@ import {
   CategoryList,
   CategoryShow,
 } from "./pages/categories";
+import {
+  ScheduleList,
+} from "./pages/schedule";
 import { Login } from "./pages/login";
 import { parseJwt } from "./utils/parse-jwt";
 
@@ -132,7 +135,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <GitHubBanner />
+      {/* <GitHubBanner /> */}
       <RefineKbarProvider>
         <ColorModeContextProvider>
           <AntdApp>
@@ -143,6 +146,13 @@ function App() {
                 routerProvider={routerBindings}
                 authProvider={authProvider}
                 resources={[
+                  {
+                    name: "Schedule",
+                    list: ScheduleList,
+                    meta: {
+                      canDelete: false,
+                    },
+                  },
                   {
                     name: "blog_posts",
                     list: "/blog-posts",
@@ -203,6 +213,10 @@ function App() {
                       <Route path="edit/:id" element={<CategoryEdit />} />
                       <Route path="show/:id" element={<CategoryShow />} />
                     </Route>
+                    <Route path="/schedule">
+                      <Route index element={<ScheduleList />} />
+                    </Route>
+
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>
                   <Route
