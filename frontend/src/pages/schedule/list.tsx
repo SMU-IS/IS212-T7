@@ -27,7 +27,7 @@ import {
   viewMonthGrid 
 } from '@schedule-x/calendar'
 import { createEventModalPlugin } from '@schedule-x/event-modal'
- 
+
 import '@schedule-x/theme-default/dist/index.css'
 
 
@@ -38,13 +38,13 @@ export const ScheduleList = () => {
   const { mode } = useContext(ColorModeContext);
   const calendarTheme = mode === "dark" ? "dark" : "light";
   const calendarRef = useRef<Calendar | null>(null);
-  const eventData = [
+  const eventData: IEvent[] = [
     {
       id: '1',
       title: 'WORK FROM HOME (AM)',
       description: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eligendi tempora temporibus, eveniet delectus, explicabo quibusdam sed inventore iure repellat cupiditate nisi. Reprehenderit, repudiandae.",
       // people: ["John"],
-      calendarId: "personal",
+      // calendarId: "personal",
       start: '2024-09-18 08:00',
       end: '2024-09-18 13:00',
     },
