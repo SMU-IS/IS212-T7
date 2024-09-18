@@ -39,9 +39,15 @@ describe("EmployeeController", () => {
 
     it("should return employee role when a valid email and password is provided", async () => {
         ctx.query = { staffEmail: "test@example.com", staffPassword: "password" };
-        employeeServiceMock.getEmployeeByEmail.mockResolvedValue(mockEmployee.role);
+        const returnValue: any = {
+            staffId: mockEmployee.staffId,
+            role: mockEmployee.role
+        };
+        employeeServiceMock.getEmployeeByEmail.mockResolvedValue(returnValue);
         await employeeController.getEmployeeByEmail(ctx);
+        console.log(ctx.body);
         expect(ctx.body).toEqual({
+            staffId: mockEmployee.staffId,
             role: mockEmployee.role
         });
     });
