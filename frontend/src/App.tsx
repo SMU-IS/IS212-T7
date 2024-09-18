@@ -42,6 +42,7 @@ import {
 } from "./pages/categories";
 import { Login } from "./pages/login";
 import { parseJwt } from "./utils/parse-jwt";
+import { WFHForm } from "./pages/wfh-application"
 
 const axiosInstance = axios.create();
 axiosInstance.interceptors.request.use((config) => {
@@ -203,6 +204,8 @@ function App() {
                       <Route path="edit/:id" element={<CategoryEdit />} />
                       <Route path="show/:id" element={<CategoryShow />} />
                     </Route>
+                    <Route path="/wfhform" element={ < WFHForm/>}/>
+                    
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>
                   <Route
