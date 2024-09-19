@@ -1,5 +1,5 @@
 import { RequestType, Status } from "@/helpers";
-import { initializeCounter, Counter } from "@/helpers/counter";
+import { Counter, initializeCounter } from "@/helpers/counter";
 import mongoose from "mongoose";
 
 interface IRequest {
@@ -13,10 +13,7 @@ interface IRequest {
 }
 
 const Schema = mongoose.Schema;
-
-// Initialize counter schema if it doesnt already exist
-// input the tableId you want to auto-increment eg. studentId
-initializeCounter("studentId").catch(console.error);
+initializeCounter("requestId").catch(console.error);
 
 const RequestSchema = new Schema<IRequest>(
   {
@@ -38,7 +35,6 @@ const RequestSchema = new Schema<IRequest>(
   }
 );
 
-// set requestId to current counter + 1
 RequestSchema.pre("save", async function (next) {
   if (this.isNew) {
     const counter = await Counter.findByIdAndUpdate(

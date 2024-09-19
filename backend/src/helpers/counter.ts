@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-// Counter Schema to allow auto increment of RequestId
+// Counter Schema to allow auto increment of uniqueId
 const CounterSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   seq: { type: Number, default: 0 },
@@ -8,7 +8,6 @@ const CounterSchema = new mongoose.Schema({
 
 const Counter = mongoose.model("Counter", CounterSchema);
 
-// input id --> requestId
 async function initializeCounter(id: String) {
   const counter = await Counter.findById(id);
   if (!counter) {
