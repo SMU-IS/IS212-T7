@@ -1,8 +1,4 @@
 import {
-  DeleteButton,
-  EditButton,
-  List,
-  ShowButton,
   useTable,
 } from "@refinedev/antd";
 
@@ -14,22 +10,18 @@ import {
 } from "react";
 
 import { ColorModeContext } from "../../contexts/color-mode";
-import type { BaseRecord } from "@refinedev/core";
-import { Space, Table } from "antd";
-
-import { useCalendarApp, ScheduleXCalendar } from '@schedule-x/react'
+import { useCalendarApp, ScheduleXCalendar, Calendar } from '@schedule-x/react'
 import {
   createViewDay,
   createViewMonthAgenda,
   createViewMonthGrid,
   createViewWeek,
   createCalendar,
-  viewMonthGrid 
+  viewMonthGrid,
 } from '@schedule-x/calendar'
 import { createEventModalPlugin } from '@schedule-x/event-modal'
-
+import calendarVar from '../../helper/scheduleVar'
 import '@schedule-x/theme-default/dist/index.css'
-
 
 export const ScheduleList = () => {
   const { tableProps } = useTable({
@@ -44,7 +36,7 @@ export const ScheduleList = () => {
       title: 'WORK FROM HOME (AM)',
       description: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eligendi tempora temporibus, eveniet delectus, explicabo quibusdam sed inventore iure repellat cupiditate nisi. Reprehenderit, repudiandae.",
       // people: ["John"],
-      calendarId: "halfday",
+      calendarId: calendarVar.halfday,
       start: '2024-09-18 08:00',
       end: '2024-09-18 13:00',
     },
@@ -65,7 +57,7 @@ export const ScheduleList = () => {
   ]
   const calendarConfig = {
       halfday: {
-        colorName: 'halfday',
+        colorName: calendarVar.halfday,
         lightColors: {
           main: '#f9d71c',
           container: '#fff5aa',
