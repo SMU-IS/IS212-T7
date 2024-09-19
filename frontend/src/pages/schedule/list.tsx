@@ -44,7 +44,7 @@ export const ScheduleList = () => {
       title: 'WORK FROM HOME (AM)',
       description: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eligendi tempora temporibus, eveniet delectus, explicabo quibusdam sed inventore iure repellat cupiditate nisi. Reprehenderit, repudiandae.",
       // people: ["John"],
-      // calendarId: "personal",
+      calendarId: "halfday",
       start: '2024-09-18 08:00',
       end: '2024-09-18 13:00',
     },
@@ -63,6 +63,21 @@ export const ScheduleList = () => {
       end: '2024-09-20',
     },
   ]
+  const calendarConfig = {
+      halfday: {
+        colorName: 'halfday',
+        lightColors: {
+          main: '#f9d71c',
+          container: '#fff5aa',
+          onContainer: '#594800',
+        },
+        darkColors: {
+          main: '#fff5c0',
+          onContainer: '#fff5de',
+          container: '#a29742',
+        },
+      },
+  }
   useEffect(() => {
     const newCalendar = createCalendar({
       views: [createViewWeek(), createViewMonthGrid(), createViewMonthAgenda()],
@@ -79,6 +94,7 @@ export const ScheduleList = () => {
         end: '18:00',
       },
       plugins: [createEventModalPlugin()],
+      calendars: calendarConfig
     });
 
     calendarRef.current = newCalendar;

@@ -4,4 +4,5 @@ interface IEvent {
     description: string;
     start: string;
     end: string;
+    calendarId?: string;
 }
