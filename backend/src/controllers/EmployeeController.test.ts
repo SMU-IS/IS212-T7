@@ -12,8 +12,11 @@ describe("EmployeeController", () => {
         employeeServiceMock = new EmployeeService() as jest.Mocked<EmployeeService>;
         employeeController = new EmployeeController(employeeServiceMock);
         ctx = {
+            method: "POST",
             query: {},
             body: {},
+            request: { body: {} },
+            response: {},
         } as Context;
         mockEmployee = {
             staffId: 1,
@@ -38,7 +41,7 @@ describe("EmployeeController", () => {
     });
 
     it("should return employee role when a valid email and password is provided", async () => {
-        ctx.query = { staffEmail: "test@example.com", staffPassword: "password" };
+        ctx.request.body = { staffEmail: "test@example.com", staffPassword: "password" };
         const returnValue: any = {
             staffId: mockEmployee.staffId,
             role: mockEmployee.role
@@ -53,7 +56,7 @@ describe("EmployeeController", () => {
     });
 
     it("should inform user of failure to find an employee with provided email", async () => {
-        ctx.query = { staffEmail: "nonexistent@example.com", staffPassword: "password" };
+        ctx.request.body = { staffEmail: "nonexistent@example.com", staffPassword: "password" };
         employeeServiceMock.getEmployeeByEmail.mockResolvedValue(null);
 
         await employeeController.getEmployeeByEmail(ctx);
