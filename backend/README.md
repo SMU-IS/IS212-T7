@@ -4,7 +4,6 @@
 
 - [Next.js](https://nextjs.org)
 - [Tailwind CSS](https://tailwindcss.com)
-- [Shadcn UI](https://ui.shadcn.com/)
 - [TypeORM](https://typeorm.io/)
 - [Koa.js](https://koajs.com/)
 - [PostgreSQL](https://www.postgresql.org/)

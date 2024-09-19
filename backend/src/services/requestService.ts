@@ -1,14 +1,25 @@
 import RequestDb from "@/database/RequestDb";
+import { Status } from "@/helpers";
 
 class RequestService {
   private requestDb = new RequestDb();
 
-  public async getRequest(requestId: number) {
-    // Process business logic here
-    // Retrieve from database layer
-    const request = await this.requestDb.getRequest(requestId);
-
+  public async getOwnRequests(myId: number) {
+    const request = await this.requestDb.getRequests(myId);
     return request;
+  }
+
+  public async getRequestsByStaffIdAndStatus(staffId: number, status: Status) {
+    const request = await this.requestDb.getRequestsByStaffIdAndStatus(
+      staffId,
+      status
+    );
+    return request;
+  }
+
+  public async getCompanySchedule() {
+    const schedule = await this.requestDb.getCompanySchedule();
+    return schedule;
   }
 
   public async postRequest(requestDetails: any) {
