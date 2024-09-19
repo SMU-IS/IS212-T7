@@ -8,15 +8,17 @@ import {
   ThemedSiderV2,
   useNotificationProvider,
 } from "@refinedev/antd";
+
+import { ColorModeContextProvider } from "./contexts/color-mode";
+
+
 import routerProvider, {
   CatchAllNavigate,
   NavigateToResource,
   UnsavedChangesNotifier,
   DocumentTitleHandler,
 } from "@refinedev/react-router-v6";
-
-import { ConfigProvider } from "antd";
-
+import { ConfigProvider, theme } from "antd";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
 import { authProvider } from "./authProvider";
@@ -35,18 +37,29 @@ import {
   CategoryList,
   CategoryShow,
 } from "./pages/categories";
+import {
+  ScheduleList
+} from "./pages/schedule"
 import { Header } from "./components/header"; // Custom header if you have one
 
 const App = () => {
   return (
     <BrowserRouter>
-      <ConfigProvider theme={RefineThemes.Blue}>
+    <ColorModeContextProvider>
+      <ConfigProvider>
         <Refine
           dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
           routerProvider={routerProvider}
           authProvider={authProvider}
           notificationProvider={useNotificationProvider} // Use Ant Design's notification provider
           resources={[
+            {
+              name: "Schedule",
+              list: ScheduleList,
+              meta: {
+                canDelete: false,
+              },
+            },
             {
               name: "blog_posts",
               list: "/blog-posts",
@@ -94,7 +107,10 @@ const App = () => {
             >
               {/* Default route to the dashboard */}
               {/* <Route index element={<DashboardPage />} /> */}
-
+              {/* Schedule Routes */}
+              <Route path="/schedule">
+                <Route index element={<ScheduleList />} />
+              </Route>
               {/* Blog Posts Routes */}
               <Route path="/blog-posts">
                 <Route index element={<BlogPostList />} />
@@ -131,6 +147,7 @@ const App = () => {
           <DocumentTitleHandler />
         </Refine>
       </ConfigProvider>
+    </ColorModeContextProvider>
     </BrowserRouter>
   );
 };
