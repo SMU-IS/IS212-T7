@@ -1,4 +1,5 @@
 import EmployeeController from "@/controllers/EmployeeController";
+import RequestController from "@/controllers/RequestController";
 import { AccessControl } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import swaggerSpec from "@/swagger";
@@ -46,5 +47,24 @@ router.get(
   checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
   (ctx) => EmployeeController.getEmployee(ctx)
 );
+
+/**
+ * @openapi
+ * /api/v1/getRequest?requestId={INSERT ID HERE}:
+ *   get:
+ *     description: Get Request data
+ *     tags: [Request]
+ *     parameters:
+ *       - in: query
+ *         name: requestId
+ *         schema:
+ *           type: number
+ *         required: true
+ *         description: The Id of the request to retrieve
+ *     responses:
+ *       200:
+ *         description: Returns an request object
+ */
+router.get("/getRequest", (ctx) => RequestController.getRequest(ctx));
 
 export default router;
