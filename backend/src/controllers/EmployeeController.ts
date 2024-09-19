@@ -32,9 +32,6 @@ class EmployeeController {
     let staffEmail = body.staffEmail;
     let staffPassword = body.staffPassword;
 
-    // console.log("Staff Email: " + staffEmail);
-    // console.log("Staff Password: "+ staffPassword);
-
     if (!staffEmail || !staffPassword) {
       ctx.body = {
         error: errMsg.MISSING_PARAMETERS,
@@ -44,9 +41,9 @@ class EmployeeController {
 
     const employeeData = await this.employeeService.getEmployeeByEmail(String(staffEmail));
 
-    if (employeeData == null) {
+    if (!employeeData) {
       ctx.body = {
-        error: errMsg.EMPLOYEE_NOT_FOUND
+        error: errMsg.USER_DOES_NOT_EXIST
       }
       return;
     }

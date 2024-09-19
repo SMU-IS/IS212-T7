@@ -1,6 +1,9 @@
 import { Context } from "koa";
 import EmployeeController from "@/controllers/EmployeeController";
 import EmployeeService from "@/services/employeeService";
+import { errMsg } from "@/helpers";
+
+import generateMockEmployee from "../../tests/mockData/mockData";
 
 describe("EmployeeController", () => {
     let employeeController: EmployeeController;
@@ -18,37 +21,34 @@ describe("EmployeeController", () => {
             request: { body: {} },
             response: {},
         } as Context;
-        mockEmployee = {
-            staffId: 1,
-            staffFName: "John",
-            staffLName: "Doe",
-            dept: "Development",
-            position: "Developer",
-            country: "USA",
-            email: "test@example.com",
-            reportingManager: null,
-            role: 1
-        };
+        mockEmployee = generateMockEmployee();
         employeeServiceMock.getEmployeeByEmail = jest.fn();
         jest.resetAllMocks();
     });
 
     it("should return an error when missing parameters", async () => {
+        // Act
         await employeeController.getEmployeeByEmail(ctx);
+
+        // Assert
         expect(ctx.body).toEqual({
-            error: "Missing Parameters",
+            error: errMsg.MISSING_PARAMETERS,
         });
     });
 
     it("should return employee role when a valid email and password is provided", async () => {
+        // Arrange
         ctx.request.body = { staffEmail: "test@example.com", staffPassword: "password" };
         const returnValue: any = {
             staffId: mockEmployee.staffId,
             role: mockEmployee.role
         };
         employeeServiceMock.getEmployeeByEmail.mockResolvedValue(returnValue);
+
+        // Act
         await employeeController.getEmployeeByEmail(ctx);
-        console.log(ctx.body);
+
+        // Assert
         expect(ctx.body).toEqual({
             staffId: mockEmployee.staffId,
             role: mockEmployee.role
@@ -56,12 +56,16 @@ describe("EmployeeController", () => {
     });
 
     it("should inform user of failure to find an employee with provided email", async () => {
+        // Arrange
         ctx.request.body = { staffEmail: "nonexistent@example.com", staffPassword: "password" };
         employeeServiceMock.getEmployeeByEmail.mockResolvedValue(null);
 
+        // Act
         await employeeController.getEmployeeByEmail(ctx);
+
+        // Assert
         expect(ctx.body).toEqual({
-            error: "Employee not found.",
+            error: errMsg.USER_DOES_NOT_EXIST,
         });
     });
 });

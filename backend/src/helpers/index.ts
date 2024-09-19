@@ -7,7 +7,7 @@ enum Role {
 enum errMsg {
   MISSING_PARAMETERS = "Missing Parameters",
   UNAUTHORISED = "User is not authorised to perform this role.",
-  EMPLOYEE_NOT_FOUND = "Employee not found.",
+  USER_DOES_NOT_EXIST = "User does not exist.",
 }
 
 enum AccessControl {
