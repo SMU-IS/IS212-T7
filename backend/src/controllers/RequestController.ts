@@ -1,26 +1,45 @@
-import { errMsg } from "@/helpers";
+import { errMsg, Status } from "@/helpers";
+import { requestSchema } from "@/schema";
 import RequestService from "@/services/requestService";
 import { Context } from "koa";
 
 class RequestController {
-  private requestService = new RequestService();
+  private requestService: RequestService;
 
-  // get Request Details
-  public async getRequest(ctx: Context) {
-    const { requestId } = ctx.query;
-    if (!requestId) {
+  constructor(requestService: RequestService) {
+    this.requestService = requestService;
+  }
+
+  public async getOwnRequests(ctx: Context) {
+    const { myId } = ctx.query;
+    if (!myId) {
       ctx.body = {
-        test: errMsg.MISSING_PARAMETERS,
-        err: requestId,
+        errMsg: errMsg.MISSING_PARAMETERS,
       };
       return;
     }
 
-    const result = await this.requestService.getRequest(Number(requestId));
+    const result = await this.requestService.getOwnRequests(Number(myId));
     ctx.body = result;
   }
 
-  // Post Request Details
+  public async getRequestsByStaffIdAndStatus(ctx: Context) {
+    const { staffId, status } = ctx.query;
+    const validation = requestSchema.safeParse({ staffId, status });
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+
+    const result = await this.requestService.getRequestsByStaffIdAndStatus(
+      Number(staffId),
+      status as Status
+    );
+    ctx.body = result;
+  }
+
   public async postRequest(ctx: any) {
     const { requestDetails } = ctx.request.body;
     if (!requestDetails) {
@@ -35,4 +54,4 @@ class RequestController {
   }
 }
 
-export default new RequestController();
+export default RequestController;

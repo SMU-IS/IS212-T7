@@ -1,8 +1,14 @@
+import { Status } from "@/helpers";
 import Request from "@/models/Request";
 
 class RequestDb {
-  public async getRequest(requestId: number) {
-    const request = await Request.findOne({ requestId });
+  public async getRequests(myId: number) {
+    const request = await Request.find({ requestedBy: myId });
+    return request;
+  }
+
+  public async getRequestsByStaffIdAndStatus(staffId: number, status: Status) {
+    const request = await Request.find({ requestedBy: staffId, status });
     return request;
   }
 
