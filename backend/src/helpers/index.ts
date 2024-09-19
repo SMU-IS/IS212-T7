@@ -23,31 +23,17 @@ const PERMISSIONS: Record<string, string[]> = {
 };
 
 enum RequestType {
-  ADHOC = "ADHOC",
-  WEEKLY = "WEEKLY",
-  MONTH = "MONTHLY",
-}
-
-enum RequestDay {
-  MONDAY = "MONDAY",
-  TUESDAY = "TUESDAY",
-  WEDNESDAY = "WEDNESDAY",
-  THURSDAY = "THURSDAY",
-  FRIDAY = "FRIDAY",
+  AM = "AM",
+  PM = "PM",
+  FULL = "FULL",
 }
 
 enum Status {
   PENDING = "PENDING",
   APPROVED = "APPROVED",
   REJECTED = "REJECTED",
+  CANCELLED = "CANCELLED",
+  WITHDRAWN = "WITHDRAWN",
 }
 
-export {
-  AccessControl,
-  PERMISSIONS,
-  RequestDay,
-  RequestType,
-  Role,
-  Status,
-  errMsg,
-};
+export { AccessControl, PERMISSIONS, RequestType, Role, Status, errMsg };

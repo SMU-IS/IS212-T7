@@ -1,5 +1,5 @@
 export default {
-  uri: String(process.env.MIGRATE_MONGO_URI),
+  uri: String(process.env.CONNECTION_STRING),
   collection: "migrations",
   migrationsPath: "./migrations",
   templatePath: "./migrations/template.ts",
