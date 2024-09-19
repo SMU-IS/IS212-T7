@@ -5,7 +5,7 @@ enum Role {
 }
 
 enum errMsg {
-  MISSING_PARAMETERS = "Missing Parameters",
+  MISSING_PARAMETERS = "Missing parameters",
   UNAUTHORISED = "User is not authorised to perform this role.",
   USER_DOES_NOT_EXIST = "User does not exist.",
 }
@@ -15,4 +15,25 @@ enum AccessControl {
   VIEW_OVERALL_SCHEDULE = "VIEW_OVERALL_SCHEDULE",
 }
 
-export { AccessControl, Role, errMsg };
+// TODO: Add more permission
+const PERMISSIONS: Record<string, string[]> = {
+  1: [AccessControl.VIEW_OWN_SCHEDULE, AccessControl.VIEW_OVERALL_SCHEDULE],
+  2: [AccessControl.VIEW_OWN_SCHEDULE],
+  3: [AccessControl.VIEW_OWN_SCHEDULE, AccessControl.VIEW_OVERALL_SCHEDULE],
+};
+
+enum RequestType {
+  AM = "AM",
+  PM = "PM",
+  FULL = "FULL",
+}
+
+enum Status {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+  CANCELLED = "CANCELLED",
+  WITHDRAWN = "WITHDRAWN",
+}
+
+export { AccessControl, PERMISSIONS, RequestType, Role, Status, errMsg };
