@@ -99,4 +99,25 @@ router.get("/getRequests", (ctx) =>
   requestController.getRequestsByStaffIdAndStatus(ctx)
 );
 
+/**
+ * @openapi
+ * /api/v1/getCompanySchedule
+ *   get:
+ *     description: Get the entire company's schedule
+ *     tags: [Request]
+ *     parameters:
+ *       - in: query
+ *         name: myId
+ *         schema:
+ *           type: number
+ *         required: true
+ *         description: Retrieve lists of schedule
+ *     responses:
+ *       200:
+ *         description: Returns a request object
+ */
+router.get("/getCompanySchedule", (ctx) =>
+  requestController.getCompanySchedule(ctx)
+);
+
 export default router;

@@ -17,6 +17,11 @@ class RequestService {
     return request;
   }
 
+  public async getCompanySchedule() {
+    const schedule = await this.requestDb.getCompanySchedule();
+    return schedule;
+  }
+
   public async postRequest(requestDetails: any) {
     // Process business logic here
     // Retrieve from database layer

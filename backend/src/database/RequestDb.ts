@@ -12,6 +12,11 @@ class RequestDb {
     return request;
   }
 
+  public async getCompanySchedule() {
+    const request = await Request.find();
+    return request;
+  }
+
   public async postRequest(requestDetails: any) {
     // logic to loop through json and insert into col
   }

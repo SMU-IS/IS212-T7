@@ -40,6 +40,11 @@ class RequestController {
     ctx.body = result;
   }
 
+  public async getCompanySchedule(ctx: Context) {
+    const result = await this.requestService.getCompanySchedule();
+    ctx.body = result;
+  }
+
   public async postRequest(ctx: any) {
     const { requestDetails } = ctx.request.body;
     if (!requestDetails) {
