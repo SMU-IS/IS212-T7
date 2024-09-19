@@ -8,7 +8,7 @@ export const authProvider: AuthProvider = {
       localStorage.setItem("auth", JSON.stringify({ email }));
       return {
         success: true,
-        redirectTo: "/dashboard",
+        redirectTo: "/schedule",
       };
     }
     return {
