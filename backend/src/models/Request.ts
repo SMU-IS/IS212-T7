@@ -1,4 +1,5 @@
 import { RequestType, Status } from "@/helpers";
+import { initializeCounter, Counter } from "@/helpers/counter";
 import mongoose from "mongoose";
 
 interface IRequest {
@@ -13,23 +14,9 @@ interface IRequest {
 
 const Schema = mongoose.Schema;
 
-// Counter Schema to allow auto increment of RequestId
-const CounterSchema = new mongoose.Schema({
-  _id: { type: String, required: true },
-  seq: { type: Number, default: 0 },
-});
-
-const Counter = mongoose.model("Counter", CounterSchema);
-
-async function initializeCounter() {
-  const counter = await Counter.findById("requestId");
-  if (!counter) {
-    await new Counter({ _id: "requestId", seq: 0 }).save();
-  }
-}
-
 // Initialize counter schema if it doesnt already exist
-initializeCounter().catch(console.error);
+// input the tableId you want to auto-increment eg. studentId
+initializeCounter("studentId").catch(console.error);
 
 const RequestSchema = new Schema<IRequest>(
   {

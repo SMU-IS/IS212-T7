@@ -1,27 +1,27 @@
 [
   {
-    "requestedDate": "2024-09-15T06:31:15.000Z",
+    "requestedDate": "2024-09-15",
     "reason": "Take care of son",
     "requestedBy": 140002,
     "assignedTo": 130002,
     "requestType": "AM"
   },
   {
-    "requestedDate": "2024-09-16T06:31:15.000Z",
+    "requestedDate": "2024-09-16",
     "reason": "Take care of daugher",
     "requestedBy": 140002,
     "assignedTo": 130002,
     "requestType": "AM"
   },
   {
-    "requestedDate": "2024-09-17T06:31:15.000Z",
+    "requestedDate": "2024-09-17",
     "reason": "Take care of mother",
     "requestedBy": 140002,
     "assignedTo": 130002,
     "requestType": "AM"
   },
   {
-    "requestedDate": "2024-09-18T06:31:15.000Z",
+    "requestedDate": "2024-09-18",
     "reason": "Take care of father",
     "requestedBy": 140002,
     "assignedTo": 130002,
