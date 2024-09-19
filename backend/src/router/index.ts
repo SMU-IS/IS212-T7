@@ -103,7 +103,7 @@ router.get("/getRequests", (ctx) =>
  * @openapi
  * /api/v1/getCompanySchedule:
  *   get:
- *     description: Get the entire company's schedule
+ *     description: Get the entire company's schedule where status is approved
  *     tags: [Request]
  *     parameters:
  *       - in: query
@@ -111,7 +111,7 @@ router.get("/getRequests", (ctx) =>
  *         schema:
  *           type: number
  *         required: true
- *         description: Retrieve lists of schedule
+ *         description: Retrieve lists of schedule that are approved
  *     responses:
  *       200:
  *         description: Returns a request object

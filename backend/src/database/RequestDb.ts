@@ -13,7 +13,7 @@ class RequestDb {
   }
 
   public async getCompanySchedule() {
-    const request = await Request.find();
+    const request = await Request.find({ status: Status.APPROVED });
     return request;
   }
 
