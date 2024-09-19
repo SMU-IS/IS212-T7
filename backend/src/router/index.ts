@@ -2,9 +2,13 @@ import EmployeeController from "@/controllers/EmployeeController";
 import { AccessControl } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import Router from "koa-router";
+import EmployeeService from "@/services/employeeService";
 
 const router = new Router();
 router.prefix("/api/v1");
+
+const employeeService = new EmployeeService();
+const employeeController = new EmployeeController(employeeService);
 
 router.get("/", async (ctx: any) => {
   ctx.body = `Server is Running! 💨`;
@@ -18,7 +22,12 @@ router.get("/", async (ctx: any) => {
 router.get(
   "/getEmployee",
   checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
-  (ctx) => EmployeeController.getEmployee(ctx)
+  (ctx) => employeeController.getEmployee(ctx)
+);
+
+router.post(
+  "/login",
+  (ctx) => employeeController.getEmployeeByEmail(ctx)
 );
 
 export default router;
