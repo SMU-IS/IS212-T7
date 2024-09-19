@@ -101,7 +101,7 @@ router.get("/getRequests", (ctx) =>
 
 /**
  * @openapi
- * /api/v1/getCompanySchedule
+ * /api/v1/getCompanySchedule:
  *   get:
  *     description: Get the entire company's schedule
  *     tags: [Request]
