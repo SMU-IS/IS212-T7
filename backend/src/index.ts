@@ -3,14 +3,14 @@ dotenv.config();
 
 import cors from "@koa/cors";
 import Koa from "koa";
-import parser from "koa-bodyparser";
+const bodyParser = require("koa-bodyparser");
 import router from "@/router";
 import "reflect-metadata";
 
 const app = new Koa();
 
+app.use(bodyParser());
 app.use(cors());
-app.use(parser());
 app.use(router.routes());
 
 export { app };
