@@ -41,6 +41,7 @@ import {
   ScheduleList
 } from "./pages/schedule"
 import { Header } from "./components/header"; // Custom header if you have one
+import { WFHForm } from "./pages/wfh-application"
 
 const App = () => {
   return (
@@ -111,6 +112,7 @@ const App = () => {
               <Route path="/schedule">
                 <Route index element={<ScheduleList />} />
               </Route>
+              <Route path="/wfhform" element={ < WFHForm/>}/>
               {/* Blog Posts Routes */}
               <Route path="/blog-posts">
                 <Route index element={<BlogPostList />} />

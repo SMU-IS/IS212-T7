@@ -2,9 +2,9 @@ import EmployeeController from "@/controllers/EmployeeController";
 import RequestController from "@/controllers/RequestController";
 import { AccessControl } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
+import EmployeeService from "@/services/employeeService";
 import RequestService from "@/services/requestService";
 import swaggerSpec from "@/swagger";
-import { Context } from "koa";
 import Router from "koa-router";
 import { koaSwagger } from "koa2-swagger-ui";
 
@@ -25,6 +25,9 @@ router.get(
     },
   })
 );
+
+const employeeService = new EmployeeService();
+const employeeController = new EmployeeController(employeeService);
 
 router.get("/", async (ctx: any) => {
   ctx.body = `Server is Running! 💨`;
@@ -50,62 +53,75 @@ router.get("/", async (ctx: any) => {
 router.get(
   "/getEmployee",
   checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
-  (ctx) => EmployeeController.getEmployee(ctx)
+  (ctx) => employeeController.getEmployee(ctx)
 );
+
+router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
 
 /**
  * @openapi
- * /api/v1/getOwnRequests?myId={INSERT ID HERE}:
+ * /api/v1/getMySchedule?myId={INSERT ID HERE}:
  *   get:
- *     description: Get your own requests
- *     tags: [Request]
+ *     description: Get your own schedule
+ *     tags: [Schedule]
  *     parameters:
  *       - in: query
  *         name: myId
  *         schema:
  *           type: number
  *         required: true
- *         description: Retrieve lists of your requests regardless of status
+ *         description: Retrieve lists of your schedule regardless of status
  *     responses:
  *       200:
  *         description: Returns a request object
  */
-router.get("/getOwnRequests", (ctx) => requestController.getOwnRequests(ctx));
+router.get("/getMySchedule", (ctx) => requestController.getMySchedule(ctx));
 
 /**
  * @openapi
- * /api/v1/getRequests?staffId={INSERT ID HERE}&status={INSERT STATUS HERE}:
+ * /api/v1/getTeamSchedule?reportingManager={INSERT ID HERE}:
  *   get:
- *     description: Get requests by staffId and status
- *     tags: [Request]
+ *     description: Get your own team's schedule
+ *     tags: [Schedule]
  *     parameters:
  *       - in: query
- *         name: staffId
+ *         name: reportingManager
  *         schema:
  *           type: number
  *         required: true
- *         description: Retrieve lists of request by that particular staff
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [PENDING, APPROVED, REJECTED, CANCELLED, WITHDRAWN]
- *         required: true
- *         description: The status of the request to filter by
+ *         description: Retrieve lists of your team's schedule that are approved
  *     responses:
  *       200:
  *         description: Returns a request object
  */
-router.get("/getRequests", (ctx) =>
-  requestController.getRequestsByStaffIdAndStatus(ctx)
-);
+router.get("/getTeamSchedule", (ctx) => requestController.getTeamSchedule(ctx));
+
+/**
+ * @openapi
+ * /api/v1/getDeptSchedule?dept={INSERT DEPT HERE}:
+ *   get:
+ *     description: Get your own dept's schedule
+ *     tags: [Schedule]
+ *     parameters:
+ *       - in: query
+ *         name: dept
+ *         schema:
+ *           type: string
+ *           enum: [CEO, Consultancy, Engineering, Finance, HR, IT, Sales, Solutioning ]
+ *         required: true
+ *         description: Retrieve lists of request by that dept
+ *     responses:
+ *       200:
+ *         description: Returns a request object
+ */
+router.get("/getDeptSchedule", (ctx) => requestController.getDeptSchedule(ctx));
 
 /**
  * @openapi
  * /api/v1/getCompanySchedule:
  *   get:
  *     description: Get the entire company's schedule where status is approved
- *     tags: [Request]
+ *     tags: [Schedule]
  *     parameters:
  *       - in: query
  *         name: myId
@@ -133,7 +149,8 @@ router.get("/getCompanySchedule", (ctx) =>
  *       200:
  *         description: Returns an Promise object
  */
-router.post("/postRequest", async (ctx: Context) => {
+router.post("/postRequest", async (ctx) => {
   await requestController.postRequest(ctx);
 });
+
 export default router;

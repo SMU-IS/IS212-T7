@@ -1,4 +1,4 @@
-import { Status } from "@/helpers";
+import { Dept, Status } from "@/helpers";
 import Request from "@/models/Request";
 
 interface RequestDetails {
@@ -12,14 +12,25 @@ interface RequestDetails {
 }
 
 class RequestDb {
-  public async getRequests(myId: number) {
-    const request = await Request.find({ requestedBy: myId });
-    return request;
+  public async getMySchedule(myId: number) {
+    const schedule = await Request.find({ staffId: myId });
+    return schedule;
   }
 
-  public async getRequestsByStaffIdAndStatus(staffId: number, status: Status) {
-    const request = await Request.find({ requestedBy: staffId, status });
-    return request;
+  public async getTeamSchedule(reportingManager: number) {
+    const teamSchedule = await Request.find({
+      reportingManager,
+      status: Status.APPROVED,
+    });
+    return teamSchedule;
+  }
+
+  public async getDeptSchedule(dept: Dept) {
+    const deptSchedule = await Request.find({
+      dept,
+      status: Status.APPROVED,
+    });
+    return deptSchedule;
   }
 
   public async getCompanySchedule() {
