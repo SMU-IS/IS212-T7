@@ -1,44 +1,42 @@
 import { RequestType, Status } from "@/helpers";
+import { Counter, initializeCounter } from "@/helpers/counter";
 import mongoose from "mongoose";
 
 interface IRequest {
   requestId: number;
-  requestType: RequestType;
+  staffId: number;
+  staffName: string;
+  reportingManager: number | null;
+  managerName: string;
+  dept: string;
   requestedDate: Date;
+  requestType: RequestType;
   reason: string;
-  assignedTo: number;
-  requestedBy: number;
   status: Status;
 }
 
 const Schema = mongoose.Schema;
-
-// Counter Schema to allow auto increment of RequestId
-const CounterSchema = new mongoose.Schema({
-  _id: { type: String, required: true },
-  seq: { type: Number, default: 0 },
-});
-
-const Counter = mongoose.model("Counter", CounterSchema);
-
-async function initializeCounter() {
-  const counter = await Counter.findById("requestId");
-  if (!counter) {
-    await new Counter({ _id: "requestId", seq: 0 }).save();
-  }
-}
-
-// Initialize counter schema if it doesnt already exist
-initializeCounter().catch(console.error);
+initializeCounter("requestId").catch(console.error);
 
 const RequestSchema = new Schema<IRequest>(
   {
     requestId: { type: Number, unique: true },
-    requestType: { type: String, required: true },
+    staffId: {
+      type: Number,
+      ref: "Employee",
+      required: true,
+    },
+    staffName: { type: String, required: true },
+    reportingManager: {
+      type: Number,
+      ref: "Employee",
+      required: false,
+    },
+    managerName: { type: String, required: false },
+    dept: { type: String, required: true },
     requestedDate: { type: Date, required: true },
+    requestType: { type: String, required: true },
     reason: { type: String, required: true },
-    assignedTo: { type: Number, required: true },
-    requestedBy: { type: Number, required: true },
     status: {
       type: String,
       required: true,
@@ -51,7 +49,6 @@ const RequestSchema = new Schema<IRequest>(
   }
 );
 
-// set requestId to current counter + 1
 RequestSchema.pre("save", async function (next) {
   if (this.isNew) {
     const counter = await Counter.findByIdAndUpdate(
