@@ -5,6 +5,7 @@ import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import RequestService from "@/services/requestService";
 import swaggerSpec from "@/swagger";
 import Router from "koa-router";
+import EmployeeService from "@/services/employeeService";
 import { koaSwagger } from "koa2-swagger-ui";
 
 const requestService = new RequestService();
@@ -24,6 +25,9 @@ router.get(
     },
   })
 );
+
+const employeeService = new EmployeeService();
+const employeeController = new EmployeeController(employeeService);
 
 router.get("/", async (ctx: any) => {
   ctx.body = `Server is Running! 💨`;
@@ -49,7 +53,12 @@ router.get("/", async (ctx: any) => {
 router.get(
   "/getEmployee",
   checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
-  (ctx) => EmployeeController.getEmployee(ctx)
+  (ctx) => employeeController.getEmployee(ctx)
+);
+
+router.post(
+  "/login",
+  (ctx) => employeeController.getEmployeeByEmail(ctx)
 );
 
 /**
