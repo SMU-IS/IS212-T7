@@ -56,10 +56,7 @@ router.get(
   (ctx) => employeeController.getEmployee(ctx)
 );
 
-router.post(
-  "/login",
-  (ctx) => employeeController.getEmployeeByEmail(ctx)
-);
+router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
 
 /**
  * @openapi
@@ -82,30 +79,37 @@ router.get("/getOwnRequests", (ctx) => requestController.getOwnRequests(ctx));
 
 /**
  * @openapi
- * /api/v1/getRequests?staffId={INSERT ID HERE}&status={INSERT STATUS HERE}:
+ * /api/v1/getRequests?staffId={INSERT ID HERE}&status={INSERT STATUS HERE}&dept={INSERT DEPT HERE}:
  *   get:
- *     description: Get requests by staffId and status
+ *     description: Get requests by staffId, or status, or dept (all 3 combinations work too)
  *     tags: [Request]
  *     parameters:
  *       - in: query
  *         name: staffId
  *         schema:
  *           type: number
- *         required: true
+ *         required: false
  *         description: Retrieve lists of request by that particular staff
  *       - in: query
  *         name: status
  *         schema:
  *           type: string
  *           enum: [PENDING, APPROVED, REJECTED, CANCELLED, WITHDRAWN]
- *         required: true
- *         description: The status of the request to filter by
+ *         required: false
+ *         description: Retrieve lists of request by status
+ *       - in: query
+ *         name: dept
+ *         schema:
+ *           type: string
+ *           enum: [CEO, Consultancy, Engineering, Finance, HR, IT, Sales, Solutioning ]
+ *         required: false
+ *         description: Retrieve lists of request by that dept
  *     responses:
  *       200:
  *         description: Returns a request object
  */
 router.get("/getRequests", (ctx) =>
-  requestController.getRequestsByStaffIdAndStatus(ctx)
+  requestController.getRequestsWithConditions(ctx)
 );
 
 /**

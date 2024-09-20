@@ -1,5 +1,5 @@
 import RequestDb from "@/database/RequestDb";
-import { errMsg, Status } from "@/helpers";
+import { Dept, errMsg, Status } from "@/helpers";
 import EmployeeService from "./employeeService";
 
 class RequestService {
@@ -12,7 +12,7 @@ class RequestService {
       return errMsg.USER_DOES_NOT_EXIST;
     }
 
-    const requests = await this.requestDb.getRequests(myId);
+    const requests = await this.requestDb.getOwnRequests(myId);
     if (requests.length < 1) {
       return errMsg.REQUESTS_NOT_FOUND;
     }
@@ -20,10 +20,15 @@ class RequestService {
     return requests;
   }
 
-  public async getRequestsByStaffIdAndStatus(staffId: number, status: Status) {
-    const requests = await this.requestDb.getRequestsByStaffIdAndStatus(
+  public async getRequestsWithConditions(
+    staffId: number,
+    status?: Status,
+    dept?: Dept
+  ) {
+    const requests = await this.requestDb.getRequestsWithConditions(
       staffId,
-      status
+      status,
+      dept
     );
     return requests;
   }

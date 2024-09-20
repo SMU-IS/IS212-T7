@@ -1,4 +1,4 @@
-import { errMsg, Status } from "@/helpers";
+import { Dept, errMsg, Status } from "@/helpers";
 import { requestSchema } from "@/schema";
 import RequestService from "@/services/requestService";
 import { Context } from "koa";
@@ -23,9 +23,9 @@ class RequestController {
     ctx.body = result;
   }
 
-  public async getRequestsByStaffIdAndStatus(ctx: Context) {
-    const { staffId, status } = ctx.query;
-    const validation = requestSchema.safeParse({ staffId, status });
+  public async getRequestsWithConditions(ctx: Context) {
+    const { staffId, status, dept } = ctx.query;
+    const validation = requestSchema.safeParse({ staffId, status, dept });
     if (!validation.success) {
       ctx.body = {
         errMsg: validation.error.format(),
@@ -33,9 +33,10 @@ class RequestController {
       return;
     }
 
-    const result = await this.requestService.getRequestsByStaffIdAndStatus(
+    const result = await this.requestService.getRequestsWithConditions(
       Number(staffId),
-      status as Status
+      status as Status,
+      dept as Dept
     );
     ctx.body = result;
   }

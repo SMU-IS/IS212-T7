@@ -1,14 +1,30 @@
-import { Status } from "@/helpers";
+import { Dept, Status } from "@/helpers";
 import Request from "@/models/Request";
 
+interface RequestQuery {
+  staffId?: number;
+  status?: Status;
+  dept?: string;
+}
+
 class RequestDb {
-  public async getRequests(myId: number) {
-    const requests = await Request.find({ requestedBy: myId });
+  public async getOwnRequests(myId: number) {
+    const requests = await Request.find({ staffId: myId });
     return requests;
   }
 
-  public async getRequestsByStaffIdAndStatus(staffId: number, status: Status) {
-    const requests = await Request.find({ requestedBy: staffId, status });
+  public async getRequestsWithConditions(
+    staffId?: number,
+    status?: Status,
+    dept?: Dept
+  ) {
+    const query: RequestQuery = {
+      ...(staffId && { staffId }),
+      ...(status && { status }),
+      ...(dept && { dept }),
+    };
+
+    const requests = await Request.find(query);
     return requests;
   }
 
