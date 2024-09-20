@@ -1,31 +1,26 @@
 import { Dept, Status } from "@/helpers";
 import Request from "@/models/Request";
 
-interface RequestQuery {
-  staffId?: number;
-  status?: Status;
-  dept?: string;
-}
-
 class RequestDb {
-  public async getOwnRequests(myId: number) {
-    const requests = await Request.find({ staffId: myId });
-    return requests;
+  public async getMySchedule(myId: number) {
+    const schedule = await Request.find({ staffId: myId });
+    return schedule;
   }
 
-  public async getRequestsWithConditions(
-    staffId?: number,
-    status?: Status,
-    dept?: Dept
-  ) {
-    const query: RequestQuery = {
-      ...(staffId && { staffId }),
-      ...(status && { status }),
-      ...(dept && { dept }),
-    };
+  public async getTeamSchedule(reportingManager: number) {
+    const teamSchedule = await Request.find({
+      reportingManager,
+      status: Status.APPROVED,
+    });
+    return teamSchedule;
+  }
 
-    const requests = await Request.find(query);
-    return requests;
+  public async getDeptSchedule(dept: Dept) {
+    const deptSchedule = await Request.find({
+      dept,
+      status: Status.APPROVED,
+    });
+    return deptSchedule;
   }
 
   public async getCompanySchedule() {

@@ -15,4 +15,12 @@ const requestSchema = z.object({
   dept: z.nativeEnum(Dept).optional(),
 });
 
-export { numberSchema, requestSchema };
+const teamSchema = z.object({
+  reportingManager: z.string(),
+});
+
+const deptSchema = z.object({
+  dept: z.nativeEnum(Dept),
+});
+
+export { deptSchema, numberSchema, requestSchema, teamSchema };

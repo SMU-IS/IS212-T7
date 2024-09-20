@@ -1,5 +1,5 @@
-import { Dept, errMsg, Status } from "@/helpers";
-import { requestSchema } from "@/schema";
+import { Dept, errMsg } from "@/helpers";
+import { deptSchema, teamSchema } from "@/schema";
 import RequestService from "@/services/requestService";
 import { Context } from "koa";
 
@@ -10,7 +10,7 @@ class RequestController {
     this.requestService = requestService;
   }
 
-  public async getOwnRequests(ctx: Context) {
+  public async getMySchedule(ctx: Context) {
     const { myId } = ctx.query;
     if (!myId) {
       ctx.body = {
@@ -19,13 +19,13 @@ class RequestController {
       return;
     }
 
-    const result = await this.requestService.getOwnRequests(Number(myId));
+    const result = await this.requestService.getMySchedule(Number(myId));
     ctx.body = result;
   }
 
-  public async getRequestsWithConditions(ctx: Context) {
-    const { staffId, status, dept } = ctx.query;
-    const validation = requestSchema.safeParse({ staffId, status, dept });
+  public async getTeamSchedule(ctx: Context) {
+    const { reportingManager } = ctx.query;
+    const validation = teamSchema.safeParse({ reportingManager });
     if (!validation.success) {
       ctx.body = {
         errMsg: validation.error.format(),
@@ -33,11 +33,23 @@ class RequestController {
       return;
     }
 
-    const result = await this.requestService.getRequestsWithConditions(
-      Number(staffId),
-      status as Status,
-      dept as Dept
+    const result = await this.requestService.getTeamSchedule(
+      Number(reportingManager)
     );
+    ctx.body = result;
+  }
+
+  public async getDeptSchedule(ctx: Context) {
+    const { dept } = ctx.query;
+    const validation = deptSchema.safeParse({ dept });
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+
+    const result = await this.requestService.getDeptSchedule(dept as Dept);
     ctx.body = result;
   }
 
