@@ -3,13 +3,13 @@ import Request from "@/models/Request";
 
 class RequestDb {
   public async getRequests(myId: number) {
-    const request = await Request.find({ requestedBy: myId });
-    return request;
+    const requests = await Request.find({ requestedBy: myId });
+    return requests;
   }
 
   public async getRequestsByStaffIdAndStatus(staffId: number, status: Status) {
-    const request = await Request.find({ requestedBy: staffId, status });
-    return request;
+    const requests = await Request.find({ requestedBy: staffId, status });
+    return requests;
   }
 
   public async getCompanySchedule() {

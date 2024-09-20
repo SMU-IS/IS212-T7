@@ -1,20 +1,31 @@
 import RequestDb from "@/database/RequestDb";
-import { Status } from "@/helpers";
+import { errMsg, Status } from "@/helpers";
+import EmployeeService from "./employeeService";
 
 class RequestService {
+  private employeeService = new EmployeeService();
   private requestDb = new RequestDb();
 
   public async getOwnRequests(myId: number) {
-    const request = await this.requestDb.getRequests(myId);
-    return request;
+    const employee = await this.employeeService.getEmployee(myId);
+    if (!employee) {
+      return errMsg.USER_DOES_NOT_EXIST;
+    }
+
+    const requests = await this.requestDb.getRequests(myId);
+    if (requests.length < 1) {
+      return errMsg.REQUESTS_NOT_FOUND;
+    }
+
+    return requests;
   }
 
   public async getRequestsByStaffIdAndStatus(staffId: number, status: Status) {
-    const request = await this.requestDb.getRequestsByStaffIdAndStatus(
+    const requests = await this.requestDb.getRequestsByStaffIdAndStatus(
       staffId,
       status
     );
-    return request;
+    return requests;
   }
 
   public async getCompanySchedule() {
