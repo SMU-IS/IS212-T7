@@ -4,12 +4,12 @@
   "private": true,
   "type": "commonjs",
   "dependencies": {
-    "@ant-design/icons": "^5.0.1",
+    "@ant-design/icons": "^5.5.1",
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@preact/signals": "^1.3.0",
-    "@refinedev/antd": "^5.37.4",
+    "@refinedev/antd": "^5.43.1",
     "@refinedev/chakra-ui": "^2.32.0",
     "@refinedev/cli": "^2.16.21",
     "@refinedev/core": "^4.47.1",
@@ -22,7 +22,7 @@
     "@schedule-x/react": "^1.63.1",
     "@schedule-x/theme-default": "^1.63.1",
     "@uiw/react-md-editor": "^3.19.5",
-    "antd": "^5.0.5",
+    "antd": "^5.20.6",
     "axios": "^1.6.2",
     "framer-motion": "^11.5.6",
     "preact": "^10.24.0",
@@ -33,7 +33,6 @@
   "devDependencies": {
     "@commitlint/cli": "^19.4.1",
     "@commitlint/config-conventional": "^19.4.1",
-    "msw": "^2.4.9",
     "@tanstack/react-query": "^5.56.2",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.0.1",
@@ -64,7 +63,7 @@
     "start": "refine start",
     "refine": "refine",
     "prettier": "npx prettier . --write",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "browserslist": {
     "production": [

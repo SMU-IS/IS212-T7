@@ -1,6 +1,6 @@
+import React from "react";
 import { AuthPage } from "@refinedev/antd";
-import { Box, Heading, useToast } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { Box, Heading } from "@chakra-ui/react";
 
 const Login = () => {
   return (
