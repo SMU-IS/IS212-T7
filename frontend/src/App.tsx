@@ -6,7 +6,6 @@ import {
   RefineThemes,
   ErrorComponent,
   ThemedSiderV2,
-  useNotificationProvider,
 } from "@refinedev/antd";
 
 import { ColorModeContextProvider } from "./contexts/color-mode";
@@ -42,112 +41,116 @@ import {
 } from "./pages/schedule"
 import { Header } from "./components/header"; // Custom header if you have one
 import { WFHForm } from "./pages/wfh-application"
+import { ChakraProvider } from "@chakra-ui/react";
+import { useCustomNotificationProvider } from "./components/toast";
 
 const App = () => {
   return (
     <BrowserRouter>
     <ColorModeContextProvider>
       <ConfigProvider>
-        <Refine
-          dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
-          routerProvider={routerProvider}
-          authProvider={authProvider}
-          notificationProvider={useNotificationProvider} // Use Ant Design's notification provider
-          resources={[
-            {
-              name: "Schedule",
-              list: ScheduleList,
-              meta: {
-                canDelete: false,
+        <ChakraProvider>
+          <Refine
+            dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
+            routerProvider={routerProvider}
+            authProvider={authProvider}
+            notificationProvider={useCustomNotificationProvider} // Use ChakraUI's notification provider
+            resources={[
+              {
+                name: "Schedule",
+                list: ScheduleList,
+                meta: {
+                  canDelete: false,
+                },
               },
-            },
-            {
-              name: "blog_posts",
-              list: "/blog-posts",
-              create: "/blog-posts/create",
-              edit: "/blog-posts/edit/:id",
-              show: "/blog-posts/show/:id",
-              meta: {
-                canDelete: true,
+              {
+                name: "blog_posts",
+                list: "/blog-posts",
+                create: "/blog-posts/create",
+                edit: "/blog-posts/edit/:id",
+                show: "/blog-posts/show/:id",
+                meta: {
+                  canDelete: true,
+                },
               },
-            },
-            {
-              name: "categories",
-              list: "/categories",
-              create: "/categories/create",
-              edit: "/categories/edit/:id",
-              show: "/categories/show/:id",
-              meta: {
-                canDelete: true,
+              {
+                name: "categories",
+                list: "/categories",
+                create: "/categories/create",
+                edit: "/categories/edit/:id",
+                show: "/categories/show/:id",
+                meta: {
+                  canDelete: true,
+                },
               },
-            },
-          ]}
-          options={{
-            syncWithLocation: true,
-            warnWhenUnsavedChanges: true,
-            useNewQueryKeys: true,
-            projectId: "cvDbbL-7DVGFW-l9PPN7",
-          }}
-        >
-          <Routes>
-            {/* Authenticated routes with layout */}
-            <Route
-              element={
-                <Authenticated
-                  key="authentication-inner"
-                  fallback={<CatchAllNavigate to="/login" />}
-                >
-                  <ThemedLayoutV2
-                    Header={Header}
-                    Sider={(props) => <ThemedSiderV2 {...props} fixed />}
+            ]}
+            options={{
+              syncWithLocation: true,
+              warnWhenUnsavedChanges: true,
+              useNewQueryKeys: true,
+              projectId: "cvDbbL-7DVGFW-l9PPN7",
+            }}
+          >
+            <Routes>
+              {/* Authenticated routes with layout */}
+              <Route
+                element={
+                  <Authenticated
+                    key="authentication-inner"
+                    fallback={<CatchAllNavigate to="/login" />}
                   >
-                    <Outlet />
-                  </ThemedLayoutV2>
-                </Authenticated>
-              }
-            >
-              {/* Default route to the dashboard */}
-              {/* <Route index element={<DashboardPage />} /> */}
-              {/* Schedule Routes */}
-              <Route path="/schedule">
-                <Route index element={<ScheduleList />} />
+                    <ThemedLayoutV2
+                      Header={Header}
+                      Sider={(props) => <ThemedSiderV2 {...props} fixed />}
+                    >
+                      <Outlet />
+                    </ThemedLayoutV2>
+                  </Authenticated>
+                }
+              >
+                {/* Default route to the dashboard */}
+                {/* <Route index element={<DashboardPage />} /> */}
+                {/* Schedule Routes */}
+                <Route path="/schedule">
+                  <Route index element={<ScheduleList />} />
+                </Route>
+                <Route path="/wfhform" element={ < WFHForm/>}/>
+                {/* Blog Posts Routes */}
+                <Route path="/blog-posts">
+                  <Route index element={<BlogPostList />} />
+                  <Route path="create" element={<BlogPostCreate />} />
+                  <Route path="edit/:id" element={<BlogPostEdit />} />
+                  <Route path="show/:id" element={<BlogPostShow />} />
+                </Route>
+
+                {/* Categories Routes */}
+                <Route path="/categories">
+                  <Route index element={<CategoryList />} />
+                  <Route path="create" element={<CategoryCreate />} />
+                  <Route path="edit/:id" element={<CategoryEdit />} />
+                  <Route path="show/:id" element={<CategoryShow />} />
+                </Route>
+
+                {/* Error page */}
+                <Route path="*" element={<ErrorComponent />} />
               </Route>
-              <Route path="/wfhform" element={ < WFHForm/>}/>
-              {/* Blog Posts Routes */}
-              <Route path="/blog-posts">
-                <Route index element={<BlogPostList />} />
-                <Route path="create" element={<BlogPostCreate />} />
-                <Route path="edit/:id" element={<BlogPostEdit />} />
-                <Route path="show/:id" element={<BlogPostShow />} />
-              </Route>
 
-              {/* Categories Routes */}
-              <Route path="/categories">
-                <Route index element={<CategoryList />} />
-                <Route path="create" element={<CategoryCreate />} />
-                <Route path="edit/:id" element={<CategoryEdit />} />
-                <Route path="show/:id" element={<CategoryShow />} />
-              </Route>
+              {/* Unauthenticated route (Login Page) */}
+              <Route path="/login" element={<Login />} />
 
-              {/* Error page */}
-              <Route path="*" element={<ErrorComponent />} />
-            </Route>
-
-            {/* Unauthenticated route (Login Page) */}
-            <Route path="/login" element={<Login />} />
-
-            {/* Redirect to resource if authenticated */}
-            <Route
-              element={
-                <Authenticated key="authentication-inner" fallback={<Outlet />}>
-                  <NavigateToResource />
-                </Authenticated>
-              }
-            />
-          </Routes>
-          <UnsavedChangesNotifier />
-          <DocumentTitleHandler />
-        </Refine>
+              {/* Redirect to resource if authenticated */}
+              <Route
+                element={
+                  <Authenticated key="authentication-inner" fallback={<Outlet />}>
+                    <NavigateToResource />
+                  </Authenticated>
+                }
+              />
+            </Routes>
+            <UnsavedChangesNotifier />
+            <DocumentTitleHandler />
+          </Refine>
+        </ChakraProvider>
       </ConfigProvider>
     </ColorModeContextProvider>
     </BrowserRouter>
