@@ -1,3 +1,4 @@
+import { ChakraProvider } from "@chakra-ui/react";
 import { Refine, Authenticated } from "@refinedev/core";
 import dataProvider from "@refinedev/simple-rest";
 import {
@@ -46,6 +47,7 @@ import { WFHForm } from "./pages/wfh-application"
 const App = () => {
   return (
     <BrowserRouter>
+    <ChakraProvider>
     <ColorModeContextProvider>
       <ConfigProvider>
         <Refine
@@ -150,6 +152,7 @@ const App = () => {
         </Refine>
       </ConfigProvider>
     </ColorModeContextProvider>
+    </ChakraProvider>
     </BrowserRouter>
   );
 };
