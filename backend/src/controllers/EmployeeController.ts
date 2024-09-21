@@ -1,6 +1,6 @@
 import { errMsg } from "@/helpers";
-import EmployeeService from "@/services/EmployeeService";
 import { Context } from "koa";
+import EmployeeService from "@/services/EmployeeService";
 
 class EmployeeController {
   private employeeService: EmployeeService;
@@ -24,13 +24,13 @@ class EmployeeController {
 
   public async getEmployeeByEmail(ctx: Context) {
     interface LoginBody {
-      staffEmail: string;
-      staffPassword: string;
+      email: string;
+      password: string;
     }
 
     const body = ctx.request.body as LoginBody;
-    let staffEmail = body.staffEmail;
-    let staffPassword = body.staffPassword;
+    let staffEmail = body.email;
+    let staffPassword = body.password;
 
     if (!staffEmail || !staffPassword) {
       ctx.body = {

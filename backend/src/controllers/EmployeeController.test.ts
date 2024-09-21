@@ -38,8 +38,8 @@ describe("EmployeeController", () => {
   it("should return employee role when a valid email and password is provided", async () => {
     // Arrange
     ctx.request.body = {
-      staffEmail: "test@example.com",
-      staffPassword: "password",
+      email: "test@example.com",
+      password: "password",
     };
     const returnValue: any = {
       staffId: mockEmployee.staffId,
@@ -60,8 +60,8 @@ describe("EmployeeController", () => {
   it("should inform user of failure to find an employee with provided email", async () => {
     // Arrange
     ctx.request.body = {
-      staffEmail: "nonexistent@example.com",
-      staffPassword: "password",
+      email: "nonexistent@example.com",
+      password: "password",
     };
     employeeServiceMock.getEmployeeByEmail.mockResolvedValue(null);
 

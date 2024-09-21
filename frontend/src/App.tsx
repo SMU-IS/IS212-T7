@@ -22,7 +22,7 @@ import { ConfigProvider, theme } from "antd";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
 import { authProvider } from "./authProvider";
-import Login from "./pages/login"; // Import your new Login component
+import Login from "./pages/login/login"; // Import your new Login component
 
 // import { DashboardPage } from "./pages/dashboard"; // Your custom dashboard page
 import {

@@ -1,23 +1,42 @@
 import { AuthProvider } from "@refinedev/core";
+import axios, { AxiosInstance } from "axios";
+
+export const api: AxiosInstance = axios.create({
+  baseURL: "http://localhost:8080",
+  timeout: 300000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
     // Replace with your actual authentication logic
-    if (email === "staff@gmail.com" && password === "password") {
-      console.log("success");
-      localStorage.setItem("auth", JSON.stringify({ email }));
+    // Axios post to 'backend:3001/api/v1/login' with email and password
+    const response = await api.post(
+      "/api/v1/login",
+      {
+        email,
+        password
+      }
+    );
+
+    if (response.data.error == undefined) {
+      localStorage.setItem("auth", JSON.stringify(response.data));
       return {
         success: true,
         redirectTo: "/schedule",
       };
+    } else {
+      return {
+        success: false,
+        error: {
+          message: "Login failed",
+          name: response.data.error,
+        },
+      };
     }
-    return {
-      success: false,
-      error: {
-        message: "Login failed",
-        name: "Invalid email or password",
-      },
-    };
   },
   logout: async () => {
     localStorage.removeItem("auth");
