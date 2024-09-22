@@ -25,3 +25,4 @@ export const getDatesInSameWeek = (newDate: Date, existingDates: Date[]): Date[]
     return diffDays < 7 && newDate.getDay() >= existingDate.getDay();
   });
 };
+

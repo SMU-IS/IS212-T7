@@ -1,6 +1,6 @@
-import { errMsg, Status } from "@/helpers";
-import { requestSchema } from "@/schema";
-import RequestService from "@/services/requestService";
+import { Dept, errMsg } from "@/helpers";
+import { deptSchema, teamSchema } from "@/schema";
+import RequestService from "@/services/RequestService";
 import { Context } from "koa";
 
 class RequestController {
@@ -10,7 +10,7 @@ class RequestController {
     this.requestService = requestService;
   }
 
-  public async getOwnRequests(ctx: Context) {
+  public async getMySchedule(ctx: Context) {
     const { myId } = ctx.query;
     if (!myId) {
       ctx.body = {
@@ -19,13 +19,13 @@ class RequestController {
       return;
     }
 
-    const result = await this.requestService.getOwnRequests(Number(myId));
+    const result = await this.requestService.getMySchedule(Number(myId));
     ctx.body = result;
   }
 
-  public async getRequestsByStaffIdAndStatus(ctx: Context) {
-    const { staffId, status } = ctx.query;
-    const validation = requestSchema.safeParse({ staffId, status });
+  public async getTeamSchedule(ctx: Context) {
+    const { reportingManager } = ctx.query;
+    const validation = teamSchema.safeParse({ reportingManager });
     if (!validation.success) {
       ctx.body = {
         errMsg: validation.error.format(),
@@ -33,10 +33,23 @@ class RequestController {
       return;
     }
 
-    const result = await this.requestService.getRequestsByStaffIdAndStatus(
-      Number(staffId),
-      status as Status
+    const result = await this.requestService.getTeamSchedule(
+      Number(reportingManager)
     );
+    ctx.body = result;
+  }
+
+  public async getDeptSchedule(ctx: Context) {
+    const { dept } = ctx.query;
+    const validation = deptSchema.safeParse({ dept });
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+
+    const result = await this.requestService.getDeptSchedule(dept as Dept);
     ctx.body = result;
   }
 
@@ -46,14 +59,13 @@ class RequestController {
   }
 
   public async postRequest(ctx: any) {
-    const { requestDetails } = ctx.request.body;
+    const requestDetails = ctx.request.body;
     if (!requestDetails) {
       ctx.body = {
         error: errMsg.MISSING_PARAMETERS,
       };
       return;
     }
-    // might need to convert input to json
     const result = await this.requestService.postRequest(requestDetails);
     ctx.body = result;
   }

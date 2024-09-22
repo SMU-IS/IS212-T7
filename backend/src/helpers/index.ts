@@ -37,4 +37,15 @@ enum Status {
   WITHDRAWN = "WITHDRAWN",
 }
 
-export { AccessControl, PERMISSIONS, RequestType, Role, Status, errMsg };
+enum Dept {
+  CEO = "CEO",
+  CONSULTANCY = "Consultancy",
+  ENGINEERING = "Engineering",
+  FINANCE = "Finance",
+  HR = "HR",
+  IT = "IT",
+  SALES = "Sales",
+  SOLUTIONING = "Solutioning",
+}
+
+export { AccessControl, Dept, PERMISSIONS, RequestType, Role, Status, errMsg };

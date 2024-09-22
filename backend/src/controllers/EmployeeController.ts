@@ -1,5 +1,5 @@
 import { errMsg } from "@/helpers";
-import EmployeeService from "@/services/employeeService";
+import EmployeeService from "@/services/EmployeeService";
 import { Context } from "koa";
 
 class EmployeeController {
@@ -24,8 +24,8 @@ class EmployeeController {
 
   public async getEmployeeByEmail(ctx: Context) {
     interface LoginBody {
-      staffEmail: string,
-      staffPassword: string
+      staffEmail: string;
+      staffPassword: string;
     }
 
     const body = ctx.request.body as LoginBody;
@@ -39,19 +39,21 @@ class EmployeeController {
       return;
     }
 
-    const employeeData = await this.employeeService.getEmployeeByEmail(String(staffEmail));
+    const employeeData = await this.employeeService.getEmployeeByEmail(
+      String(staffEmail)
+    );
 
     if (!employeeData) {
       ctx.body = {
-        error: errMsg.USER_DOES_NOT_EXIST
-      }
+        error: errMsg.USER_DOES_NOT_EXIST,
+      };
       return;
     }
 
     ctx.body = {
       staffId: employeeData.staffId,
-      role: employeeData.role
-    }
+      role: employeeData.role,
+    };
   }
 }
 

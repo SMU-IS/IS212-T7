@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect } from "react";
+
 import {
   Form,
   Button,
@@ -19,6 +21,7 @@ import {
 import { validateForm } from "../../utils/wfh-validation";
 import { useToast } from "@chakra-ui/react";
 
+
 const { Option } = Select;
 const { Title } = Typography;
 
@@ -34,7 +37,6 @@ export const WFHForm = () => {
   // these variables will require user input
   const [wfhDates, setWfhDates] = useState<WFHDate[]>([]);
   const [reason, setReason] = useState<string>("");
-
   // add code here to fetch user data from db
 
   // handlers
@@ -118,7 +120,6 @@ export const WFHForm = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     const formData: FormData = { wfhDates, reason };
     const validationError = validateForm(formData);
     if (validationError) {
@@ -226,7 +227,6 @@ export const WFHForm = () => {
                 <Option value="PM">PM</Option>
                 <Option value="FULL">Full Day</Option>
               </Select>
-
               <Button
                 onClick={() => handleRemoveDate(index)}
                 type="primary"
@@ -249,7 +249,6 @@ export const WFHForm = () => {
             rows={4}
           />
         </Form.Item>
-
         <Form.Item>
           <Button type="primary" htmlType="submit">
             Submit

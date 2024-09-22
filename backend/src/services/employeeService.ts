@@ -11,9 +11,9 @@ class EmployeeService {
     return employee;
   }
 
-    public async getEmployeeByEmail(staffEmail: string) {
-      return await this.employeeDb.getEmployeeByEmail(staffEmail);
-    }
+  public async getEmployeeByEmail(staffEmail: string) {
+    return await this.employeeDb.getEmployeeByEmail(staffEmail);
+  }
 }
 
 export default EmployeeService;

@@ -4,11 +4,14 @@ import mongoose from "mongoose";
 
 interface IRequest {
   requestId: number;
-  requestType: RequestType;
+  staffId: number;
+  staffName: string;
+  reportingManager: number | null;
+  managerName: string;
+  dept: string;
   requestedDate: Date;
+  requestType: RequestType;
   reason: string;
-  assignedTo: number;
-  requestedBy: number;
   status: Status;
 }
 
@@ -18,11 +21,22 @@ initializeCounter("requestId").catch(console.error);
 const RequestSchema = new Schema<IRequest>(
   {
     requestId: { type: Number, unique: true },
-    requestType: { type: String, required: true },
+    staffId: {
+      type: Number,
+      ref: "Employee",
+      required: true,
+    },
+    staffName: { type: String, required: true },
+    reportingManager: {
+      type: Number,
+      ref: "Employee",
+      required: false,
+    },
+    managerName: { type: String, required: false },
+    dept: { type: String, required: true },
     requestedDate: { type: Date, required: true },
+    requestType: { type: String, required: true },
     reason: { type: String, required: true },
-    assignedTo: { type: Number, required: true },
-    requestedBy: { type: Number, required: true },
     status: {
       type: String,
       required: true,

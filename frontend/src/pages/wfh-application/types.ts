@@ -1,3 +1,4 @@
+
 export type TimeOfDay = 'AM' | 'PM' | 'FULL';
 
 export interface WFHDate {
