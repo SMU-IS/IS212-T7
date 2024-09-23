@@ -6,10 +6,13 @@ class EmployeeDb {
     return employee;
   }
 
-  public async getEmployeeByEmail(userEmail: string) {
-    return await Employee.findOne({
-      email: userEmail
-    }, "staffId role").exec();
+  public async getEmployeeByEmail(userEmail: string): Promise<any> {
+    return await Employee.findOne(
+      {
+        email: userEmail,
+      },
+      "staffId hashedPassword role"
+    ).exec();
   }
 }
 
