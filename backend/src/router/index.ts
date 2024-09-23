@@ -1,5 +1,7 @@
 import EmployeeController from "@/controllers/EmployeeController";
 import RequestController from "@/controllers/RequestController";
+import EmployeeDb from "@/database/EmployeeDb";
+import RequestDb from "@/database/RequestDb";
 import { AccessControl } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import EmployeeService from "@/services/EmployeeService";
@@ -7,17 +9,17 @@ import RequestService from "@/services/RequestService";
 import swaggerSpec from "@/swagger";
 import Router from "koa-router";
 import { koaSwagger } from "koa2-swagger-ui";
-import EmployeeDb from "@/database/EmployeeDb";
 
 /**
  * Databases
  */
+const requestDb = new RequestDb();
 const employeeDb = new EmployeeDb();
 
 /**
  * Services
  */
-const requestService = new RequestService();
+const requestService = new RequestService(requestDb);
 const employeeService = new EmployeeService(employeeDb);
 
 /**
