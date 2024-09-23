@@ -26,6 +26,7 @@ class EmployeeController {
 
   public async getEmployeeByEmail(ctx: Context) {
     const { staffEmail, staffPassword } = ctx.request.body as LoginBody;
+
     if (!staffEmail || !staffPassword) {
       return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
     }

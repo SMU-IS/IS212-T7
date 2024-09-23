@@ -18,8 +18,8 @@ export const authProvider: AuthProvider = {
     const response = await api.post(
       "/api/v1/login",
       {
-        email,
-        password
+        staffEmail: email,
+        staffPassword: password
       }
     );
 
