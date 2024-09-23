@@ -1,8 +1,10 @@
 import { AuthProvider } from "@refinedev/core";
 import axios, { AxiosInstance } from "axios";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 export const api: AxiosInstance = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: String(backendUrl),
   timeout: 300000,
   headers: {
     "Content-Type": "application/json",
@@ -12,8 +14,7 @@ export const api: AxiosInstance = axios.create({
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
-    // Replace with your actual authentication logic
-    // Axios post to 'backend:3001/api/v1/login' with email and password
+    // Axios post to 'baseURL/api/v1/login' with email and password
     const response = await api.post(
       "/api/v1/login",
       {
