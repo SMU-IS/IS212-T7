@@ -7,12 +7,18 @@ import RequestService from "@/services/RequestService";
 import swaggerSpec from "@/swagger";
 import Router from "koa-router";
 import { koaSwagger } from "koa2-swagger-ui";
+import EmployeeDb from "@/database/EmployeeDb";
+
+/**
+ * Databases
+ */
+const employeeDb = new EmployeeDb();
 
 /**
  * Services
  */
 const requestService = new RequestService();
-const employeeService = new EmployeeService();
+const employeeService = new EmployeeService(employeeDb);
 
 /**
  * Controllers

@@ -3,7 +3,11 @@ import { errMsg } from "@/helpers";
 import bcrpyt from "bcrypt";
 
 class EmployeeService {
-  private employeeDb = new EmployeeDb();
+  private employeeDb: EmployeeDb;
+
+  constructor(employeeDb: EmployeeDb) {
+    this.employeeDb = employeeDb;
+  }
 
   public async getEmployee(staffId: number) {
     const employee = await this.employeeDb.getEmployee(staffId);
