@@ -1,6 +1,6 @@
 import { AccessControl, errMsg, PERMISSIONS } from "@/helpers";
 import { numberSchema } from "@/schema";
-import EmployeeService from "@/services/employeeService";
+import EmployeeService from "@/services/EmployeeService";
 import { Context, Next } from "koa";
 
 const employeeService = new EmployeeService();

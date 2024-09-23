@@ -1,3 +1,4 @@
+import { ChakraProvider } from "@chakra-ui/react";
 import { Refine, Authenticated } from "@refinedev/core";
 import dataProvider from "@refinedev/simple-rest";
 import {
@@ -41,10 +42,12 @@ import {
   ScheduleList
 } from "./pages/schedule"
 import { Header } from "./components/header"; // Custom header if you have one
+import { WFHForm } from "./pages/wfh-application"
 
 const App = () => {
   return (
     <BrowserRouter>
+    <ChakraProvider>
     <ColorModeContextProvider>
       <ConfigProvider>
         <Refine
@@ -111,6 +114,7 @@ const App = () => {
               <Route path="/schedule">
                 <Route index element={<ScheduleList />} />
               </Route>
+              <Route path="/wfhform" element={ < WFHForm/>}/>
               {/* Blog Posts Routes */}
               <Route path="/blog-posts">
                 <Route index element={<BlogPostList />} />
@@ -148,6 +152,7 @@ const App = () => {
         </Refine>
       </ConfigProvider>
     </ColorModeContextProvider>
+    </ChakraProvider>
     </BrowserRouter>
   );
 };

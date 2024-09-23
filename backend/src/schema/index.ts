@@ -1,3 +1,4 @@
+import { Dept, Status } from "@/helpers";
 import { z } from "zod";
 
 const numberSchema = z.string().transform((val) => {
@@ -8,6 +9,18 @@ const numberSchema = z.string().transform((val) => {
   return number;
 });
 
-const roleIdSchema = z.enum(["1", "2", "3"]);
+const requestSchema = z.object({
+  staffId: z.string().optional(),
+  status: z.nativeEnum(Status).optional(),
+  dept: z.nativeEnum(Dept).optional(),
+});
 
-export { numberSchema, roleIdSchema };
+const teamSchema = z.object({
+  reportingManager: z.string(),
+});
+
+const deptSchema = z.object({
+  dept: z.nativeEnum(Dept),
+});
+
+export { deptSchema, numberSchema, requestSchema, teamSchema };

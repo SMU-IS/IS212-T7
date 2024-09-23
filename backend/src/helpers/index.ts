@@ -8,6 +8,7 @@ enum errMsg {
   MISSING_PARAMETERS = "Missing parameters",
   UNAUTHORISED = "User is not authorised to perform this role.",
   USER_DOES_NOT_EXIST = "User does not exist.",
+  REQUESTS_NOT_FOUND = "No requests found",
 }
 
 enum AccessControl {
@@ -23,31 +24,28 @@ const PERMISSIONS: Record<string, string[]> = {
 };
 
 enum RequestType {
-  ADHOC = "ADHOC",
-  WEEKLY = "WEEKLY",
-  MONTH = "MONTHLY",
-}
-
-enum RequestDay {
-  MONDAY = "MONDAY",
-  TUESDAY = "TUESDAY",
-  WEDNESDAY = "WEDNESDAY",
-  THURSDAY = "THURSDAY",
-  FRIDAY = "FRIDAY",
+  AM = "AM",
+  PM = "PM",
+  FULL = "FULL",
 }
 
 enum Status {
   PENDING = "PENDING",
   APPROVED = "APPROVED",
   REJECTED = "REJECTED",
+  CANCELLED = "CANCELLED",
+  WITHDRAWN = "WITHDRAWN",
 }
 
-export {
-  AccessControl,
-  PERMISSIONS,
-  RequestDay,
-  RequestType,
-  Role,
-  Status,
-  errMsg,
-};
+enum Dept {
+  CEO = "CEO",
+  CONSULTANCY = "Consultancy",
+  ENGINEERING = "Engineering",
+  FINANCE = "Finance",
+  HR = "HR",
+  IT = "IT",
+  SALES = "Sales",
+  SOLUTIONING = "Solutioning",
+}
+
+export { AccessControl, Dept, PERMISSIONS, RequestType, Role, Status, errMsg };
