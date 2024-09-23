@@ -17,3 +17,12 @@ export const formatDate = (date: Date): string => {
     day: "numeric",
   });
 };
+
+export const getDatesInSameWeek = (newDate: Date, existingDates: Date[]): Date[] => {
+  return existingDates.filter(existingDate => {
+    const diffTime = Math.abs(newDate.getTime() - existingDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays < 7 && newDate.getDay() >= existingDate.getDay();
+  });
+};
+

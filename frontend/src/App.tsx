@@ -1,3 +1,4 @@
+import { ChakraProvider } from "@chakra-ui/react";
 import { Refine, Authenticated } from "@refinedev/core";
 import dataProvider from "@refinedev/simple-rest";
 import {
@@ -47,6 +48,7 @@ import { useCustomNotificationProvider } from "./components/toast";
 const App = () => {
   return (
     <BrowserRouter>
+    <ChakraProvider>
     <ColorModeContextProvider>
       <ConfigProvider>
         <ChakraProvider>
@@ -153,6 +155,7 @@ const App = () => {
         </ChakraProvider>
       </ConfigProvider>
     </ColorModeContextProvider>
+    </ChakraProvider>
     </BrowserRouter>
   );
 };

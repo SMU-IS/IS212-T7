@@ -1,4 +1,5 @@
-export type TimeOfDay = 'AM' | 'PM' | 'Full Day';
+
+export type TimeOfDay = 'AM' | 'PM' | 'FULL';
 
 export interface WFHDate {
   date: Date;
