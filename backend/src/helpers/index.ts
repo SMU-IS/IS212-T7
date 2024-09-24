@@ -13,13 +13,10 @@ enum errMsg {
   SAME_DAY_REQUEST = "Existing request for selected day found.",
 }
 
-enum noteMsg {
-  REQUEST_LIMIT = "Note: More than 2 requests have already been made for the selected week.",
-}
+const noteMsg =
+  "Note: More than 2 requests have already been made for the selected week.";
 
-enum successMsg {
-  APPLICATION_SUCCESS = "Selected dates submitted successfully.",
-}
+const successMsg = "Selected dates submitted successfully.";
 
 enum AccessControl {
   VIEW_OWN_SCHEDULE = "VIEW_OWN_SCHEDULE",

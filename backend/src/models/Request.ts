@@ -2,7 +2,7 @@ import { RequestType, Status } from "@/helpers";
 import { Counter, initializeCounter } from "@/helpers/counter";
 import mongoose from "mongoose";
 
-export interface IRequest extends Document {
+export interface IRequest {
   requestId: number;
   staffId: number;
   staffName: string;

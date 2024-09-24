@@ -89,7 +89,7 @@ class RequestController {
 
     if (result.successDates.length > 0) {
       responseMessage.success = {
-        message: successMsg.APPLICATION_SUCCESS,
+        message: successMsg,
         dates: result.successDates,
       };
     }
@@ -103,7 +103,7 @@ class RequestController {
 
     if (result.noteDates.length > 0) {
       responseMessage.note = {
-        message: noteMsg.REQUEST_LIMIT,
+        message: noteMsg,
         dates: result.noteDates,
       };
     }
