@@ -1,6 +1,7 @@
 import { Dept, errMsg, successMsg, noteMsg } from "@/helpers";
-import { deptSchema, teamSchema } from "@/schema";
-import RequestService from "@/services/requestService";
+import { deptSchema, requestSchema, teamSchema } from "@/schema";
+import RequestService from "@/services/RequestService";
+import UtilsController from "@/controllers/UtilsController";
 import { Context } from "koa";
 
 interface ResponseMessage {
@@ -28,10 +29,7 @@ class RequestController {
   public async getMySchedule(ctx: Context) {
     const { myId } = ctx.query;
     if (!myId) {
-      ctx.body = {
-        errMsg: errMsg.MISSING_PARAMETERS,
-      };
-      return;
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
     }
 
     const result = await this.requestService.getMySchedule(Number(myId));
@@ -75,9 +73,10 @@ class RequestController {
 
   public async postRequest(ctx: any) {
     const requestDetails = ctx.request.body;
-    if (!requestDetails) {
+    const validation = requestSchema.safeParse(requestDetails);
+    if (!validation.success) {
       ctx.body = {
-        error: errMsg.MISSING_PARAMETERS,
+        errMsg: validation.error.format(),
       };
       return;
     }

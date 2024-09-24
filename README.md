@@ -1,7 +1,10 @@
 # IS212 T7 Back-end
 
-## Backend Tech Stack
+## Tech Stack
 
+- [React.js](https://react.dev)
+- [Refine](https://refine.dev)
+- [Tailwind CSS](https://tailwindcss.com)
 - [Koa.js](https://koajs.com/)
 - [Mongoose](https://mongoosejs.com)
 - [MongoDB](https://www.mongodb.com)
@@ -17,6 +20,12 @@
 2. Install dependencies
 
    ```
+   cd frontend
+   npm install
+   ```
+
+   ```
+   cd backend
    npm install
    ```
 
@@ -46,6 +55,12 @@
 5. To run test
 
    ```
+   cd frontend
+   npm run test
+   ```
+
+   ```
+   cd backend
    npm run test
    ```
 

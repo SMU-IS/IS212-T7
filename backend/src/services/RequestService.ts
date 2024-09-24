@@ -1,10 +1,16 @@
+import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
 import { Dept, errMsg } from "@/helpers";
-import EmployeeService from "./employeeService";
+import EmployeeService from "./EmployeeService";
 
 class RequestService {
-  private employeeService = new EmployeeService();
   private requestDb = new RequestDb();
+  private employeeDb = new EmployeeDb();
+  private employeeService = new EmployeeService(this.employeeDb);
+
+  constructor(requestDb: RequestDb) {
+    this.requestDb = requestDb;
+  }
 
   public async getMySchedule(myId: number) {
     const employee = await this.employeeService.getEmployee(myId);
@@ -36,10 +42,7 @@ class RequestService {
   }
 
   public async postRequest(requestDetails: any) {
-    // Process business logic here
-    // Retrieve from database layer
     const requestInsert = await this.requestDb.postRequest(requestDetails);
-
     return requestInsert;
   }
 }

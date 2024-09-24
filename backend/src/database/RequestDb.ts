@@ -20,7 +20,10 @@ interface ResponseDates {
 
 class RequestDb {
   public async getMySchedule(myId: number) {
-    const schedule = await Request.find({ staffId: myId });
+    const schedule = await Request.find(
+      { staffId: myId },
+      "-_id -createdAt -updatedAt"
+    );
     return schedule;
   }
 
@@ -34,28 +37,37 @@ class RequestDb {
   }
 
   public async getTeamSchedule(reportingManager: number) {
-    const teamSchedule = await Request.find({
-      reportingManager,
-      status: Status.APPROVED,
-    });
+    const teamSchedule = await Request.find(
+      {
+        reportingManager,
+        status: Status.APPROVED,
+      },
+      "-_id -createdAt -updatedAt"
+    );
     return teamSchedule;
   }
 
   public async getDeptSchedule(dept: Dept) {
-    const deptSchedule = await Request.find({
-      dept,
-      status: Status.APPROVED,
-    });
+    const deptSchedule = await Request.find(
+      {
+        dept,
+        status: Status.APPROVED,
+      },
+      "-_id -createdAt -updatedAt"
+    );
     return deptSchedule;
   }
 
   public async getCompanySchedule() {
-    const request = await Request.find({ status: Status.APPROVED });
+    const request = await Request.find(
+      { status: Status.APPROVED },
+      "-_id -createdAt -updatedAt"
+    );
     return request;
   }
 
   public async postRequest(requestDetails: RequestDetails) {
-    let responseDate: ResponseDates = {
+    let responseDates: ResponseDates = {
       successDates: [],
       noteDates: [],
       errorDates: [],
@@ -68,12 +80,12 @@ class RequestDb {
       const [date, type] = dateType;
       let dateInput = new Date(date);
       if (dateList.some((d) => d.getTime() === dateInput.getTime())) {
-        responseDate.errorDates.push(dateType);
+        responseDates.errorDates.push(dateType);
         continue;
       }
       let checkWeek = checkDate(dateInput, weekMapping);
       if (checkWeek) {
-        responseDate.noteDates.push(dateType);
+        responseDates.noteDates.push(dateType);
       }
       const document = {
         staffId: requestDetails.staffId,
@@ -88,13 +100,13 @@ class RequestDb {
       try {
         const requestInsert = await Request.create(document);
         if (requestInsert) {
-          responseDate.successDates.push(dateType);
+          responseDates.successDates.push(dateType);
         }
       } catch (error) {
-        responseDate.errorDates.push(dateType);
+        responseDates.errorDates.push(dateType);
       }
     }
-    return responseDate;
+    return responseDates;
   }
 }
 
