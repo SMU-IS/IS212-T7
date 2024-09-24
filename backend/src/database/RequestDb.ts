@@ -1,5 +1,6 @@
 import { Dept, Status } from "@/helpers";
 import Request from "@/models/Request";
+import { weekMap, checkDate } from "@/helpers/date";
 
 interface RequestDetails {
   staffId: number;
@@ -11,9 +12,24 @@ interface RequestDetails {
   reason: string;
 }
 
+interface ResponseDates {
+  successDates: [Date, string][];
+  noteDates: [Date, string][];
+  errorDates: [Date, string][];
+}
+
 class RequestDb {
   public async getMySchedule(myId: number) {
     const schedule = await Request.find({ staffId: myId });
+    return schedule;
+  }
+
+  public async getMyRequests(myId: number) {
+    const schedule = await Request.find({
+      staffId: myId,
+      status: { $nin: ["CANCELLED", "WITHDRAWN"] },
+    });
+
     return schedule;
   }
 
@@ -39,12 +55,26 @@ class RequestDb {
   }
 
   public async postRequest(requestDetails: RequestDetails) {
-    let successDates: [Date, string][] = [];
-    let errorDates: [Date, string][] = [];
-    let outMsg = "";
+    let responseDate: ResponseDates = {
+      successDates: [],
+      noteDates: [],
+      errorDates: [],
+    };
+    const result = await this.getMyRequests(requestDetails.staffId);
+    const dateList = result.map((request) => request.requestedDate);
+    const weekMapping = weekMap(dateList);
 
     for (const dateType of requestDetails.requestedDates) {
       const [date, type] = dateType;
+      let dateInput = new Date(date);
+      if (dateList.some((d) => d.getTime() === dateInput.getTime())) {
+        responseDate.errorDates.push(dateType);
+        continue;
+      }
+      let checkWeek = checkDate(dateInput, weekMapping);
+      if (checkWeek) {
+        responseDate.noteDates.push(dateType);
+      }
       const document = {
         staffId: requestDetails.staffId,
         staffName: requestDetails.staffName,
@@ -57,27 +87,14 @@ class RequestDb {
       };
       try {
         const requestInsert = await Request.create(document);
-        console.log("Insert successful:", requestInsert);
-        successDates.push(dateType);
+        if (requestInsert) {
+          responseDate.successDates.push(dateType);
+        }
       } catch (error) {
-        console.log("Error inserting document:", error);
-        errorDates.push(dateType);
+        responseDate.errorDates.push(dateType);
       }
     }
-
-    if (successDates.length > 0) {
-      outMsg += "Application Successfully:\n";
-      successDates.forEach(([date, time]) => {
-        outMsg += `${date}, ${time}\n`;
-      });
-    }
-    if (errorDates.length > 0) {
-      outMsg += "\nApplication Unsuccessful:\n";
-      errorDates.forEach(([date, time]) => {
-        outMsg += `${date}, ${time}\n`;
-      });
-    }
-    return outMsg;
+    return responseDate;
   }
 }
 

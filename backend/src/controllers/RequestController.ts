@@ -1,7 +1,22 @@
-import { Dept, errMsg } from "@/helpers";
+import { Dept, errMsg, successMsg, noteMsg } from "@/helpers";
 import { deptSchema, teamSchema } from "@/schema";
 import RequestService from "@/services/requestService";
 import { Context } from "koa";
+
+interface ResponseMessage {
+  success: {
+    message: string;
+    dates: [Date, string][];
+  };
+  note: {
+    message: string;
+    dates: [Date, string][];
+  };
+  error: {
+    message: string;
+    dates: [Date, string][];
+  };
+}
 
 class RequestController {
   private requestService: RequestService;
@@ -67,7 +82,34 @@ class RequestController {
       return;
     }
     const result = await this.requestService.postRequest(requestDetails);
-    ctx.body = result;
+    let responseMessage: ResponseMessage = {
+      success: { message: "", dates: [] },
+      error: { message: "", dates: [] },
+      note: { message: "", dates: [] },
+    };
+
+    if (result.successDates.length > 0) {
+      responseMessage.success = {
+        message: successMsg.APPLICATION_SUCCESS,
+        dates: result.successDates,
+      };
+    }
+
+    if (result.errorDates.length > 0) {
+      responseMessage.error = {
+        message: errMsg.SAME_DAY_REQUEST,
+        dates: result.errorDates,
+      };
+    }
+
+    if (result.noteDates.length > 0) {
+      responseMessage.note = {
+        message: noteMsg.REQUEST_LIMIT,
+        dates: result.noteDates,
+      };
+    }
+
+    ctx.body = responseMessage;
   }
 }
 
