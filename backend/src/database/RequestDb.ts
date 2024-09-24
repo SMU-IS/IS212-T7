@@ -27,10 +27,10 @@ class RequestDb {
     return schedule;
   }
 
-  public async getMyRequests(myId: number) {
+  public async getPendingOrApprovedRequests(myId: number) {
     const schedule = await Request.find({
       staffId: myId,
-      status: { $nin: ["CANCELLED", "WITHDRAWN"] },
+      status: { $nin: ["CANCELLED", "WITHDRAWN", "REJECTED"] },
     });
 
     return schedule;
@@ -72,7 +72,9 @@ class RequestDb {
       noteDates: [],
       errorDates: [],
     };
-    const result = await this.getMyRequests(requestDetails.staffId);
+    const result = await this.getPendingOrApprovedRequests(
+      requestDetails.staffId
+    );
     const dateList = result.map((request) => request.requestedDate);
     const weekMapping = weekMap(dateList);
 
