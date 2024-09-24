@@ -1,6 +1,11 @@
 import { Role } from "@/helpers";
 import mongoose from "mongoose";
 
+export interface LoginBody {
+  staffEmail: string;
+  staffPassword: string;
+}
+
 interface IEmployee {
   staffId: number;
   staffFName: string;
@@ -9,6 +14,7 @@ interface IEmployee {
   position: string;
   country: string;
   email: string;
+  hashedPassword: string;
   reportingManager: number | null;
   role: Role;
 }
@@ -23,6 +29,7 @@ const EmployeeSchema = new Schema<IEmployee>(
     position: { type: String, required: true },
     country: { type: String, required: true },
     email: { type: String, required: true },
+    hashedPassword: { type: String, required: true },
     reportingManager: {
       type: Number,
       ref: "Employee",
@@ -32,6 +39,7 @@ const EmployeeSchema = new Schema<IEmployee>(
   },
   {
     timestamps: true,
+    versionKey: false,
   }
 );
 

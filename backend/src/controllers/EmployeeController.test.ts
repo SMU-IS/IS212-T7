@@ -1,17 +1,20 @@
 import EmployeeController from "@/controllers/EmployeeController";
 import { errMsg } from "@/helpers";
 import EmployeeService from "@/services/EmployeeService";
+import EmployeeDb from "@/database/EmployeeDb";
 import generateMockEmployee from "@/tests/mockData";
 import { Context } from "koa";
 
 describe("EmployeeController", () => {
   let employeeController: EmployeeController;
   let employeeServiceMock: jest.Mocked<EmployeeService>;
+  let employeeDbMock: EmployeeDb;
   let ctx: Context;
   let mockEmployee: any;
 
   beforeEach(() => {
-    employeeServiceMock = new EmployeeService() as jest.Mocked<EmployeeService>;
+    employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    employeeServiceMock = new EmployeeService(employeeDbMock) as jest.Mocked<EmployeeService>;
     employeeController = new EmployeeController(employeeServiceMock);
     ctx = {
       method: "POST",
@@ -39,7 +42,7 @@ describe("EmployeeController", () => {
     // Arrange
     ctx.request.body = {
       staffEmail: "test@example.com",
-      staffPassword: "password",
+      staffPassword: "test-password",
     };
     const returnValue: any = {
       staffId: mockEmployee.staffId,
@@ -63,7 +66,7 @@ describe("EmployeeController", () => {
       staffEmail: "nonexistent@example.com",
       staffPassword: "password",
     };
-    employeeServiceMock.getEmployeeByEmail.mockResolvedValue(null);
+    employeeServiceMock.getEmployeeByEmail.mockResolvedValue(errMsg.USER_DOES_NOT_EXIST);
 
     // Act
     await employeeController.getEmployeeByEmail(ctx);
@@ -71,6 +74,23 @@ describe("EmployeeController", () => {
     // Assert
     expect(ctx.body).toEqual({
       error: errMsg.USER_DOES_NOT_EXIST,
+    });
+  });
+
+  it("should inform user of authentication error with valid email", async () => {
+    // Arrange
+    ctx.request.body = {
+      staffEmail: "test@example.com",
+      staffPassword: "password",
+    };
+    employeeServiceMock.getEmployeeByEmail.mockResolvedValue(errMsg.UNAUTHENTICATED);
+
+    // Act
+    await employeeController.getEmployeeByEmail(ctx);
+
+    // Assert
+    expect(ctx.body).toEqual({
+      error: errMsg.UNAUTHENTICATED,
     });
   });
 });

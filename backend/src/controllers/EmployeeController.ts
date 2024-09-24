@@ -1,4 +1,6 @@
+import UtilsController from "@/controllers/UtilsController";
 import { errMsg } from "@/helpers";
+import { LoginBody } from "@/models/Employee";
 import EmployeeService from "@/services/EmployeeService";
 import { Context } from "koa";
 
@@ -23,36 +25,29 @@ class EmployeeController {
   }
 
   public async getEmployeeByEmail(ctx: Context) {
-    interface LoginBody {
-      staffEmail: string;
-      staffPassword: string;
-    }
-
-    const body = ctx.request.body as LoginBody;
-    let staffEmail = body.staffEmail;
-    let staffPassword = body.staffPassword;
+    const { staffEmail, staffPassword } = ctx.request.body as LoginBody;
 
     if (!staffEmail || !staffPassword) {
-      ctx.body = {
-        error: errMsg.MISSING_PARAMETERS,
-      };
-      return;
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
     }
 
-    const employeeData = await this.employeeService.getEmployeeByEmail(
-      String(staffEmail)
+    const result = await this.employeeService.getEmployeeByEmail(
+      String(staffEmail),
+      String(staffPassword)
     );
 
-    if (!employeeData) {
-      ctx.body = {
-        error: errMsg.USER_DOES_NOT_EXIST,
-      };
-      return;
+    if (result == errMsg.USER_DOES_NOT_EXIST) {
+      return UtilsController.throwAPIError(ctx, errMsg.USER_DOES_NOT_EXIST);
     }
 
+    if (result == errMsg.UNAUTHENTICATED) {
+      return UtilsController.throwAPIError(ctx, errMsg.UNAUTHENTICATED);
+    }
+
+    const { staffId, role } = result;
     ctx.body = {
-      staffId: employeeData.staffId,
-      role: employeeData.role,
+      staffId,
+      role,
     };
   }
 }
