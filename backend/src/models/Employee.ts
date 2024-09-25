@@ -39,6 +39,7 @@ const EmployeeSchema = new Schema<IEmployee>(
   },
   {
     timestamps: true,
+    versionKey: false,
   }
 );
 

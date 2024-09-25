@@ -13,28 +13,40 @@ interface RequestDetails {
 
 class RequestDb {
   public async getMySchedule(myId: number) {
-    const schedule = await Request.find({ staffId: myId });
+    const schedule = await Request.find(
+      { staffId: myId },
+      "-_id -createdAt -updatedAt"
+    );
     return schedule;
   }
 
   public async getTeamSchedule(reportingManager: number) {
-    const teamSchedule = await Request.find({
-      reportingManager,
-      status: Status.APPROVED,
-    });
+    const teamSchedule = await Request.find(
+      {
+        reportingManager,
+        status: Status.APPROVED,
+      },
+      "-_id -createdAt -updatedAt"
+    );
     return teamSchedule;
   }
 
   public async getDeptSchedule(dept: Dept) {
-    const deptSchedule = await Request.find({
-      dept,
-      status: Status.APPROVED,
-    });
+    const deptSchedule = await Request.find(
+      {
+        dept,
+        status: Status.APPROVED,
+      },
+      "-_id -createdAt -updatedAt"
+    );
     return deptSchedule;
   }
 
   public async getCompanySchedule() {
-    const request = await Request.find({ status: Status.APPROVED });
+    const request = await Request.find(
+      { status: Status.APPROVED },
+      "-_id -createdAt -updatedAt"
+    );
     return request;
   }
 

@@ -46,6 +46,7 @@ const RequestSchema = new Schema<IRequest>(
   },
   {
     timestamps: true,
+    versionKey: false,
   }
 );
 
