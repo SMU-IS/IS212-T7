@@ -8,8 +8,7 @@ export const api: AxiosInstance = axios.create({
   timeout: 300000,
   headers: {
     "Content-Type": "application/json",
-  },
-  withCredentials: true,
+  }
 });
 
 export const authProvider: AuthProvider = {
