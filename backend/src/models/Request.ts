@@ -1,34 +1,66 @@
-import { RequestDay, RequestType, Status } from "@/helpers";
-import mongoose, { Date } from "mongoose";
+import { RequestType, Status } from "@/helpers";
+import { Counter, initializeCounter } from "@/helpers/counter";
+import mongoose from "mongoose";
 
-interface IRequest {
+export interface IRequest {
   requestId: number;
-  requestType: RequestType;
+  staffId: number;
+  staffName: string;
+  reportingManager: number | null;
+  managerName: string;
+  dept: string;
   requestedDate: Date;
-  requestedDay: RequestDay;
+  requestType: RequestType;
   reason: string;
-  assignedTo: number;
-  approvedOn: Date;
   status: Status;
 }
 
 const Schema = mongoose.Schema;
+initializeCounter("requestId").catch(console.error);
+
 const RequestSchema = new Schema<IRequest>(
   {
-    requestId: { type: Number, unique: true, required: true },
-    requestType: { type: String, required: true },
+    requestId: { type: Number, unique: true },
+    staffId: {
+      type: Number,
+      ref: "Employee",
+      required: true,
+    },
+    staffName: { type: String, required: true },
+    reportingManager: {
+      type: Number,
+      ref: "Employee",
+      required: false,
+    },
+    managerName: { type: String, required: false },
+    dept: { type: String, required: true },
     requestedDate: { type: Date, required: true },
-    requestedDay: { type: String, required: true },
+    requestType: { type: String, required: true },
     reason: { type: String, required: true },
-    assignedTo: { type: Number, required: true },
-    approvedOn: { type: Date, required: true },
-    status: { type: String, required: true },
+    status: {
+      type: String,
+      required: true,
+      enum: ["PENDING", "APPROVED", "REJECTED", "CANCELLED", "WITHDRAWN"],
+      default: Status.PENDING,
+    },
   },
   {
     timestamps: true,
+    versionKey: false,
   }
 );
 
-RequestSchema.index({ requestId: 1 }, { unique: true });
+RequestSchema.pre("save", async function (next) {
+  if (this.isNew) {
+    const counter = await Counter.findByIdAndUpdate(
+      "requestId",
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    this.requestId = counter.seq;
+  }
+  next();
+});
 
+RequestSchema.index({ requestId: 1 }, { unique: true });
 export default mongoose.model<IRequest>("Request", RequestSchema);
