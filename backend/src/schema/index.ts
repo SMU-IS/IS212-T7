@@ -1,4 +1,4 @@
-import { Dept, Status } from "@/helpers";
+import { Dept } from "@/helpers";
 import { z } from "zod";
 
 const numberSchema = z.string().transform((val) => {
@@ -10,9 +10,13 @@ const numberSchema = z.string().transform((val) => {
 });
 
 const requestSchema = z.object({
-  staffId: z.string().optional(),
-  status: z.nativeEnum(Status).optional(),
-  dept: z.nativeEnum(Dept).optional(),
+  staffId: z.number(), 
+  staffName: z.string(), 
+  reportingManager: z.number(), 
+  managerName: z.string(), 
+  dept: z.nativeEnum(Dept),
+  requestedDates: z.array(z.tuple([z.string(), z.string()])),
+  reason: z.string(),
 });
 
 const teamSchema = z.object({

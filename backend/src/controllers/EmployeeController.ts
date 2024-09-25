@@ -14,10 +14,7 @@ class EmployeeController {
   public async getEmployee(ctx: Context) {
     const { staffId } = ctx.query;
     if (!staffId) {
-      ctx.body = {
-        error: errMsg.MISSING_PARAMETERS,
-      };
-      return;
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
     }
 
     const result = await this.employeeService.getEmployee(Number(staffId));

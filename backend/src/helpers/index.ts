@@ -10,7 +10,13 @@ enum errMsg {
   UNAUTHORISED = "User is not authorised to perform this role.",
   USER_DOES_NOT_EXIST = "User does not exist.",
   REQUESTS_NOT_FOUND = "No requests found",
+  SAME_DAY_REQUEST = "Existing request for selected day found.",
 }
+
+const noteMsg =
+  "Note: More than 2 requests have already been made for the selected week.";
+
+const successMsg = "Selected dates submitted successfully.";
 
 enum AccessControl {
   VIEW_OWN_SCHEDULE = "VIEW_OWN_SCHEDULE",
@@ -49,4 +55,14 @@ enum Dept {
   SOLUTIONING = "Solutioning",
 }
 
-export { AccessControl, Dept, PERMISSIONS, RequestType, Role, Status, errMsg };
+export {
+  AccessControl,
+  Dept,
+  PERMISSIONS,
+  RequestType,
+  Role,
+  Status,
+  errMsg,
+  successMsg,
+  noteMsg,
+};
