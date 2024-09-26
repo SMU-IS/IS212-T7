@@ -40,8 +40,8 @@ class EmployeeController {
       return UtilsController.throwAPIError(ctx, errMsg.USER_DOES_NOT_EXIST);
     }
 
-    if (result == errMsg.UNAUTHENTICATED) {
-      return UtilsController.throwAPIError(ctx, errMsg.UNAUTHENTICATED);
+    if (result == errMsg.WRONG_PASSWORD) {
+      return UtilsController.throwAPIError(ctx, errMsg.WRONG_PASSWORD);
     }
 
     const { staffId, role } = result;

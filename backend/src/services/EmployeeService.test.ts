@@ -68,6 +68,6 @@ describe("EmployeeController", () => {
     const result = await employeeService.getEmployeeByEmail(staffEmail, inputPassword);
 
     // Assert
-    expect(result).toEqual(errMsg.UNAUTHENTICATED);
+    expect(result).toEqual(errMsg.WRONG_PASSWORD);
   });
 });
