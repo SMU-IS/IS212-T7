@@ -42,10 +42,7 @@ class RequestService {
   }
 
   public async postRequest(requestDetails: any) {
-    // Process business logic here
-    // Retrieve from database layer
     const requestInsert = await this.requestDb.postRequest(requestDetails);
-
     return requestInsert;
   }
 }

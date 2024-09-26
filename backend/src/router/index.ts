@@ -161,7 +161,7 @@ router.get("/getCompanySchedule", (ctx) =>
  *       - in: WFH Application Details
  *     responses:
  *       200:
- *         description: Returns an Promise object
+ *         description: Returns an success, error, note object
  */
 router.post("/postRequest", async (ctx) => {
   await requestController.postRequest(ctx);

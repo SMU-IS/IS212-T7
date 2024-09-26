@@ -1,7 +1,23 @@
-import { Dept, errMsg } from "@/helpers";
-import { deptSchema, teamSchema } from "@/schema";
+import { Dept, errMsg, successMsg, noteMsg } from "@/helpers";
+import { deptSchema, requestSchema, teamSchema } from "@/schema";
 import RequestService from "@/services/RequestService";
+import UtilsController from "@/controllers/UtilsController";
 import { Context } from "koa";
+
+interface ResponseMessage {
+  success: {
+    message: string;
+    dates: [Date, string][];
+  };
+  note: {
+    message: string;
+    dates: [Date, string][];
+  };
+  error: {
+    message: string;
+    dates: [Date, string][];
+  };
+}
 
 class RequestController {
   private requestService: RequestService;
@@ -13,10 +29,7 @@ class RequestController {
   public async getMySchedule(ctx: Context) {
     const { myId } = ctx.query;
     if (!myId) {
-      ctx.body = {
-        errMsg: errMsg.MISSING_PARAMETERS,
-      };
-      return;
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
     }
 
     const result = await this.requestService.getMySchedule(Number(myId));
@@ -60,14 +73,42 @@ class RequestController {
 
   public async postRequest(ctx: any) {
     const requestDetails = ctx.request.body;
-    if (!requestDetails) {
+    const validation = requestSchema.safeParse(requestDetails);
+    if (!validation.success) {
       ctx.body = {
-        error: errMsg.MISSING_PARAMETERS,
+        errMsg: validation.error.format(),
       };
       return;
     }
     const result = await this.requestService.postRequest(requestDetails);
-    ctx.body = result;
+    let responseMessage: ResponseMessage = {
+      success: { message: "", dates: [] },
+      error: { message: "", dates: [] },
+      note: { message: "", dates: [] },
+    };
+
+    if (result.successDates.length > 0) {
+      responseMessage.success = {
+        message: successMsg,
+        dates: result.successDates,
+      };
+    }
+
+    if (result.errorDates.length > 0) {
+      responseMessage.error = {
+        message: errMsg.SAME_DAY_REQUEST,
+        dates: result.errorDates,
+      };
+    }
+
+    if (result.noteDates.length > 0) {
+      responseMessage.note = {
+        message: noteMsg,
+        dates: result.noteDates,
+      };
+    }
+
+    ctx.body = responseMessage;
   }
 }
 
