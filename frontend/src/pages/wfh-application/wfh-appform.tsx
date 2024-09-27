@@ -60,12 +60,12 @@ export const WFHForm: React.FC = () => {
         timeout: 300000,
       });
 
-      const { staffId: id, staffFName, staffLName, dept, reportingManager } = response.data;
+      const { staffId: id, staffFName, staffLName, dept, reportingManager, reportingManagerName } = response.data;
       const newEmployeeData = {
         name: `${staffFName} ${staffLName}`,
         staffID: id,
         dept,
-        managerName: reportingManager,
+        managerName: reportingManagerName,
         managerID: reportingManager,
       };
       setEmployeeData(newEmployeeData);
