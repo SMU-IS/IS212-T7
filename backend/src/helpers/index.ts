@@ -7,7 +7,7 @@ enum Role {
 enum errMsg {
   MISSING_HEADER = "Missing header",
   MISSING_PARAMETERS = "Missing parameters",
-  UNAUTHENTICATED = "User is not authenticated.",
+  WRONG_PASSWORD = "User has entered the wrong password.",
   UNAUTHORISED = "User is not authorised to perform this role.",
   USER_DOES_NOT_EXIST = "User does not exist.",
   REQUESTS_NOT_FOUND = "No requests found",

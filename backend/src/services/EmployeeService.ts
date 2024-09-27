@@ -23,7 +23,7 @@ class EmployeeService {
     const { hashedPassword } = result;
     const isAuthenticated = await bcrpyt.compare(inputPassword, hashedPassword);
     if (!isAuthenticated) {
-      return errMsg.UNAUTHENTICATED;
+      return errMsg.WRONG_PASSWORD;
     }
 
     return await this.employeeDb.getEmployeeByEmail(staffEmail);

@@ -49,6 +49,47 @@ router.get("/", async (ctx: any) => {
 
 /**
  * @openapi
+ * /api/v1/login:
+ *   post:
+ *     description: Login
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               staffEmail:
+ *                 type: string
+ *                 description: The email of the employee
+ *               staffPassword:
+ *                 type: string
+ *                 description: The password of the employee
+ *             required:
+ *               - staffEmail
+ *               - staffPassword
+ *     responses:
+ *       200:
+ *         description: Returns an employee object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 staffId:
+ *                   type: number
+ *                   description: The employee's ID
+ *                 role:
+ *                   type: string
+ *                   description: The employee's role
+ *       400:
+ *         description: Invalid request or missing parameters
+ */
+router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
+
+/**
+ * @openapi
  * /api/v1/getEmployee?staffId={INSERT ID HERE}:
  *   get:
  *     description: Get employee data
@@ -64,11 +105,9 @@ router.get("/", async (ctx: any) => {
  *       200:
  *         description: Returns an employee object
  */
-router.get(
-  "/getEmployee", (ctx) => employeeController.getEmployee(ctx)
-);
 
-router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
+router.get("/getEmployee", (ctx) => employeeController.getEmployee(ctx));
+
 
 /**
  * @openapi
@@ -145,8 +184,10 @@ router.get("/getDeptSchedule", (ctx) => requestController.getDeptSchedule(ctx));
  *       200:
  *         description: Returns a request object
  */
-router.get("/getCompanySchedule", (ctx) =>
-  requestController.getCompanySchedule(ctx)
+router.get(
+  "/getCompanySchedule",
+  checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
+  (ctx) => requestController.getCompanySchedule(ctx)
 );
 
 /**

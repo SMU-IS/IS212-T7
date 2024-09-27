@@ -83,14 +83,14 @@ describe("EmployeeController", () => {
       staffEmail: "test@example.com",
       staffPassword: "password",
     };
-    employeeServiceMock.getEmployeeByEmail.mockResolvedValue(errMsg.UNAUTHENTICATED);
+    employeeServiceMock.getEmployeeByEmail.mockResolvedValue(errMsg.WRONG_PASSWORD);
 
     // Act
     await employeeController.getEmployeeByEmail(ctx);
 
     // Assert
     expect(ctx.body).toEqual({
-      error: errMsg.UNAUTHENTICATED,
+      error: errMsg.WRONG_PASSWORD,
     });
   });
 });
