@@ -11,7 +11,6 @@ import {
 
 import { ColorModeContextProvider } from "./contexts/color-mode";
 
-
 import routerProvider, {
   CatchAllNavigate,
   NavigateToResource,
@@ -42,7 +41,6 @@ import {
 } from "./pages/schedule"
 import { Header } from "./components/header"; // Custom header if you have one
 import { WFHForm } from "./pages/wfh-application"
-import { ChakraProvider } from "@chakra-ui/react";
 import { useCustomNotificationProvider } from "./components/toast";
 
 const App = () => {
@@ -83,6 +81,17 @@ const App = () => {
                 show: "/categories/show/:id",
                 meta: {
                   canDelete: true,
+                },
+              },
+              {
+                name: "WFH Request",
+                list: "/wfhform",
+                create: "/wfhform",
+                edit: "/wfhform",
+                show: "/wfhform",
+                meta: {
+                  canDelete: false,
+                  label: "Apply for WFH"
                 },
               },
             ]}

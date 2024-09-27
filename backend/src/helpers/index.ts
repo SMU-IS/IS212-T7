@@ -5,6 +5,7 @@ enum Role {
 }
 
 enum errMsg {
+  MISSING_HEADER = "Missing header",
   MISSING_PARAMETERS = "Missing parameters",
   UNAUTHENTICATED = "User is not authenticated.",
   UNAUTHORISED = "User is not authorised to perform this role.",

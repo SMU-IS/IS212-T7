@@ -2,8 +2,8 @@ import EmployeeController from "@/controllers/EmployeeController";
 import RequestController from "@/controllers/RequestController";
 import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
-import { AccessControl } from "@/helpers";
-import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
+// import { AccessControl } from "@/helpers";
+// import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import EmployeeService from "@/services/EmployeeService";
 import RequestService from "@/services/RequestService";
 import swaggerSpec from "@/swagger";
@@ -65,9 +65,7 @@ router.get("/", async (ctx: any) => {
  *         description: Returns an employee object
  */
 router.get(
-  "/getEmployee",
-  checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
-  (ctx) => employeeController.getEmployee(ctx)
+  "/getEmployee", (ctx) => employeeController.getEmployee(ctx)
 );
 
 router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
