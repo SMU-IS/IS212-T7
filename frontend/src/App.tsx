@@ -62,6 +62,7 @@ const App = () => {
                 list: ScheduleList,
                 meta: {
                   canDelete: false,
+                  label: "My Schedule"
                 },
               },
               {

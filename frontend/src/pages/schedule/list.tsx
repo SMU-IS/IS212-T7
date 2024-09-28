@@ -23,15 +23,19 @@ import { createEventModalPlugin } from '@schedule-x/event-modal'
 import { createEventsServicePlugin } from '@schedule-x/events-service'
 
 import calendarVar from '../../helper/scheduleVar'
+import { customCalendarConfig } from "@/config/calendarType";
 import '@schedule-x/theme-default/dist/index.css'
 
 import { useApiUrl, useCustom } from "@refinedev/core";
+import { IEvent } from "@/interfaces/schedule";
 
 
 export const ScheduleList = () => {
   const { tableProps } = useTable({
+    syncWithLocation: false,
     queryOptions: {
-      keepPreviousData: true,
+      enabled: false,
+      keepPreviousData: false,
     },
   });
   const myId = 140008; // Change ID according to user
@@ -52,36 +56,6 @@ export const ScheduleList = () => {
   const calendarTheme = mode === "dark" ? "dark" : "light";
   const calendarRef = useRef<Calendar | null>(null);
 
-  // Calendar Data
-  const calendarConfig = {
-      halfday: {
-        colorName: calendarVar.HALFDAY,
-        lightColors: {
-          main: '#f9d71c',
-          container: '#fff5aa',
-          onContainer: '#594800',
-        },
-        darkColors: {
-          main: '#fff5c0',
-          onContainer: '#fff5de',
-          container: '#a29742',
-        },
-      },
-      fullday: {
-        colorName: calendarVar.FULLDAY,
-        lightColors: {
-          main: '#f91c45',
-          container: '#ffd2dc',
-          onContainer: '#59000d',
-        },
-        darkColors: {
-          main: '#ffc0cc',
-          onContainer: '#ffdee6',
-          container: '#a24258',
-        },
-      },
-  }
-
   // Data manipulation
   useEffect(() => {
     const fetchSchedule = async () => {
@@ -97,37 +71,43 @@ export const ScheduleList = () => {
   
             case "PM":
               start = new Date(item.requestedDate);
-              start.setHours(13, 0, 0); // 13:00
               end = new Date(item.requestedDate);
-              end.setHours(18, 0, 0); // 18:00
-              start = start.toISOString().replace('T', ' ').split('.')[0];
-              end = end.toISOString().replace('T', ' ').split('.')[0];
+              start = `${start.toISOString().split('T')[0]} 13:00` // Hard set time for PM
+              end = `${end.toISOString().split('T')[0]} 18:00`
+              console.log(start, end)
               break;
   
             case "AM":
               start = new Date(item.requestedDate);
-              start.setHours(8, 0, 0); // 08:00
               end = new Date(item.requestedDate);
-              end.setHours(13, 0, 0); // 13:00
-              start = start.toISOString().replace('T', ' ').split('.')[0];
-              end = end.toISOString().replace('T', ' ').split('.')[0];
+              start = `${start.toISOString().split('T')[0]} 08:00` // Hard set time for AM
+              end = `${end.toISOString().split('T')[0]} 12:00`
               break;
   
             default:
               start = end = new Date(item.requestedDate).toISOString().split('T')[0];
               break;
           }
-  
+          console.log(start)
+          let calendarColor;
+          const titleStatus = "";
+          if (item.status == "PENDING"){
+            calendarColor = item.requestType == "FULL" ? calendarVar.PENDINGFULL: calendarVar.PENDINGHALF
+            // titleStatus = "[PENDING] "
+          }else{
+            calendarColor = item.requestType == "FULL" ? calendarVar.FULLDAY: calendarVar.HALFDAY
+          }
           return {
             id: item.requestId.toString(),
-            title: `WORK FROM HOME${item.requestType === 'AM' ? ' (AM)' : ''}`,
+            title: `${titleStatus}Work from Home (${item.requestType})`,
             description: `Request by ${item.staffName} to ${item.reason}`,
             start,
             end,
-            calendarId: item.requestType == "FULL" ? "full": 'halfday'
+            calendarId: calendarColor
           };
         });
         // Update calendar events
+        console.log(formattedData)
         setCalendarEvents(formattedData || []);
       }
     };
@@ -151,7 +131,7 @@ export const ScheduleList = () => {
           end: '18:00',
         },
         plugins: [createEventModalPlugin()],
-        calendars: calendarConfig,
+        calendars: customCalendarConfig,
       });
       calendarRef.current.render(document.getElementById('calendar'));
     }
@@ -165,7 +145,7 @@ export const ScheduleList = () => {
 
   return (
     <div>
-      <div id="calendar"></div>
+      <div id="calendar" style={{ height: "650px", maxHeight: "90vh" }}></div>
     </div>
   );
 };
