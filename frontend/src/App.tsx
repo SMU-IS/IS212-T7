@@ -1,3 +1,4 @@
+import { ChakraProvider } from "@chakra-ui/react";
 import { Refine, Authenticated } from "@refinedev/core";
 import dataProvider from "@refinedev/simple-rest";
 import {
@@ -9,7 +10,6 @@ import {
 } from "@refinedev/antd";
 
 import { ColorModeContextProvider } from "./contexts/color-mode";
-
 
 import routerProvider, {
   CatchAllNavigate,
@@ -41,13 +41,13 @@ import {
 } from "./pages/schedule"
 import { Header } from "./components/header"; // Custom header if you have one
 import { WFHForm } from "./pages/wfh-application"
-import { ChakraProvider } from "@chakra-ui/react";
 // import { useCustomNotificationProvider } from "./components/toast";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 const App = () => {
   return (
     <BrowserRouter>
+    <ChakraProvider>
     <ColorModeContextProvider>
       <ConfigProvider>
         <ChakraProvider>
@@ -60,6 +60,20 @@ const App = () => {
               {
                 name: "schedule",
                 list: ScheduleList,
+                meta: {
+                  canDelete: false,
+                },
+              },
+              {
+                name: "WFH Request",
+                list: "/wfhform",
+                create: "/wfhform",
+                edit: "/wfhform",
+                show: "/wfhform",
+                meta: {
+                  canDelete: false,
+                  label: "Apply for WFH"
+                },
               },
             ]}
             options={{
@@ -129,6 +143,7 @@ const App = () => {
         </ChakraProvider>
       </ConfigProvider>
     </ColorModeContextProvider>
+    </ChakraProvider>
     </BrowserRouter>
   );
 };

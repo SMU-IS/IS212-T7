@@ -18,11 +18,27 @@ export const formatDate = (date: Date): string => {
   });
 };
 
+// revised function to check >2 dates in same week 
+// Function to get the start of the week (Sunday) for a given date
+const getStartOfWeek = (date: Date): Date => {
+  const dateCopy = new Date(date);
+  const day = dateCopy.getDay(); // 0 (Sunday) to 6 (Saturday)
+  const diff = dateCopy.getDate() - day; // ahead/back to Sunday
+  return new Date(dateCopy.setDate(diff));
+};
+
+// Function to get the end of the week (Saturday) for a given date
+const getEndOfWeek = (date: Date): Date => {
+  const startOfWeek = getStartOfWeek(date);
+  return new Date(startOfWeek.setDate(startOfWeek.getDate() + 6));
+};
+
 export const getDatesInSameWeek = (newDate: Date, existingDates: Date[]): Date[] => {
+  const startOfWeek = getStartOfWeek(newDate);
+  const endOfWeek = getEndOfWeek(newDate);
+
   return existingDates.filter(existingDate => {
-    const diffTime = Math.abs(newDate.getTime() - existingDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays < 7 && newDate.getDay() >= existingDate.getDay();
+    return existingDate >= startOfWeek && existingDate <= endOfWeek;
   });
 };
 

@@ -105,11 +105,9 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
  *       200:
  *         description: Returns an employee object
  */
-router.get(
-  "/getEmployee",
-  checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
-  (ctx) => employeeController.getEmployee(ctx)
-);
+
+router.get("/getEmployee", (ctx) => employeeController.getEmployee(ctx));
+
 
 /**
  * @openapi

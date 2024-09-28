@@ -12,7 +12,7 @@ export const checkUserRolePermission = (action: AccessControl) => {
   return async (ctx: Context, next: Next) => {
     const { id } = ctx.request.header;
     if (!id) {
-      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_HEADER);
     }
 
     const sanitisedStaffId = numberSchema.parse(id);

@@ -8,14 +8,14 @@ interface RequestDetails {
   reportingManager: number;
   managerName: string;
   dept: string;
-  requestedDates: [Date, string][];
+  requestedDates: [string, string][];
   reason: string;
 }
 
 interface ResponseDates {
-  successDates: [Date, string][];
-  noteDates: [Date, string][];
-  errorDates: [Date, string][];
+  successDates: [string, string][];
+  noteDates: [string, string][];
+  errorDates: [string, string][];
 }
 
 class RequestDb {
