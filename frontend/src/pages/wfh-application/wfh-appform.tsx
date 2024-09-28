@@ -60,7 +60,14 @@ export const WFHForm: React.FC = () => {
         timeout: 300000,
       });
 
-      const { staffId: id, staffFName, staffLName, dept, reportingManager, reportingManagerName } = response.data;
+      const {
+        staffId: id,
+        staffFName,
+        staffLName,
+        dept,
+        reportingManager,
+        reportingManagerName,
+      } = response.data;
       const newEmployeeData = {
         name: `${staffFName} ${staffLName}`,
         staffID: id,
@@ -93,25 +100,46 @@ export const WFHForm: React.FC = () => {
     }
 
     if (!isAtLeast24HoursAhead(date)) {
-      showToast("Invalid date", "Selected date must be at least 24 hours ahead.", "error");
+      showToast(
+        "Invalid date",
+        "Selected date must be at least 24 hours ahead.",
+        "error",
+      );
       return false;
     }
 
-    const dateExists = wfhDates.some((wfhDate) => wfhDate.date.toDateString() === date.toDateString());
+    const dateExists = wfhDates.some(
+      (wfhDate) => wfhDate.date.toDateString() === date.toDateString(),
+    );
     if (dateExists) {
-      showToast("Date already selected", "Please choose a different date.", "warning");
+      showToast(
+        "Date already selected",
+        "Please choose a different date.",
+        "warning",
+      );
       return false;
     }
 
-    const datesInSameWeek = getDatesInSameWeek(date, wfhDates.map((wfhDate) => wfhDate.date));
+    const datesInSameWeek = getDatesInSameWeek(
+      date,
+      wfhDates.map((wfhDate) => wfhDate.date),
+    );
     if (datesInSameWeek.length >= 2) {
-      showToast("Weekly limit exceeded", "You have selected more than 2 WFH days for this week.", "info");
+      showToast(
+        "Weekly limit exceeded",
+        "You have selected more than 2 WFH days for this week.",
+        "info",
+      );
     }
 
     return true;
   };
 
-  const showToast = (title: string, description: string, status: "error" | "warning" | "info" | "success") => {
+  const showToast = (
+    title: string,
+    description: string,
+    status: "error" | "warning" | "info" | "success",
+  ) => {
     toast({
       title,
       description,
@@ -123,7 +151,9 @@ export const WFHForm: React.FC = () => {
 
   const handleTimeOfDayChange = (index: number, timeOfDay: TimeOfDay) => {
     setWfhDates((prev) =>
-      prev.map((wfhDate, i) => (i === index ? { ...wfhDate, timeOfDay } : wfhDate))
+      prev.map((wfhDate, i) =>
+        i === index ? { ...wfhDate, timeOfDay } : wfhDate,
+      ),
     );
   };
 
@@ -131,23 +161,27 @@ export const WFHForm: React.FC = () => {
     setWfhDates((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+  const handleReasonChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
     setReason(e.target.value);
   };
 
   const handleSubmit = async (values: any) => {
     const formData: FormData = { wfhDates, reason: values.reason };
     const validationError = validateForm(formData);
-    
+
     if (validationError) {
       showToast("Form Error", validationError, "error");
       return;
     }
 
     const requestedDates = wfhDates.map((wfhDate) => [
-      wfhDate.date.toISOString().split('T')[0],
-      wfhDate.timeOfDay
+      wfhDate.date.toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" }),
+      wfhDate.timeOfDay,
     ]);
+
+    console.log(requestedDates);
 
     const payload = {
       staffId: Number(employeeData.staffID),
@@ -160,19 +194,29 @@ export const WFHForm: React.FC = () => {
     };
 
     try {
-      const response = await axios.post(`${backendUrl}/api/v1/postRequest`, payload);
+      const response = await axios.post(
+        `${backendUrl}/api/v1/postRequest`,
+        payload,
+      );
       // console.log('Incoming request data:', payload);
       // console.log(response.data);
       if (response.data.success) {
-        showToast("Success", "WFH application submitted successfully!", "success");
+        showToast(
+          "Success",
+          "WFH application submitted successfully!",
+          "success",
+        );
       } else {
         throw new Error("Failed to submit the WFH application.");
       }
     } catch (error) {
       console.error("Error:", error);
-      showToast("Error", "An error occurred while submitting the WFH application.", "error");
+      showToast(
+        "Error",
+        "An error occurred while submitting the WFH application.",
+        "error",
+      );
     }
-
   };
 
   if (isLoading) {
@@ -186,7 +230,13 @@ export const WFHForm: React.FC = () => {
       </Title>
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         {Object.entries(employeeData).map(([key, value]) => (
-          <Form.Item key={key} label={key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, str => str.toUpperCase())}  name={key}>
+          <Form.Item
+            key={key}
+            label={key
+              .replace(/([a-z])([A-Z])/g, "$1 $2")
+              .replace(/^./, (str) => str.toUpperCase())}
+            name={key}
+          >
             <Input value={value} readOnly />
           </Form.Item>
         ))}
@@ -198,7 +248,9 @@ export const WFHForm: React.FC = () => {
         <Form.Item
           label="Select Work-From-Home Dates"
           name="wfhDates"
-          rules={[{ required: true, message: "Please select work-from-home dates" }]}
+          rules={[
+            { required: true, message: "Please select work-from-home dates" },
+          ]}
         >
           <DatePicker
             onChange={handleWfhDatesChange}
@@ -213,14 +265,20 @@ export const WFHForm: React.FC = () => {
               <span>{formatDate(wfhDate.date)}</span>
               <Select
                 value={wfhDate.timeOfDay}
-                onChange={(value) => handleTimeOfDayChange(index, value as TimeOfDay)}
+                onChange={(value) =>
+                  handleTimeOfDayChange(index, value as TimeOfDay)
+                }
                 style={{ width: 120 }}
               >
                 <Option value="AM">AM</Option>
                 <Option value="PM">PM</Option>
                 <Option value="FULL">Full Day</Option>
               </Select>
-              <Button onClick={() => handleRemoveDate(index)} type="primary" danger>
+              <Button
+                onClick={() => handleRemoveDate(index)}
+                type="primary"
+                danger
+              >
                 Remove
               </Button>
             </Space>
@@ -244,4 +302,3 @@ export const WFHForm: React.FC = () => {
     </Card>
   );
 };
-
