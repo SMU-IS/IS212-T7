@@ -7,15 +7,15 @@ import { Context } from "koa";
 interface ResponseMessage {
   success: {
     message: string;
-    dates: [Date, string][];
+    dates: [string, string][];
   };
   note: {
     message: string;
-    dates: [Date, string][];
+    dates: [string, string][];
   };
   error: {
     message: string;
-    dates: [Date, string][];
+    dates: [string, string][];
   };
 }
 
