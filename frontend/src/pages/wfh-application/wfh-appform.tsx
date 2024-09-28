@@ -1,6 +1,4 @@
-
 import React, { useState, useEffect } from "react";
-
 import {
   Form,
   Button,
@@ -11,6 +9,10 @@ import {
   Card,
   Typography,
 } from "antd";
+import { Box, useToast } from "@chakra-ui/react";
+import { useGetIdentity } from "@refinedev/core";
+import axios from "axios";
+import { EmployeeJWT } from "@/interfaces/employee";
 import { WFHDate, TimeOfDay, FormData } from "./types";
 import {
   isWeekday,
@@ -19,92 +21,109 @@ import {
   getDatesInSameWeek,
 } from "../../utils/wfh-dateUtils";
 import { validateForm } from "../../utils/wfh-validation";
-import { useToast } from "@chakra-ui/react";
-
 
 const { Option } = Select;
 const { Title } = Typography;
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-export const WFHForm = () => {
+export const WFHForm: React.FC = () => {
   const toast = useToast();
-  // these 5 variables to be populated from db
-  const [name, setName] = useState<string>("");
-  const [staffID, setStaffID] = useState<string>("");
-  const [dept, setDept] = useState<string>("");
-  const [managerName, setManagerName] = useState<string>("");
-  const [managerID, setManagerId] = useState<string>("");
+  const { data: user } = useGetIdentity<EmployeeJWT>();
+  const [form] = Form.useForm();
 
-  // these variables will require user input
+  const [employeeData, setEmployeeData] = useState({
+    name: "",
+    staffID: "",
+    dept: "",
+    managerName: "",
+    managerID: "",
+  });
   const [wfhDates, setWfhDates] = useState<WFHDate[]>([]);
   const [reason, setReason] = useState<string>("");
-  // add code here to fetch user data from db
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // handlers
+  useEffect(() => {
+    if (user?.staffId) {
+      fetchEmployeeData(user.staffId);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    // Update form fields when employeeData changes
+    form.setFieldsValue(employeeData);
+  }, [employeeData, form]);
+
+  const fetchEmployeeData = async (staffId: string) => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/v1/getEmployee`, {
+        params: { staffId },
+        timeout: 300000,
+      });
+
+      const { staffId: id, staffFName, staffLName, dept, reportingManager, reportingManagerName } = response.data;
+      const newEmployeeData = {
+        name: `${staffFName} ${staffLName}`,
+        staffID: id,
+        dept,
+        managerName: reportingManagerName,
+        managerID: reportingManager,
+      };
+      setEmployeeData(newEmployeeData);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching employee data:", error);
+      showToast("Error", "Failed to load employee data", "error");
+    }
+  };
+
   const handleWfhDatesChange = (selectedDate: any) => {
     if (selectedDate && selectedDate.$d) {
       const newDate = selectedDate.$d;
 
-      if (!isWeekday(newDate)) {
-        toast({
-          title: "Invalid date",
-          description: "Please select a weekday.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-        return;
-      }
-
-      if (!isAtLeast24HoursAhead(newDate)) {
-        toast({
-          title: "Invalid date",
-          description: "Selected date must be at least 24 hours ahead.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-        return;
-      }
-
-      const dateExists = wfhDates.some(
-        (wfhDate) => wfhDate.date.toDateString() === newDate.toDateString(),
-      );
-
-      if (dateExists) {
-        toast({
-          title: "Date already selected",
-          description: "Please choose a different date.",
-          status: "warning",
-          duration: 3000,
-          isClosable: true,
-        });
-        return;
-      }
-
-      const datesInSameWeek = getDatesInSameWeek(
-        newDate,
-        wfhDates.map((wfhDate) => wfhDate.date),
-      );
-      if (datesInSameWeek.length >= 2) {
-        toast({
-          title: "Weekly limit exceeded",
-          description: "You have selected more than 2 WFH days for this week.",
-          status: "info",
-          duration: 5000,
-          isClosable: true,
-        });
-      }
+      if (!isValidDate(newDate)) return;
 
       setWfhDates((prev) => [...prev, { date: newDate, timeOfDay: "FULL" }]);
     }
   };
 
-  //this handler takes index of the date being updated & the timeOfDay (AM, PM, or Full Day) and updates the respective WFH date
+  const isValidDate = (date: Date): boolean => {
+    if (!isWeekday(date)) {
+      showToast("Invalid date", "Please select a weekday.", "error");
+      return false;
+    }
+
+    if (!isAtLeast24HoursAhead(date)) {
+      showToast("Invalid date", "Selected date must be at least 24 hours ahead.", "error");
+      return false;
+    }
+
+    const dateExists = wfhDates.some((wfhDate) => wfhDate.date.toDateString() === date.toDateString());
+    if (dateExists) {
+      showToast("Date already selected", "Please choose a different date.", "warning");
+      return false;
+    }
+
+    const datesInSameWeek = getDatesInSameWeek(date, wfhDates.map((wfhDate) => wfhDate.date));
+    if (datesInSameWeek.length >= 2) {
+      showToast("Weekly limit exceeded", "You have selected more than 2 WFH days for this week.", "info");
+    }
+
+    return true;
+  };
+
+  const showToast = (title: string, description: string, status: "error" | "warning" | "info" | "success") => {
+    toast({
+      title,
+      description,
+      status,
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
   const handleTimeOfDayChange = (index: number, timeOfDay: TimeOfDay) => {
     setWfhDates((prev) =>
-      prev.map((wfhDate, i) =>
-        i === index ? { ...wfhDate, timeOfDay } : wfhDate,
-      ),
+      prev.map((wfhDate, i) => (i === index ? { ...wfhDate, timeOfDay } : wfhDate))
     );
   };
 
@@ -112,86 +131,65 @@ export const WFHForm = () => {
     setWfhDates((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleReasonChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
-  ) => {
+  const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     setReason(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData: FormData = { wfhDates, reason };
+  const handleSubmit = async (values: any) => {
+    const formData: FormData = { wfhDates, reason: values.reason };
     const validationError = validateForm(formData);
+    
     if (validationError) {
-      toast({
-        title: "Form Error",
-        description: validationError,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      showToast("Form Error", validationError, "error");
       return;
     }
-    // format "date as YYYY-MM-DD"
-    const requestedDates = wfhDates.map((wfhDate) => {
-      const date = wfhDate.date;
-      const year = String(date.getFullYear());
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
 
-      return [`${year}-${month}-${day}`, wfhDate.timeOfDay];
-    });
+    const requestedDates = wfhDates.map((wfhDate) => [
+      wfhDate.date.toISOString().split('T')[0],
+      wfhDate.timeOfDay
+    ]);
 
-    // prepare final object to send to API
     const payload = {
-      staffId: Number(staffID),
-      staffName: name,
-      reportingManager: Number(managerID),
-      managerName: managerName,
-      dept: dept,
-      requestedDates: requestedDates,
-      reason: reason,
+      staffId: Number(employeeData.staffID),
+      staffName: employeeData.name,
+      reportingManager: Number(employeeData.managerID),
+      managerName: String(employeeData.managerName),
+      dept: employeeData.dept,
+      requestedDates,
+      reason: values.reason,
     };
 
-    // to check output
-    console.log("Formatted Data:", payload);
+    try {
+      const response = await axios.post(`${backendUrl}/api/v1/postRequest`, payload);
+      // console.log('Incoming request data:', payload);
+      // console.log(response.data);
+      if (response.data.success) {
+        showToast("Success", "WFH application submitted successfully!", "success");
+      } else {
+        throw new Error("Failed to submit the WFH application.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      showToast("Error", "An error occurred while submitting the WFH application.", "error");
+    }
 
-    // Add code to send data to the server here
-
-    toast({
-      title: "Success",
-      description: "WFH application submitted successfully!",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
   };
+
+  if (isLoading) {
+    return <Box>Loading...</Box>;
+  }
 
   return (
     <Card style={{ maxWidth: "600px", margin: "0 auto", padding: "10px" }}>
       <Title level={2} style={{ textAlign: "center" }}>
         Work-From-Home Application Form
       </Title>
-      <Form layout="vertical" onSubmitCapture={handleSubmit}>
-        <Form.Item label="Staff Name" name="staffName" initialValue={name}>
-          <Input value={name} readOnly />
-        </Form.Item>
-
-        <Form.Item label="Staff ID" name="staffID" initialValue={staffID}>
-          <Input value={staffID} readOnly />
-        </Form.Item>
-
-        <Form.Item label="Department" name="dept" initialValue={dept}>
-          <Input value={dept} readOnly />
-        </Form.Item>
-
-        <Form.Item label="Manager's Name" name="managerName">
-          <Input value={managerName} readOnly />
-        </Form.Item>
-
-        <Form.Item label="Manager ID" name="managerID" initialValue={managerID}>
-          <Input value={managerID} readOnly />
-        </Form.Item>
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        {Object.entries(employeeData).map(([key, value]) => (
+          <Form.Item key={key} label={key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, str => str.toUpperCase())}  name={key}>
+            <Input value={value} readOnly />
+          </Form.Item>
+        ))}
 
         <Form.Item label="Date of Application">
           <Input value={new Date().toISOString().split("T")[0]} readOnly />
@@ -200,14 +198,11 @@ export const WFHForm = () => {
         <Form.Item
           label="Select Work-From-Home Dates"
           name="wfhDates"
-          rules={[
-            { required: true, message: "Please select work-from-home dates" },
-          ]}
+          rules={[{ required: true, message: "Please select work-from-home dates" }]}
         >
           <DatePicker
             onChange={handleWfhDatesChange}
             format="YYYY-MM-DD"
-            showTime={false}
             disabledDate={(date) => date && !isWeekday(date.toDate())}
           />
         </Form.Item>
@@ -218,20 +213,14 @@ export const WFHForm = () => {
               <span>{formatDate(wfhDate.date)}</span>
               <Select
                 value={wfhDate.timeOfDay}
-                onChange={(value) =>
-                  handleTimeOfDayChange(index, value as TimeOfDay)
-                }
+                onChange={(value) => handleTimeOfDayChange(index, value as TimeOfDay)}
                 style={{ width: 120 }}
               >
                 <Option value="AM">AM</Option>
                 <Option value="PM">PM</Option>
                 <Option value="FULL">Full Day</Option>
               </Select>
-              <Button
-                onClick={() => handleRemoveDate(index)}
-                type="primary"
-                danger
-              >
+              <Button onClick={() => handleRemoveDate(index)} type="primary" danger>
                 Remove
               </Button>
             </Space>
@@ -243,12 +232,9 @@ export const WFHForm = () => {
           name="reason"
           rules={[{ required: true, message: "Please provide a reason" }]}
         >
-          <Input.TextArea
-            value={reason}
-            onChange={handleReasonChange}
-            rows={4}
-          />
+          <Input.TextArea rows={4} />
         </Form.Item>
+
         <Form.Item>
           <Button type="primary" htmlType="submit">
             Submit
@@ -258,3 +244,4 @@ export const WFHForm = () => {
     </Card>
   );
 };
+

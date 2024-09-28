@@ -16,6 +16,7 @@ interface IEmployee {
   email: string;
   hashedPassword: string;
   reportingManager: number | null;
+  reportingManagerName: string;
   role: Role;
 }
 
@@ -35,6 +36,7 @@ const EmployeeSchema = new Schema<IEmployee>(
       ref: "Employee",
       required: false,
     },
+    reportingManagerName: { type: String, required: true },
     role: { type: Number, required: true, enum: [1, 2, 3] },
   },
   {
