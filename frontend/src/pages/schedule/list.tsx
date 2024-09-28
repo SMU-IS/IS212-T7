@@ -55,7 +55,7 @@ export const ScheduleList = () => {
   // Calendar Data
   const calendarConfig = {
       halfday: {
-        colorName: calendarVar.halfday,
+        colorName: calendarVar.HALFDAY,
         lightColors: {
           main: '#f9d71c',
           container: '#fff5aa',
@@ -68,7 +68,7 @@ export const ScheduleList = () => {
         },
       },
       fullday: {
-        colorName: calendarVar.fullday,
+        colorName: calendarVar.FULLDAY,
         lightColors: {
           main: '#f91c45',
           container: '#ffd2dc',

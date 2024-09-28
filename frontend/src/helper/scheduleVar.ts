@@ -1,6 +1,6 @@
 enum calendarVar {
-    halfday = 'halfday',
-    fullday = "fullday"
+    HALFDAY = "halfday",
+    FULLDAY = "fullday"
 }
 
 export default calendarVar;
