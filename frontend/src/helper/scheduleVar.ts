@@ -1,7 +1,12 @@
-enum calendarVar {
+export enum calendarVar {
     HALFDAY = "halfday",
     FULLDAY = "fullday",
     PENDINGHALF = "pendingHalf",
     PENDINGFULL = "pendingFull"
 }
-export default calendarVar;
+export enum RequestType {
+    AM = "AM",
+    PM = "PM",
+    FULL = "FULL",
+  }
+export default {calendarVar, RequestType};

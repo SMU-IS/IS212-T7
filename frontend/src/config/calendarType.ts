@@ -1,7 +1,7 @@
-import calendarVar from "@/helper/scheduleVar"
+import { calendarVar } from "@/helper/scheduleVar";
 export const customCalendarConfig = {
     // Approved
-    halfday: {
+    [calendarVar.HALFDAY]: {
       colorName: calendarVar.HALFDAY,
       lightColors: {
         main: '#ff9900',
@@ -14,7 +14,7 @@ export const customCalendarConfig = {
         container: '#1A1D23', // Dark Background
       },
     },
-    fullday: {
+    [calendarVar.FULLDAY]: {
       colorName: calendarVar.FULLDAY,
       lightColors: {
         main: '#9d4edd',
@@ -28,7 +28,7 @@ export const customCalendarConfig = {
       },
     },
     // Pending
-    pendingFull: {
+    [calendarVar.PENDINGFULL]: {
       colorName: calendarVar.PENDINGFULL,
       lightColors: {
         main: '#9d4edd', // purple
@@ -41,7 +41,7 @@ export const customCalendarConfig = {
         container: '#333333', // Dark Gray background
       },
     },
-    pendingHalf: {
+    [calendarVar.PENDINGHALF]: {
       colorName: calendarVar.PENDINGHALF,
       lightColors: {
         main: '#ff9900', // purple
