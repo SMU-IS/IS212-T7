@@ -1,4 +1,9 @@
 export interface EmployeeJWT {
     staffId: string,
-    role: number
+    role: number,
+    name: string;
+    dept: string;
+    email: string;
+    position: string;
+    reportingManager: number;
 }

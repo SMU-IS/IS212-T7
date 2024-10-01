@@ -41,10 +41,36 @@ import {
 } from "./pages/schedule"
 import { Header } from "./components/header"; // Custom header if you have one
 import { WFHForm } from "./pages/wfh-application"
+import { TeamScheduleList } from "./pages/team-schedule"
+import { Typography } from 'antd';
+import logo from "@/assets/logo.png"
+
 // import { useCustomNotificationProvider } from "./components/toast";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 const App = () => {
+  const { Title } = Typography;
+  const CustomTitle = () => (
+    <div style={{display: "flex", alignContent: "center"}}>
+      <div style={{alignContent: "center"}}>
+        <img 
+          src={logo} 
+          alt="Sayless Logo" 
+          style={{ height: "30px", marginRight: "5px" }} // Adjust width and height as needed
+        />
+      </div>
+      <Title level={3} style={{ 
+        textAlign: 'center', 
+        color: '#15B392',
+        fontWeight: 'bold',
+        margin: 0,
+        alignContent: "center"
+        }}
+        >
+          SAYLESS
+      </Title>
+    </div>
+);
   return (
     <BrowserRouter>
     <ChakraProvider>
@@ -63,6 +89,14 @@ const App = () => {
                 meta: {
                   canDelete: false,
                   label: "My Schedule"
+                },
+              },
+              {
+                name: "teamSchedule",
+                list: TeamScheduleList,
+                meta: {
+                  canDelete: false,
+                  label: "Team Schedule"
                 },
               },
               {
@@ -91,6 +125,7 @@ const App = () => {
                     fallback={<CatchAllNavigate to="/login" />}
                   >
                     <ThemedLayoutV2
+                    Title={CustomTitle}
                       Header={Header}
                       Sider={(props) => <ThemedSiderV2 {...props} fixed />}
                     >
@@ -104,6 +139,9 @@ const App = () => {
                 {/* Schedule Routes */}
                 <Route path="/schedule" >
                   <Route index element={<ScheduleList />} />
+                </Route>
+                <Route path="/teamSchedule" >
+                  <Route index element={<TeamScheduleList />} />
                 </Route>
                 <Route path="/wfhform" element={ < WFHForm/>}/>
                 {/* Blog Posts Routes */}
