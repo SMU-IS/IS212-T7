@@ -1,8 +1,6 @@
 import {
     useEffect,
-    useContext,
     useState,
-    useRef
   } from "react";
   
   import { useGetIdentity } from "@refinedev/core";
@@ -10,7 +8,7 @@ import {
   import axios from "axios";
   
   import { IResponseData } from "@/interfaces/schedule";
-  import { Table, Space, Tag, Card, Typography } from "antd";
+  import { Table, Tag, Typography } from "antd";
   const { Title } = Typography;
   
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -55,24 +53,38 @@ import {
         dataIndex: "staffName",
         key: "staffName",
         render: (text: string, record: any) => {
-            // Assuming 'userStaffId' is the current user's staffId
             const isCurrentUser = record.staffId === user?.staffId;
             return (
                 <span style={{ color: isCurrentUser ? 'green' : 'inherit', fontWeight: isCurrentUser ? 'bold' : 'normal' }}>
                     {isCurrentUser ? `${text} (ME)` : text}
                 </span>
             );
-        }
+        },
+        onCell: () => ({
+            style: {
+                flex: 2, // Adjust this value based on desired ratio
+            },
+        }),
     },
     {
         title: "Manager Name",
         dataIndex: "managerName",
         key: "managerName",
+        onCell: () => ({
+            style: {
+                flex: 2, // Adjust this value based on desired ratio
+            },
+        }),
     },
     {
         title: "Department",
         dataIndex: "dept",
         key: "dept",
+        onCell: () => ({
+            style: {
+                flex: 1, // Adjust this value based on desired ratio
+            },
+        }),
     },
     {
         title: "Request Type",
@@ -94,16 +106,26 @@ import {
             }
             return <Tag color={color}>{requestType}</Tag>;
         },
+        onCell: () => ({
+            style: {
+                flex: 1, // Adjust this value based on desired ratio
+            },
+        }),
     },
     {
         title: "Reason",
         dataIndex: "reason",
         key: "reason",
+        onCell: () => ({
+            style: {
+                flex: 3, // Adjust this value based on desired ratio
+            },
+        }),
     },
     ];
 
     const groupedData = calendarEvents.reduce((acc: Record<string, any[]>, item) => {
-        const date = new Date(item.requestedDate).toLocaleDateString("en-CA");
+        const date = new Date(item.requestedDate).toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" });
         if (!acc[date]) {
             acc[date] = [];
         }
@@ -121,8 +143,12 @@ import {
                                 margin: 10, 
                             }}
                         >
-                            {new Date(date).toLocaleDateString(undefined, { 
-                                year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
+                            {new Date(date).toLocaleDateString("en-CA", { 
+                                timeZone: "Asia/Singapore",
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric', 
+                                weekday: 'short',
                             })}
                         </Title>
                     <Table
@@ -130,6 +156,8 @@ import {
                         dataSource={groupedData[date]}
                         pagination={false}
                         rowKey={(record) => record.staffName + record.requestedDate} // Unique row key
+                        tableLayout="fixed" // Ensure the table layout is fixed
+                        style={{ display: 'flex' }} // Use flexbox for the table
                     />
                 </div>
             ))}
