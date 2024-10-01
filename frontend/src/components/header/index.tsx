@@ -10,6 +10,9 @@ import {
 } from "antd";
 import React, { useContext } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { Button } from "antd";
+import { AlertTwoTone, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
 const { useToken } = theme;
@@ -26,6 +29,7 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   const { token } = useToken();
   const { data: user } = useGetIdentity<IUser>();
   const { mode, setMode } = useContext(ColorModeContext);
+  const navigate = useNavigate(); // Hook to handle navigation
 
   const headerStyles: React.CSSProperties = {
     backgroundColor: token.colorBgElevated,
@@ -45,6 +49,18 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
+        <Button
+          type="link"
+          icon={<AlertTwoTone />}
+          style={{ marginRight: 8 }}
+          onClick={() => navigate("/incomingRequests")} // Navigate to the route on click
+        >
+          Incoming WFH Requests
+        </Button>
+        <Space style={{ marginLeft: "8px" }} size="middle">
+          {user?.name && <Text strong>{user.name}</Text>}
+          {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
+        </Space>
         <Switch
           checkedChildren="🌛"
           unCheckedChildren="🔆"
