@@ -6,4 +6,7 @@ export interface EmployeeJWT {
     email: string;
     position: string;
     reportingManager: number;
+    reportingManagerName: string;
+    tempReportingManager: string | null;
+    tempReportingManagerName: number | null;
 }
