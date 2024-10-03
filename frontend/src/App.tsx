@@ -4,12 +4,14 @@ import dataProvider from "@refinedev/simple-rest";
 import {
   // AuthPage,
   ThemedLayoutV2,
+  ThemedTitleV2,
   RefineThemes,
   ErrorComponent,
   ThemedSiderV2,
 } from "@refinedev/antd";
 
 import { ColorModeContextProvider } from "./contexts/color-mode";
+import { CalendarOutlined, ClockCircleTwoTone } from "@ant-design/icons";
 
 import routerProvider, {
   CatchAllNavigate,
@@ -59,6 +61,7 @@ const App = () => {
                   {
                     name: "schedule",
                     list: ScheduleList,
+                    icon: <CalendarOutlined />,
                     meta: {
                       canDelete: false,
                       label: "My Schedule",
@@ -70,6 +73,7 @@ const App = () => {
                     create: "/wfhform",
                     edit: "/wfhform",
                     show: "/wfhform",
+                    icon: <ClockCircleTwoTone />,
                     meta: {
                       canDelete: false,
                       label: "Apply for WFH",
@@ -90,6 +94,13 @@ const App = () => {
                         fallback={<CatchAllNavigate to="/login" />}
                       >
                         <ThemedLayoutV2
+                          Title={({ collapsed }) => (
+                            <ThemedTitleV2
+                              // collapsed is a boolean value that indicates whether the <Sidebar> is collapsed or not
+                              collapsed={collapsed}
+                              text="SPM WFH T7"
+                            />
+                          )}
                           Header={Header}
                           Sider={(props) => <ThemedSiderV2 {...props} fixed />}
                         >

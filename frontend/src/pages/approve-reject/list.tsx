@@ -1,8 +1,21 @@
-import { useMany } from "@refinedev/core";
-import { List, TextField, TagField, useTable } from "@refinedev/antd";
-import { Button, Table, Typography, Modal, Form, Input, Select } from "antd";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Button,
+  Table,
+  Typography,
+  Modal,
+  Form,
+  Input,
+  Select,
+  Row,
+  Col,
+  Statistic,
+  Empty,
+  Card,
+} from "antd";
+import { List, TagField } from "@refinedev/antd";
+import CountUp from "react-countup";
 
 // Mocked Data with Four Status Types and Department/Team
 const mockPosts = Array.from({ length: 10 }, (_, index) => ({
@@ -11,10 +24,7 @@ const mockPosts = Array.from({ length: 10 }, (_, index) => ({
   email: `Email${index + 1}@example.com`,
   role: `Role ${index + 1}`,
   date: `3rd Oct 24`,
-  department: index % 2 === 0 ? "Marketing" : "Engineering", // Example department field
-  category: {
-    id: (index % 3) + 1, // Example category IDs
-  },
+  department: index % 2 === 0 ? "Marketing" : "Engineering",
   status:
     index % 4 === 0
       ? "Pending"
@@ -26,25 +36,27 @@ const mockPosts = Array.from({ length: 10 }, (_, index) => ({
   action: index % 2 === 0 ? "Yes" : "Not-editable",
 }));
 
+const formatter = (value: number) => <CountUp end={value} separator="," />;
+
 export const IncomingList: React.FC = () => {
-  const [dataSource, setDataSource] = useState<IPost[]>([]);
-  const [filteredData, setFilteredData] = useState<IPost[]>([]);
+  const [dataSource, setDataSource] = useState(mockPosts);
+  const [filteredData, setFilteredData] = useState(mockPosts);
   const [modalVisible, setModalVisible] = useState(false);
-  const [currentPost, setCurrentPost] = useState<IPost | null>(null);
+  const [currentPost, setCurrentPost] = useState(null);
   const [filterStatus, setFilterStatus] = useState<string | undefined>(
     undefined,
   );
-  const [showDescription, setShowDescription] = useState<boolean>(false); // New state for description visibility
   const [description, setDescription] = useState<string>(""); // New state for description
+  const [showDescription, setShowDescription] = useState<boolean>(false); // New state for description visibility
+
   const navigate = useNavigate();
 
   useEffect(() => {
     setDataSource(mockPosts);
-    setFilteredData(mockPosts); // Initialize filtered data
+    setFilteredData(mockPosts);
   }, []);
 
   useEffect(() => {
-    // Filter data based on selected status
     if (filterStatus) {
       setFilteredData(
         dataSource.filter((post) => post.status === filterStatus),
@@ -54,29 +66,33 @@ export const IncomingList: React.FC = () => {
     }
   }, [filterStatus, dataSource]);
 
-  const handleEditClick = (post: IPost) => {
+  // Function to calculate the count of requests based on status
+  const getStatusCounts = () => {
+    return {
+      pending: dataSource.filter((post) => post.status === "Pending").length,
+      approved: dataSource.filter((post) => post.status === "Approved").length,
+      expired: dataSource.filter((post) => post.status === "Expired").length,
+      rejected: dataSource.filter((post) => post.status === "Rejected").length,
+    };
+  };
+
+  const counts = getStatusCounts(); // Get the current counts for each status
+
+  const handleEditClick = (post: any) => {
     setCurrentPost(post);
-    setDescription(""); // Reset description on edit
-    setShowDescription(false); // Reset description visibility on edit
+    setDescription("");
+    setShowDescription(false);
     setModalVisible(true);
-    console.log(post);
   };
 
   const handleModalClose = () => {
     setModalVisible(false);
-    setCurrentPost(null); // Clear current post on modal close
-    setDescription(""); // Clear description on close
+    setCurrentPost(null);
+    setDescription("");
   };
 
-  const handleSave = async (values: any) => {
-    if (currentPost?.status === "Rejected" && !description) {
-      // Check for description if status is Rejected
-      alert("Please provide a description for the rejected status.");
-      return;
-    }
-
+  const handleSave = (values: any) => {
     console.log("Updated values:", values);
-    // Save the updated values logic here
     const updatedPost = {
       ...currentPost,
       ...values,
@@ -85,42 +101,85 @@ export const IncomingList: React.FC = () => {
     const updatedDataSource = dataSource.map((post) =>
       post.id === currentPost?.id ? updatedPost : post,
     );
-    setDataSource(updatedDataSource); // Update the data source with new values
-    // Update filtered data based on current filter
+    setDataSource(updatedDataSource);
     setFilteredData(
       updatedDataSource.filter(
         (post) => !filterStatus || post.status === filterStatus,
       ),
     );
     setModalVisible(false);
-    setCurrentPost(null); // Clear current post after saving
-    setDescription(""); // Clear description after saving
-    setShowDescription(false); // Reset description visibility after saving
+    setCurrentPost(null);
+    setDescription("");
+    setShowDescription(false);
   };
 
   return (
     <List>
       <Typography.Title level={3}>Approve/Reject WFH Requests</Typography.Title>
+
+      {/* Row for Animated Status Counts */}
+      <Row gutter={16}>
+        <Col span={6}>
+          <Card bordered={true} style={{ borderColor: "lightblue" }}>
+            <Statistic
+              title="Pending"
+              value={counts.pending}
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card bordered={false}>
+            <Statistic
+              title="Approved"
+              value={counts.approved}
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card bordered={false}>
+            <Statistic
+              title="Expired"
+              value={counts.expired}
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card bordered={false}>
+            <Statistic
+              title="Rejected"
+              value={counts.rejected}
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Filter by status */}
       <Select
         placeholder="Filter by status"
-        style={{ width: 200, marginBottom: 16 }}
+        style={{ width: 200, marginBottom: 16, float: "right", marginTop: 50 }}
         onChange={(value) => setFilterStatus(value)}
+        defaultValue={"All"}
         allowClear
       >
-        <Select.Option value={undefined}>All</Select.Option> {/* All option */}
+        <Select.Option value={undefined}>All</Select.Option>
         <Select.Option value="Pending">Pending</Select.Option>
         <Select.Option value="Approved">Approved</Select.Option>
         <Select.Option value="Expired">Expired</Select.Option>
         <Select.Option value="Rejected">Rejected</Select.Option>
       </Select>
+
+      {/* Table */}
       <Table dataSource={filteredData} rowKey="id" pagination={false}>
         <Table.Column dataIndex="id" title="ID" />
         <Table.Column dataIndex="name" title="Name" />
         <Table.Column dataIndex="email" title="Email" />
         <Table.Column dataIndex="role" title="Role" />
         <Table.Column dataIndex="date" title="WFH Date" />
-        <Table.Column dataIndex="department" title="Department/Team" />{" "}
-        {/* New column */}
+        <Table.Column dataIndex="department" title="Department/Team" />
         <Table.Column
           dataIndex="status"
           title="Status"
@@ -134,7 +193,7 @@ export const IncomingList: React.FC = () => {
                     ? "green"
                     : value === "Expired"
                       ? "red"
-                      : "orange" // Color for Rejected
+                      : "orange"
               }
             />
           )}
@@ -142,13 +201,13 @@ export const IncomingList: React.FC = () => {
         <Table.Column
           dataIndex="action"
           title="Action"
-          render={(value: string, record: IPost) => {
-            return record.status === "Pending" ? (
+          render={(value: string, record: any) =>
+            record.status === "Pending" ? (
               <Button onClick={() => handleEditClick(record)}>Edit</Button>
             ) : (
-              <TagField value="Not-editable" color="lightgrey" />
-            );
-          }}
+              <TagField value="Not-editable" color="grey" />
+            )
+          }
         />
       </Table>
 
@@ -158,7 +217,7 @@ export const IncomingList: React.FC = () => {
         open={modalVisible}
         onCancel={handleModalClose}
         footer={null}
-        key={currentPost ? currentPost.id : "modal"} // Add a unique key
+        key={currentPost ? currentPost.id : "modal"}
       >
         {currentPost && (
           <Form
@@ -181,9 +240,7 @@ export const IncomingList: React.FC = () => {
               rules={[{ required: true, message: "Status is required" }]}
             >
               <Select
-                onChange={(value) => {
-                  setShowDescription(value === "Rejected"); // Show description if status is "Rejected"
-                }}
+                onChange={(value) => setShowDescription(value === "Rejected")}
               >
                 <Select.Option value="Pending">Pending</Select.Option>
                 <Select.Option value="Approved">Approved</Select.Option>
@@ -219,18 +276,3 @@ export const IncomingList: React.FC = () => {
     </List>
   );
 };
-
-interface IPost {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  date: string;
-  status: string;
-  action: string;
-  department: string; // Add department field to the interface
-  category: {
-    id: number;
-  };
-  description?: string; // Optional description field
-}

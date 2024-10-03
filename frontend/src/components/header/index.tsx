@@ -7,11 +7,17 @@ import {
   Switch,
   theme,
   Typography,
+  Badge,
 } from "antd";
 import React, { useContext } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { Button } from "antd";
-import { AlertTwoTone, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  AlertOutlined,
+  AlertTwoTone,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
@@ -27,9 +33,14 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   sticky = true,
 }) => {
   const { token } = useToken();
+  let count = 1;
   const { data: user } = useGetIdentity<IUser>();
   const { mode, setMode } = useContext(ColorModeContext);
   const navigate = useNavigate(); // Hook to handle navigation
+
+  const handleIncomingNotif = () => {
+    count++;
+  };
 
   const headerStyles: React.CSSProperties = {
     backgroundColor: token.colorBgElevated,
@@ -49,14 +60,16 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
-        <Button
-          type="link"
-          icon={<AlertTwoTone />}
-          style={{ marginRight: 8 }}
-          onClick={() => navigate("/incomingRequests")} // Navigate to the route on click
-        >
-          Incoming WFH Requests
-        </Button>
+        <Badge count={count} offset={[-8, 0]}>
+          <Button
+            type="primary"
+            icon={<AlertOutlined />}
+            style={{ marginRight: 8 }}
+            onClick={() => navigate("/incomingRequests")} // Navigate to the route on click
+          >
+            Incoming WFH Requests
+          </Button>
+        </Badge>
         <Space style={{ marginLeft: "8px" }} size="middle">
           {user?.name && <Text strong>{user.name}</Text>}
           {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
