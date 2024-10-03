@@ -147,7 +147,13 @@ router.get("/getMySchedule", (ctx) => requestController.getMySchedule(ctx));
  *           type: string
  *           enum: [CEO, Consultancy, Engineering, Finance, HR, IT, Sales, Solutioning]
  *         required: true
- *         description: Pass in staff's department
+ *         description: User's department
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
  *     responses:
  *       200:
  *         description: Returns a request object
