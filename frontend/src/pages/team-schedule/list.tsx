@@ -19,7 +19,6 @@ import {
     const [calendarEvents, setCalendarEvents] = useState<IResponseData[]>([]); // State for calendar events
     useEffect(() => {
       if (user?.staffId) {
-        console.log(user)
         fetchScheduleData(user)
       }
     }, [user]);
@@ -27,25 +26,27 @@ import {
     const fetchScheduleData = async (user: EmployeeJWT) => {
       try {
         const responseData = await axios.get(`${backendUrl}/api/v1/getTeamSchedule`, {
-          params: { 
-            myId: user.staffId, 
-            reportingManager: user.reportingManager,
-            dept: user.dept },
-          timeout: 300000,
+            headers: { 
+                id: user.staffId,
+                },
+            params: { 
+                reportingManager: user.reportingManager,
+                dept: user.dept },
+            timeout: 300000,
         });
         const eventArr: IResponseData[] = responseData?.data || [];
         // Update calendar events
-        setCalendarEvents(eventArr);
+        if (Array.isArray(eventArr) && eventArr.length > 0) {
+            setCalendarEvents(eventArr || []);  // Set the events if the data exists
+        } else {
+            console.warn("No events to set in the calendar");
+        }
         
       } catch (error) {
-        console.error("Error fetching schedule data:", error);
-  
+        // console.error("Error fetching schedule data:", error);
+
       }
     };
-
-    useEffect(() => {
-        console.log(calendarEvents)
-      }, [calendarEvents]);
   
     const columns = [
     {
@@ -130,27 +131,40 @@ import {
             acc[date] = [];
         }
         acc[date].push(item);
+
         return acc;
     }, {});
 
+    const sortedDates = Object.keys(groupedData).sort().reverse();
     return (
         <div>
-            {Object.keys(groupedData).map((date) => (
+            {sortedDates
+            .map((date) => {
+            // Convert the date string to a Date object
+            const eventDate = new Date(date);
+            const currentDate = new Date();
+
+            // Check if the date is in the past
+            const isPastDate = eventDate < currentDate;
+
+            return (
                 <div key={date} style={{ marginBottom: '20px' }}>
                     <Title
-                            level={4} // Level 4 corresponds to <h4>, you can adjust this to a different level
-                            style={{ 
-                                margin: 10, 
-                            }}
-                        >
-                            {new Date(date).toLocaleDateString("en-CA", { 
-                                timeZone: "Asia/Singapore",
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric', 
-                                weekday: 'short',
-                            })}
-                        </Title>
+                        level={4} // Level 4 corresponds to <h4>, you can adjust this to a different level
+                        style={{ 
+                            margin: 10, 
+                            color: isPastDate ? 'gray' : '', // Change color for past dates
+                        }}
+                    >
+                        {new Date(date).toLocaleDateString("en-CA", { 
+                            timeZone: "Asia/Singapore",
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric', 
+                            weekday: 'short',
+                        })}
+                        {isPastDate}
+                    </Title>
                     <Table
                         columns={columns}
                         dataSource={groupedData[date]}
@@ -160,7 +174,8 @@ import {
                         style={{ display: 'flex' }} // Use flexbox for the table
                     />
                 </div>
-            ))}
+            );
+        })}
         </div>
     );
   };

@@ -100,7 +100,6 @@ export const ScheduleList = () => {
 
   // Create the Calendar
   useEffect(() => {
-    console.log("calendar")
     if (!calendarRef.current && eventsLoaded) {
       calendarRef.current = createCalendar({
         views: [createViewWeek(), createViewMonthGrid(), createViewMonthAgenda()],
