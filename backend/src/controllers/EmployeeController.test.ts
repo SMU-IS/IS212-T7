@@ -1,7 +1,7 @@
 import EmployeeController from "@/controllers/EmployeeController";
+import EmployeeDb from "@/database/EmployeeDb";
 import { errMsg } from "@/helpers";
 import EmployeeService from "@/services/EmployeeService";
-import EmployeeDb from "@/database/EmployeeDb";
 import generateMockEmployee from "@/tests/mockData";
 import { Context } from "koa";
 
@@ -14,7 +14,9 @@ describe("EmployeeController", () => {
 
   beforeEach(() => {
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
-    employeeServiceMock = new EmployeeService(employeeDbMock) as jest.Mocked<EmployeeService>;
+    employeeServiceMock = new EmployeeService(
+      employeeDbMock
+    ) as jest.Mocked<EmployeeService>;
     employeeController = new EmployeeController(employeeServiceMock);
     ctx = {
       method: "POST",
@@ -44,9 +46,26 @@ describe("EmployeeController", () => {
       staffEmail: "test@example.com",
       staffPassword: "test-password",
     };
+
+    const {
+      staffId,
+      staffFName,
+      staffLName,
+      dept,
+      position,
+      email,
+      reportingManager,
+      role,
+    } = mockEmployee;
+
     const returnValue: any = {
-      staffId: mockEmployee.staffId,
-      role: mockEmployee.role,
+      staffId,
+      name: `${staffFName} ${staffLName}`,
+      dept,
+      position,
+      email,
+      reportingManager,
+      role,
     };
     employeeServiceMock.getEmployeeByEmail.mockResolvedValue(returnValue);
 
@@ -54,10 +73,7 @@ describe("EmployeeController", () => {
     await employeeController.getEmployeeByEmail(ctx);
 
     // Assert
-    expect(ctx.body).toEqual({
-      staffId: mockEmployee.staffId,
-      role: mockEmployee.role,
-    });
+    expect(ctx.body).toEqual(returnValue);
   });
 
   it("should inform user of failure to find an employee with provided email", async () => {
@@ -66,7 +82,9 @@ describe("EmployeeController", () => {
       staffEmail: "nonexistent@example.com",
       staffPassword: "password",
     };
-    employeeServiceMock.getEmployeeByEmail.mockResolvedValue(errMsg.USER_DOES_NOT_EXIST);
+    employeeServiceMock.getEmployeeByEmail.mockResolvedValue(
+      errMsg.USER_DOES_NOT_EXIST
+    );
 
     // Act
     await employeeController.getEmployeeByEmail(ctx);
@@ -83,7 +101,9 @@ describe("EmployeeController", () => {
       staffEmail: "test@example.com",
       staffPassword: "password",
     };
-    employeeServiceMock.getEmployeeByEmail.mockResolvedValue(errMsg.WRONG_PASSWORD);
+    employeeServiceMock.getEmployeeByEmail.mockResolvedValue(
+      errMsg.WRONG_PASSWORD
+    );
 
     // Act
     await employeeController.getEmployeeByEmail(ctx);

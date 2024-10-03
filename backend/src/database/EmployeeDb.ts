@@ -14,7 +14,7 @@ class EmployeeDb {
       {
         email: userEmail,
       },
-      "staffId hashedPassword role"
+      "-_id -createdAt -updatedAt"
     ).exec();
   }
 }

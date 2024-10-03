@@ -10,7 +10,10 @@ const generateMockEmployee = async (overrides = {}) => ({
   email: "test@example.com",
   hashedPassword: await hashPassword("test-password"),
   reportingManager: null,
+  reportingManagerName: null,
   role: 1,
+  tempReportingManager: null,
+  tempReportingManagerName: null,
   ...overrides,
 });
 
