@@ -21,9 +21,10 @@ export const authProvider: AuthProvider = {
 
     if (response.data.error == undefined) {
       localStorage.setItem("auth", JSON.stringify(response.data));
+      console.log(response.data);
       return {
         success: true,
-        redirectTo: "/schedule",
+        redirectTo: response.data.role == 2 ? "/schedule" : "/teamSchedule",
       };
     } else {
       return {
