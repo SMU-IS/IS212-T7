@@ -12,6 +12,7 @@ enum errMsg {
   USER_DOES_NOT_EXIST = "User does not exist.",
   REQUESTS_NOT_FOUND = "No requests found",
   SAME_DAY_REQUEST = "Existing request for selected day found.",
+  DIFFERENT_TEAM = "User is from a different team and has no additional privilege to view data.",
 }
 
 const noteMsg =

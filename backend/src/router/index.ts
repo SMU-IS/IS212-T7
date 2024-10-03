@@ -3,6 +3,7 @@ import RequestController from "@/controllers/RequestController";
 import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
 import { AccessControl } from "@/helpers";
+import { checkSameTeam } from "@/middleware/checkSameTeam";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import EmployeeService from "@/services/EmployeeService";
 import RequestService from "@/services/RequestService";
@@ -151,7 +152,9 @@ router.get("/getMySchedule", (ctx) => requestController.getMySchedule(ctx));
  *       200:
  *         description: Returns a request object
  */
-router.get("/getTeamSchedule", (ctx) => requestController.getTeamSchedule(ctx));
+router.get("/getTeamSchedule", checkSameTeam(), (ctx) =>
+  requestController.getTeamSchedule(ctx)
+);
 
 /**
  * @openapi
