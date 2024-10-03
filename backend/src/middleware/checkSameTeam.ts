@@ -11,12 +11,13 @@ const employeeService = new EmployeeService(employeeDb);
 export const checkSameTeam = () => {
   return async (ctx: Context, next: Next) => {
     const { id } = ctx.request.header;
-    const { dept } = ctx.query;
+    const { reportingManager, dept } = ctx.query;
 
     if (!id) {
       return UtilsController.throwAPIError(ctx, errMsg.MISSING_HEADER);
     }
 
+    const sanitisedReportingManagerId = numberSchema.parse(reportingManager);
     const sanitisedStaffId = numberSchema.parse(id);
     const employee = await employeeService.getEmployee(sanitisedStaffId);
     if (!employee) {
@@ -24,6 +25,13 @@ export const checkSameTeam = () => {
     }
 
     if (dept !== employee.dept && employee.role !== Role.HR) {
+      return UtilsController.throwAPIError(ctx, errMsg.DIFFERENT_DEPARTMENT);
+    }
+
+    if (
+      sanitisedReportingManagerId !== employee.reportingManager &&
+      employee.role !== Role.HR
+    ) {
       return UtilsController.throwAPIError(ctx, errMsg.DIFFERENT_TEAM);
     }
 
