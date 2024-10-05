@@ -45,6 +45,7 @@ enum Status {
   REJECTED = "REJECTED",
   CANCELLED = "CANCELLED",
   WITHDRAWN = "WITHDRAWN",
+  EXPIRED = "EXPIRED",
 }
 
 enum Dept {

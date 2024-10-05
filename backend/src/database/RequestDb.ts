@@ -1,6 +1,7 @@
 import { Dept, Status } from "@/helpers";
 import Request from "@/models/Request";
 import { weekMap, checkDate } from "@/helpers/date";
+import dayjs from "dayjs";
 
 interface RequestDetails {
   staffId: number;
@@ -110,6 +111,21 @@ class RequestDb {
       }
     }
     return responseDates;
+  }
+
+  public async updateRequestStatusToExpired(): Promise<void> {
+    const now = dayjs.utc().startOf("day");
+    await Request.updateMany(
+      {
+        status: Status.PENDING,
+        requestedDate: now.toDate(),
+      },
+      {
+        $set: {
+          status: Status.EXPIRED,
+        },
+      }
+    );
   }
 }
 
