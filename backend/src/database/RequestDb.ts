@@ -114,7 +114,7 @@ class RequestDb {
   }
 
   public async updateRequestStatusToExpired(): Promise<void> {
-    const now = dayjs.utc().startOf("day");
+    const now = dayjs().utc(true).startOf("day");
     await Request.updateMany(
       {
         status: Status.PENDING,
