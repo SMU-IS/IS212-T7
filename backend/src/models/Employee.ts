@@ -6,7 +6,7 @@ export interface LoginBody {
   staffPassword: string;
 }
 
-interface IEmployee {
+export interface IEmployee {
   staffId: number;
   staffFName: string;
   staffLName: string;

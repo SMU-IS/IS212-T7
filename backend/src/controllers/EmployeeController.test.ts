@@ -2,7 +2,7 @@ import EmployeeController from "@/controllers/EmployeeController";
 import EmployeeDb from "@/database/EmployeeDb";
 import { errMsg } from "@/helpers";
 import EmployeeService from "@/services/EmployeeService";
-import generateMockEmployee from "@/tests/mockData";
+import { generateMockEmployee } from "@/tests/mockData";
 import { Context } from "koa";
 
 describe("EmployeeController", () => {

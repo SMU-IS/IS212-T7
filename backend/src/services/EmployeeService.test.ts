@@ -1,7 +1,7 @@
-import EmployeeService from "@/services/EmployeeService";
-import { errMsg } from "@/helpers";
 import EmployeeDb from "@/database/EmployeeDb";
-import generateMockEmployee from "@/tests/mockData";
+import { errMsg } from "@/helpers";
+import EmployeeService from "@/services/EmployeeService";
+import { generateMockEmployee } from "@/tests/mockData";
 
 describe("EmployeeController", () => {
   let employeeService: EmployeeService;
@@ -28,7 +28,10 @@ describe("EmployeeController", () => {
     employeeDbMock.getEmployeeByEmail.mockResolvedValue(returnValue);
 
     // Act
-    const result = await employeeService.getEmployeeByEmail(staffEmail, inputPassword);
+    const result = await employeeService.getEmployeeByEmail(
+      staffEmail,
+      inputPassword
+    );
 
     // Assert
     expect(result).toEqual({
@@ -45,7 +48,10 @@ describe("EmployeeController", () => {
     employeeDbMock.getEmployeeByEmail.mockResolvedValue(null);
 
     // Act
-    const result = await employeeService.getEmployeeByEmail(staffEmail, inputPassword);
+    const result = await employeeService.getEmployeeByEmail(
+      staffEmail,
+      inputPassword
+    );
 
     // Assert
     expect(result).toEqual(errMsg.USER_DOES_NOT_EXIST);
@@ -65,7 +71,10 @@ describe("EmployeeController", () => {
     employeeDbMock.getEmployeeByEmail.mockResolvedValue(returnValue);
 
     // Act
-    const result = await employeeService.getEmployeeByEmail(staffEmail, inputPassword);
+    const result = await employeeService.getEmployeeByEmail(
+      staffEmail,
+      inputPassword
+    );
 
     // Assert
     expect(result).toEqual(errMsg.WRONG_PASSWORD);

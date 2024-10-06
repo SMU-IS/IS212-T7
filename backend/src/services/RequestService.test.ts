@@ -1,8 +1,9 @@
-import RequestService from "@/services/RequestService";
 import RequestDb from "@/database/RequestDb";
+import RequestService from "@/services/RequestService";
+import { generateMockEmployee, mockRequest } from "@/tests/mockData";
 import { jest } from "@jest/globals";
 
-describe("RequestService", () => {
+describe("post requests", () => {
   let requestService: RequestService;
   let requestDbMock: jest.Mocked<RequestDb>;
 
@@ -115,5 +116,115 @@ describe("RequestService", () => {
     // Assert
     expect(result).toEqual(expectedResponse);
     expect(requestDbMock.postRequest).toHaveBeenCalledWith(requestDetails);
+  });
+});
+
+describe("get schedules", () => {
+  let requestService: RequestService;
+  let requestDbMock: jest.Mocked<RequestDb>;
+  let mockEmployee: any;
+
+  beforeEach(() => {
+    requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
+    requestService = new RequestService(requestDbMock);
+    mockEmployee = generateMockEmployee();
+
+    /**
+     * Mock Database Calls
+     */
+    requestDbMock.getTeamSchedule = jest.fn();
+    requestDbMock.getDeptSchedule = jest.fn();
+    requestDbMock.getCompanySchedule = jest.fn();
+
+    jest.resetAllMocks();
+  });
+
+  it("should return team schedule", async () => {
+    const { reportingManager, dept } = mockEmployee;
+    const {
+      staffId,
+      staffName,
+      requestedDate,
+      requestType,
+      reason,
+      status,
+      requestId,
+    } = mockRequest;
+
+    const returnValue: any = {
+      staffId,
+      staffName,
+      reportingManager: mockRequest.reportingManager,
+      managerName: mockRequest.managerName,
+      dept: mockRequest.dept,
+      requestedDate,
+      requestType,
+      reason,
+      status,
+      requestId,
+    };
+
+    requestDbMock.getTeamSchedule.mockResolvedValue(returnValue);
+    const result = await requestService.getTeamSchedule(reportingManager, dept);
+    expect(result).toEqual(returnValue);
+  });
+
+  it("should return department schedule", async () => {
+    const { dept } = mockEmployee;
+    const {
+      staffId,
+      staffName,
+      requestedDate,
+      requestType,
+      reason,
+      status,
+      requestId,
+    } = mockRequest;
+
+    const returnValue: any = {
+      staffId,
+      staffName,
+      reportingManager: mockRequest.reportingManager,
+      managerName: mockRequest.managerName,
+      dept: mockRequest.dept,
+      requestedDate,
+      requestType,
+      reason,
+      status,
+      requestId,
+    };
+
+    requestDbMock.getDeptSchedule.mockResolvedValue(returnValue);
+    const result = await requestService.getDeptSchedule(dept);
+    expect(result).toEqual(returnValue);
+  });
+
+  it("should return company-wide schedule", async () => {
+    const {
+      staffId,
+      staffName,
+      requestedDate,
+      requestType,
+      reason,
+      status,
+      requestId,
+    } = mockRequest;
+
+    const returnValue: any = {
+      staffId,
+      staffName,
+      reportingManager: mockRequest.reportingManager,
+      managerName: mockRequest.managerName,
+      dept: mockRequest.dept,
+      requestedDate,
+      requestType,
+      reason,
+      status,
+      requestId,
+    };
+
+    requestDbMock.getCompanySchedule.mockResolvedValue(returnValue);
+    const result = await requestService.getCompanySchedule();
+    expect(result).toEqual(returnValue);
   });
 });

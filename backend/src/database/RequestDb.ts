@@ -1,6 +1,6 @@
 import { Dept, Status } from "@/helpers";
-import Request from "@/models/Request";
-import { weekMap, checkDate } from "@/helpers/date";
+import { checkDate, weekMap } from "@/helpers/date";
+import Request, { IRequest } from "@/models/Request";
 import dayjs from "dayjs";
 
 interface RequestDetails {
@@ -20,7 +20,7 @@ interface ResponseDates {
 }
 
 class RequestDb {
-  public async getMySchedule(myId: number) {
+  public async getMySchedule(myId: number): Promise<IRequest[]> {
     const schedule = await Request.find(
       { staffId: myId },
       "-_id -createdAt -updatedAt"
