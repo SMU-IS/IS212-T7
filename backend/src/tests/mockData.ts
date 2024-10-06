@@ -1,4 +1,3 @@
-import { Dept } from "@/helpers";
 import { hashPassword } from "@/tests/utils";
 
 const generateMockEmployee = async (overrides = {}) => ({
@@ -18,13 +17,6 @@ const generateMockEmployee = async (overrides = {}) => ({
   ...overrides,
 });
 
-const staffId = {
-  [Dept.CEO]: 130002,
-  [`${Dept.SALES}_Same_Team`]: 140004,
-  [`${Dept.SALES}_Different_Team`]: 140880,
-  [Dept.ENGINEERING]: 150115,
-};
-
 const mockRequest = {
   staffId: 140003,
   staffName: "Janice Chan",
@@ -38,4 +30,4 @@ const mockRequest = {
   requestId: 22,
 };
 
-export { generateMockEmployee, mockRequest, staffId };
+export { generateMockEmployee, mockRequest };
