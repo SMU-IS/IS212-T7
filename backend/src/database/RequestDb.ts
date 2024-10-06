@@ -31,7 +31,14 @@ class RequestDb {
   public async getPendingOrApprovedRequests(myId: number) {
     const schedule = await Request.find({
       staffId: myId,
-      status: { $nin: ["CANCELLED", "WITHDRAWN", "REJECTED"] },
+      status: {
+        $nin: [
+          Status.CANCELLED,
+          Status.WITHDRAWN,
+          Status.REJECTED,
+          Status.EXPIRED,
+        ],
+      },
     });
 
     return schedule;
