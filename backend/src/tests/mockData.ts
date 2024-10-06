@@ -1,3 +1,4 @@
+import { Dept } from "@/helpers";
 import { hashPassword } from "@/tests/utils";
 
 const generateMockEmployee = async (overrides = {}) => ({
@@ -17,4 +18,24 @@ const generateMockEmployee = async (overrides = {}) => ({
   ...overrides,
 });
 
-export default generateMockEmployee;
+const staffId = {
+  [Dept.CEO]: 130002,
+  [`${Dept.SALES}_Same_Team`]: 140004,
+  [`${Dept.SALES}_Different_Team`]: 140880,
+  [Dept.ENGINEERING]: 150115,
+};
+
+const mockRequest = {
+  staffId: 140003,
+  staffName: "Janice Chan",
+  reportingManager: 140894,
+  managerName: "Rahim Khalid",
+  dept: "Sales",
+  requestedDate: "2024-10-08T00:00:00.000Z",
+  requestType: "FULL",
+  reason: "Raining",
+  status: "APPROVED",
+  requestId: 22,
+};
+
+export { generateMockEmployee, mockRequest, staffId };
