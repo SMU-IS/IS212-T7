@@ -2,7 +2,7 @@ import UtilsController from "@/controllers/UtilsController";
 import EmployeeDb from "@/database/EmployeeDb";
 import { Dept, errMsg } from "@/helpers";
 import EmployeeService from "@/services/EmployeeService";
-import { middlewareMockData, staffId } from "@/tests/middlewareMockData";
+import { middlewareMockData } from "@/tests/middlewareMockData";
 import { Context, Next } from "koa";
 import { checkSameTeam } from "./checkSameTeam";
 
@@ -30,7 +30,7 @@ describe("checkSameTeam middleware", () => {
         header: {},
       },
       query: {
-        reportingManager: staffId.Sales_Manager,
+        reportingManager: String(middlewareMockData.Sales_Manager.staffId),
         dept: Dept.SALES,
       },
     } as unknown as Context;
@@ -53,7 +53,7 @@ describe("checkSameTeam middleware", () => {
         },
       },
       query: {
-        reportingManager: String(staffId.Sales_Manager),
+        reportingManager: String(middlewareMockData.Sales_Manager.staffId),
         dept: Dept.SALES,
       },
     } as unknown as Context;
@@ -66,15 +66,15 @@ describe("checkSameTeam middleware", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("should throw an error if user attempts to fetch sales department schedule when he is from the engineering department and not a manager", async () => {
+  it("should throw an error if an ordinary engineer attempts to fetch sales department schedule", async () => {
     ctx = {
       request: {
         header: {
-          id: String(staffId.Engineering),
+          id: String(middlewareMockData.Engineering.staffId),
         },
       },
       query: {
-        reportingManager: String(staffId.Sales_Manager),
+        reportingManager: String(middlewareMockData.Sales_Manager.staffId),
         dept: Dept.SALES,
       },
     } as unknown as Context;
@@ -91,15 +91,15 @@ describe("checkSameTeam middleware", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("should throw an error if user attempts to fetch another sales team's schedule and not a manager", async () => {
+  it("should throw an error if an ordinary and different sale team user attempts to fetch other sales team's schedule", async () => {
     ctx = {
       request: {
         header: {
-          id: String(staffId.Sales_Different_Team),
+          id: String(middlewareMockData.Sales_Different_Team.staffId),
         },
       },
       query: {
-        reportingManager: String(staffId.Sales_Manager),
+        reportingManager: String(middlewareMockData.Sales_Manager.staffId),
         dept: Dept.SALES,
       },
     } as unknown as Context;
@@ -116,15 +116,15 @@ describe("checkSameTeam middleware", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("should be able to view team schedule as long as your roleId is 1", async () => {
+  it("should be able to view team schedule as long as the roleId is 1", async () => {
     ctx = {
       request: {
         header: {
-          id: String(staffId.CEO),
+          id: String(middlewareMockData.CEO.staffId),
         },
       },
       query: {
-        reportingManager: String(staffId.Sales_Manager),
+        reportingManager: String(middlewareMockData.Sales_Manager.staffId),
         dept: Dept.SALES,
       },
     } as unknown as Context;

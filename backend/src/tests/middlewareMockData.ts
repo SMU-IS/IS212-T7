@@ -1,13 +1,5 @@
 import { Dept } from "@/helpers";
 
-const staffId = {
-  [Dept.CEO]: 130002,
-  [`${Dept.SALES}_Same_Team`]: 140004,
-  [`${Dept.SALES}_Different_Team`]: 140880,
-  [Dept.ENGINEERING]: 150115,
-  [`${Dept.SALES}_Manager`]: 140894,
-};
-
 const middlewareMockData = {
   [Dept.CEO]: {
     staffId: 130002,
@@ -65,6 +57,20 @@ const middlewareMockData = {
     tempReportingManager: null,
     tempReportingManagerName: null,
   },
+  [`${Dept.SALES}_Manager`]: {
+    staffId: 140894,
+    staffFName: "Rahim",
+    staffLName: "Khalid",
+    dept: "Sales",
+    position: "Sales Manager",
+    country: "Singapore",
+    email: "Rahim.Khalid@allinone.com.sg",
+    reportingManager: 140001,
+    role: 3,
+    reportingManagerName: "Derek Tan",
+    tempReportingManager: null,
+    tempReportingManagerName: null,
+  },
 };
 
-export { middlewareMockData, staffId };
+export { middlewareMockData };
