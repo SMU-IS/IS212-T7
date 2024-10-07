@@ -1,7 +1,7 @@
-import { Dept, errMsg, successMsg, noteMsg } from "@/helpers";
+import UtilsController from "@/controllers/UtilsController";
+import { Dept, errMsg, noteMsg, successMsg } from "@/helpers";
 import { deptSchema, requestSchema, teamSchema } from "@/schema";
 import RequestService from "@/services/RequestService";
-import UtilsController from "@/controllers/UtilsController";
 import { Context } from "koa";
 
 interface ResponseMessage {
@@ -24,6 +24,18 @@ class RequestController {
 
   constructor(requestService: RequestService) {
     this.requestService = requestService;
+  }
+
+  public async getPendingRequests(ctx: Context) {
+    const { staffId } = ctx.query;
+    if (!staffId) {
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
+    }
+
+    const pendingRequests = await this.requestService.getPendingRequests(
+      Number(staffId)
+    );
+    ctx.body = pendingRequests;
   }
 
   public async getMySchedule(ctx: Context) {

@@ -1,6 +1,7 @@
 import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
 import { Dept, errMsg } from "@/helpers";
+import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
 
 class RequestService {
@@ -24,6 +25,11 @@ class RequestService {
     }
 
     return schedule;
+  }
+
+  public async getPendingRequests(staffId: number): Promise<IRequest[]> {
+    const pendingRequests = await this.requestDb.getPendingRequests(staffId);
+    return pendingRequests;
   }
 
   public async getTeamSchedule(reportingManager: number, dept: Dept) {

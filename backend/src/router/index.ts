@@ -91,6 +91,27 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
 
 /**
  * @openapi
+ * /api/v1/getPendingRequests?staffId={INSERT ID HERE}:
+ *   get:
+ *     description: Get pending request from direct subordinates
+ *     tags: [Pending Requests]
+ *     parameters:
+ *       - in: query
+ *         name: staffId
+ *         schema:
+ *           type: number
+ *         required: true
+ *         description: Returns all pending requests from direct subordinates
+ *     responses:
+ *       200:
+ *         description: Returns all pending requests from direct subordinates
+ */
+router.get("/getPendingRequests", (ctx) =>
+  requestController.getPendingRequests(ctx)
+);
+
+/**
+ * @openapi
  * /api/v1/getEmployee?staffId={INSERT ID HERE}:
  *   get:
  *     description: Get employee data
@@ -106,7 +127,6 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
  *       200:
  *         description: Returns an employee object
  */
-
 router.get("/getEmployee", (ctx) => employeeController.getEmployee(ctx));
 
 /**

@@ -28,6 +28,14 @@ class RequestDb {
     return schedule;
   }
 
+  public async getPendingRequests(staffId: number): Promise<IRequest[]> {
+    const pendingRequests = await Request.find({
+      reportingManager: staffId,
+      status: Status.PENDING,
+    });
+    return pendingRequests;
+  }
+
   public async getPendingOrApprovedRequests(myId: number) {
     const schedule = await Request.find({
       staffId: myId,
