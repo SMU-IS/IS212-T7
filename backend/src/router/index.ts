@@ -109,6 +109,7 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
 
 router.get("/getEmployee", (ctx) => employeeController.getEmployee(ctx));
 
+
 /**
  * @openapi
  * /api/v1/getMySchedule?myId={INSERT ID HERE}:

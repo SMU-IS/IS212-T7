@@ -110,7 +110,6 @@ const App = () => {
                   label: "Apply for WFH"
                 },
               },
-            
             ]}
             options={{
               syncWithLocation: true,
