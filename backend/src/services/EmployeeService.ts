@@ -29,6 +29,10 @@ class EmployeeService {
 
     return await this.employeeDb.getEmployeeByEmail(staffEmail);
   }
+
+  public async getDeptScheduleByStaffId(staffId: number) {
+    return await this.employeeDb.getDeptScheduleByStaffId(staffId);
+  }
 }
 
 export default EmployeeService;

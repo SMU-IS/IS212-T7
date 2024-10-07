@@ -185,6 +185,29 @@ router.get("/getDeptSchedule", (ctx) => requestController.getDeptSchedule(ctx));
 
 /**
  * @openapi
+ * /api/v1/getDeptScheduleByStaffId?staffId={INSERT STAFF ID HERE}:
+ *   get:
+ *     description: Get schedule for departments under current manager/director.
+ *     tags: [Schedule]
+ *     parameters:
+ *       - in: query
+ *         name: staffId
+ *         schema:
+ *           type: number
+ *         required: true
+ *         description: Retrieve list of departments under given staffId.
+ *     responses:
+ *       200:
+ *         description: Returns a request object
+ */
+router.get(
+  "/getDeptScheduleByStaffId",
+  checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
+  (ctx) => employeeController.getDeptScheduleByStaffId(ctx)
+);
+
+/**
+ * @openapi
  * /api/v1/getCompanySchedule:
  *   get:
  *     description: Get the entire company's schedule where status is approved

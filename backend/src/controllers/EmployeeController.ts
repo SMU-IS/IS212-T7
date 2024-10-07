@@ -3,6 +3,7 @@ import { errMsg } from "@/helpers";
 import { LoginBody } from "@/models/Employee";
 import EmployeeService from "@/services/EmployeeService";
 import { Context } from "koa";
+import { numberSchema } from "@/schema";
 
 class EmployeeController {
   private employeeService: EmployeeService;
@@ -69,6 +70,19 @@ class EmployeeController {
       tempReportingManager,
       tempReportingManagerName,
     };
+  }
+
+  public async getDeptScheduleByStaffId(ctx: Context) {
+    const { staffId } = ctx.query;
+    const validation = numberSchema.safeParse(staffId);
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+
+    ctx.body = await this.employeeService.getDeptScheduleByStaffId(Number(staffId));
   }
 }
 
