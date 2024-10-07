@@ -9,7 +9,24 @@ import {
   Card,
   Typography,
 } from "antd";
-import { Box, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  VStack,
+  Text,
+  List,
+  ListItem,
+  Badge,
+  useDisclosure,
+  Center,
+} from "@chakra-ui/react";
 import { useGetIdentity } from "@refinedev/core";
 import axios from "axios";
 import { EmployeeJWT } from "@/interfaces/employee";
@@ -19,8 +36,11 @@ import {
   isAtLeast24HoursAhead,
   formatDate,
   getDatesInSameWeek,
+  getSGTDate,
+  isValidWFHDeadline,
 } from "../../utils/wfh-dateUtils";
 import { validateForm } from "../../utils/wfh-validation";
+import moment from "moment-timezone";
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -30,6 +50,7 @@ export const WFHForm: React.FC = () => {
   const toast = useToast();
   const { data: user } = useGetIdentity<EmployeeJWT>();
   const [form] = Form.useForm();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [employeeData, setEmployeeData] = useState({
     name: "",
@@ -42,35 +63,40 @@ export const WFHForm: React.FC = () => {
   const [reason, setReason] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const [modalContent, setModalContent] = useState<{
+    success: { message: string; dates: [string, string][] };
+    error: { message: string; dates: [string, string][] };
+    note: { message: string; dates: [string, string][] };
+  }>({
+    success: { message: "", dates: [] },
+    error: { message: "", dates: [] },
+    note: { message: "", dates: [] },
+  });
+
   useEffect(() => {
-    if (user?.staffId) {
-      fetchEmployeeData(user.staffId);
+    if (user != undefined) {
+      fetchEmployeeData(user);
     }
   }, [user]);
 
   useEffect(() => {
-    // Update form fields when employeeData changes
     form.setFieldsValue(employeeData);
   }, [employeeData, form]);
 
-  const fetchEmployeeData = async (staffId: string) => {
+  const fetchEmployeeData = async (staff: any) => {
     try {
-      const response = await axios.get(`${backendUrl}/api/v1/getEmployee`, {
-        params: { staffId },
-        timeout: 300000,
-      });
-
       const {
         staffId: id,
-        staffFName,
-        staffLName,
+        name,
         dept,
         reportingManager,
         reportingManagerName,
-      } = response.data;
+        tempReportingManager,
+        tempReportingManagerName,
+      } = staff;
 
       const newEmployeeData = {
-        name: `${staffFName} ${staffLName}`,
+        name: name,
         staffID: id,
         dept,
         managerName: reportingManagerName,
@@ -86,7 +112,7 @@ export const WFHForm: React.FC = () => {
 
   const handleWfhDatesChange = (selectedDate: any) => {
     if (selectedDate && selectedDate.$d) {
-      const newDate = selectedDate.$d;
+      const newDate = getSGTDate(selectedDate.$d);
 
       if (!isValidDate(newDate)) return;
 
@@ -101,7 +127,6 @@ export const WFHForm: React.FC = () => {
     }
 
     if (!isAtLeast24HoursAhead(date)) {
-
       showToast(
         "Invalid date",
         "Selected date must be at least 24 hours ahead.",
@@ -110,8 +135,19 @@ export const WFHForm: React.FC = () => {
       return false;
     }
 
+    if (!isValidWFHDeadline(date)) {
+      showToast(
+        "Invalid date",
+        "This date does not meet the application deadlines.",
+        "error",
+      );
+      return false;
+    }
+
     const dateExists = wfhDates.some(
-      (wfhDate) => wfhDate.date.toDateString() === date.toDateString(),
+      (wfhDate) =>
+        getSGTDate(wfhDate.date).toDateString() ===
+        getSGTDate(date).toDateString(),
     );
     if (dateExists) {
       showToast(
@@ -132,19 +168,16 @@ export const WFHForm: React.FC = () => {
         "You have selected more than 2 WFH days for this week.",
         "info",
       );
-
     }
 
     return true;
   };
-
 
   const showToast = (
     title: string,
     description: string,
     status: "error" | "warning" | "info" | "success",
   ) => {
-
     toast({
       title,
       description,
@@ -156,7 +189,9 @@ export const WFHForm: React.FC = () => {
 
   const handleTimeOfDayChange = (index: number, timeOfDay: TimeOfDay) => {
     setWfhDates((prev) =>
-      prev.map((wfhDate, i) => (i === index ? { ...wfhDate, timeOfDay } : wfhDate))
+      prev.map((wfhDate, i) =>
+        i === index ? { ...wfhDate, timeOfDay } : wfhDate,
+      ),
     );
   };
 
@@ -164,28 +199,27 @@ export const WFHForm: React.FC = () => {
     setWfhDates((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+  const handleReasonChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
     setReason(e.target.value);
   };
 
   const handleSubmit = async (values: any) => {
     const formData: FormData = { wfhDates, reason: values.reason };
     const validationError = validateForm(formData);
-
-
     if (validationError) {
       showToast("Form Error", validationError, "error");
       return;
     }
 
     const requestedDates = wfhDates.map((wfhDate) => [
+      moment(wfhDate.date).tz("Asia/Singapore").format("YYYY-MM-DD"),
 
-      wfhDate.date.toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" }),
       wfhDate.timeOfDay,
     ]);
 
     console.log(requestedDates);
-
 
     const payload = {
       staffId: Number(employeeData.staffID),
@@ -198,29 +232,45 @@ export const WFHForm: React.FC = () => {
     };
 
     try {
-
       const response = await axios.post(
         `${backendUrl}/api/v1/postRequest`,
         payload,
       );
       // console.log('Incoming request data:', payload);
       // console.log(response.data);
-      if (response.data.success) {
+
+      const { success, error, note } = response.data;
+      setModalContent({ success, error, note });
+
+      // toast notification
+      if (!error || !error.message) {
         showToast(
           "Success",
-          "WFH application submitted successfully!",
+          "WFH application submitted successfully",
           "success",
         );
-
       } else {
-        throw new Error("Failed to submit the WFH application.");
+        showToast(
+          "Warning",
+          "THere are some issues with your WFH application",
+          "warning",
+        );
       }
+      // open application summary modal after 1 second delay
+      setTimeout(() => {
+        onOpen();
+      }, 1000);
+
+      // clear form upon submission
+      form.setFieldsValue({ wfhDates: [], reason: "" });
+      setWfhDates([]);
+      setReason("");
     } catch (error) {
       console.error("Error:", error);
 
       showToast(
         "Error",
-        "An error occurred while submitting the WFH application.",
+        "An error occured while submitting the WFH application.",
         "error",
       );
     }
@@ -231,76 +281,177 @@ export const WFHForm: React.FC = () => {
   }
 
   return (
-    <Card style={{ maxWidth: "600px", margin: "0 auto", padding: "10px" }}>
-      <Title level={2} style={{ textAlign: "center" }}>
-        Work-From-Home Application Form
-      </Title>
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        {Object.entries(employeeData).map(([key, value]) => (
+    <>
+      <Card style={{ maxWidth: "600px", margin: "0 auto", padding: "10px" }}>
+        <Title level={2} style={{ textAlign: "center" }}>
+          Work-From-Home Application Form
+        </Title>
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          {Object.entries(employeeData).map(([key, value]) => (
+            <Form.Item
+              key={key}
+              label={key
+                .replace(/([a-z])([A-Z])/g, "$1 $2")
+                .replace(/^./, (str) => str.toUpperCase())}
+              name={key}
+            >
+              <Input value={value} disabled />
+            </Form.Item>
+          ))}
+
+          <Form.Item label="Date of Application">
+            <Input
+              value={moment().tz("Asia/Singapore").format("YYYY-MM-DD")}
+              disabled
+            />
+          </Form.Item>
 
           <Form.Item
-            key={key}
-            label={key
-              .replace(/([a-z])([A-Z])/g, "$1 $2")
-              .replace(/^./, (str) => str.toUpperCase())}
-            name={key}
+            label="Select Work-From-Home Dates"
+            name="wfhDates"
+            rules={[
+              { required: true, message: "Please select work-from-home dates" },
+            ]}
           >
-            
-            <Input value={value} readOnly />
+            <DatePicker
+              onChange={handleWfhDatesChange}
+              format="YYYY-MM-DD"
+              disabledDate={(date) => date && !isWeekday(date.toDate())}
+            />
           </Form.Item>
-        ))}
 
-        <Form.Item label="Date of Application">
-          <Input value={new Date().toISOString().split("T")[0]} readOnly />
-        </Form.Item>
+          {wfhDates.map((wfhDate, index) => (
+            <Form.Item key={index} label={`Date ${index + 1}`}>
+              <Space>
+                <span>{formatDate(wfhDate.date)}</span>
+                <Select
+                  value={wfhDate.timeOfDay}
+                  onChange={(value) =>
+                    handleTimeOfDayChange(index, value as TimeOfDay)
+                  }
+                  style={{ width: 120 }}
+                >
+                  <Option value="AM">AM</Option>
+                  <Option value="PM">PM</Option>
+                  <Option value="FULL">Full Day</Option>
+                </Select>
+                <Button
+                  onClick={() => handleRemoveDate(index)}
+                  type="primary"
+                  danger
+                >
+                  Remove
+                </Button>
+              </Space>
+            </Form.Item>
+          ))}
 
-        <Form.Item
-          label="Select Work-From-Home Dates"
-          name="wfhDates"
-          rules={[{ required: true, message: "Please select work-from-home dates" }]}
-        >
-          <DatePicker
-            onChange={handleWfhDatesChange}
-            format="YYYY-MM-DD"
-            disabledDate={(date) => date && !isWeekday(date.toDate())}
-          />
-        </Form.Item>
-
-        {wfhDates.map((wfhDate, index) => (
-          <Form.Item key={index} label={`Date ${index + 1}`}>
-            <Space>
-              <span>{formatDate(wfhDate.date)}</span>
-              <Select
-                value={wfhDate.timeOfDay}
-                onChange={(value) => handleTimeOfDayChange(index, value as TimeOfDay)}
-                style={{ width: 120 }}
-              >
-                <Option value="AM">AM</Option>
-                <Option value="PM">PM</Option>
-                <Option value="FULL">Full Day</Option>
-              </Select>
-              <Button onClick={() => handleRemoveDate(index)} type="primary" danger>
-                Remove
-              </Button>
-            </Space>
+          <Form.Item
+            label="Reason for Work-From-Home"
+            name="reason"
+            rules={[{ required: true, message: "Please provide a reason" }]}
+          >
+            <Input.TextArea rows={4} />
           </Form.Item>
-        ))}
 
-        <Form.Item
-          label="Reason for Work-From-Home"
-          name="reason"
-          rules={[{ required: true, message: "Please provide a reason" }]}
-        >
-          <Input.TextArea rows={4} />
-        </Form.Item>
-
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
-        </Form.Item>
-      </Form>
-    </Card>
+          <Form.Item style={{ display: "flex", justifyContent: "center" }}>
+            <Button type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
+      <Modal isOpen={isOpen} onClose={onClose} size="lg">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            WFH Application Summary
+          </ModalHeader>
+          <ModalBody>
+            <VStack align="stretch" spacing={4}>
+              {modalContent.success.message && (
+                <Box>
+                  <Text fontWeight="bold" color="green.500">
+                    Success:
+                  </Text>
+                  <Text>{modalContent.success.message}</Text>
+                  {modalContent.success.dates.length > 0 && (
+                    <List mt={2}>
+                      {modalContent.success.dates.map(
+                        ([date, timeOfDay], index) => (
+                          <ListItem key={index}>
+                            {date} -{" "}
+                            <Badge colorScheme="green">{timeOfDay}</Badge>
+                          </ListItem>
+                        ),
+                      )}
+                    </List>
+                  )}
+                </Box>
+              )}
+              {modalContent.error.message && (
+                <Box>
+                  <Text fontWeight="bold" color="red.500">
+                    Error:
+                  </Text>
+                  <Text>{modalContent.error.message}</Text>
+                  {modalContent.error.dates.length > 0 && (
+                    <List mt={2}>
+                      {modalContent.error.dates.map(
+                        ([date, timeOfDay], index) => (
+                          <ListItem key={index}>
+                            {date} -{" "}
+                            <Badge colorScheme="red">{timeOfDay}</Badge>
+                          </ListItem>
+                        ),
+                      )}
+                    </List>
+                  )}
+                  <Text>
+                    {" "}
+                    <br />
+                    <i>
+                      Kindly cancel the existing request for these day(s) and
+                      submit a new application.
+                    </i>
+                  </Text>
+                </Box>
+              )}
+              {modalContent.note.message && (
+                <Box>
+                  <Text fontWeight="bold" color="orange.500">
+                    Note:
+                  </Text>
+                  <Text>{modalContent.note.message}</Text>
+                  {modalContent.note.dates.length > 0 && (
+                    <List mt={2}>
+                      {modalContent.note.dates.map(
+                        ([date, timeOfDay], index) => (
+                          <ListItem key={index}>
+                            {date} -{" "}
+                            <Badge colorScheme="orange">{timeOfDay}</Badge>
+                          </ListItem>
+                        ),
+                      )}
+                    </List>
+                  )}
+                </Box>
+              )}
+            </VStack>
+          </ModalBody>
+          <ModalFooter justifyContent={"center"}>
+            <Button style={{ marginRight: "12px" }} onClick={onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
-
