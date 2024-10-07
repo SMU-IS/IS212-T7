@@ -1,7 +1,14 @@
+import UtilsController from "@/controllers/UtilsController";
+import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
+import { AccessControl, errMsg } from "@/helpers";
+import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import RequestService from "@/services/RequestService";
+import { middlewareMockData } from "@/tests/middlewareMockData";
 import { generateMockEmployee, mockRequestData } from "@/tests/mockData";
 import { jest } from "@jest/globals";
+import { Context, Next } from "koa";
+import EmployeeService from "./EmployeeService";
 
 describe("post requests", () => {
   let requestService: RequestService;
@@ -120,19 +127,69 @@ describe("post requests", () => {
 });
 
 describe("get pending requests", () => {
+  let employeeDbMock: EmployeeDb;
+  let employeeServiceMock: jest.Mocked<EmployeeService>;
   let requestService: RequestService;
   let requestDbMock: jest.Mocked<RequestDb>;
+  let ctx: Context;
+  let next: Next;
+  const checkUserRolePermMiddleware = checkUserRolePermission(
+    AccessControl.VIEW_PENDING_REQUEST
+  );
 
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     requestService = new RequestService(requestDbMock);
 
+    employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    employeeServiceMock = new EmployeeService(
+      employeeDbMock
+    ) as jest.Mocked<EmployeeService>;
+
     /**
      * Mock Database Calls
      */
     requestDbMock.getPendingRequests = jest.fn();
+    next = jest.fn() as any;
+    EmployeeService.prototype.getEmployee = jest.fn() as any;
+    UtilsController.throwAPIError = jest.fn();
 
     jest.resetAllMocks();
+  });
+
+  it("should not return pending requests because of missing headers", async () => {
+    ctx = {
+      request: {
+        header: {},
+      },
+    } as unknown as Context;
+    ctx.request.header.id = undefined;
+
+    await checkUserRolePermMiddleware(ctx, next);
+    expect(UtilsController.throwAPIError).toHaveBeenCalledWith(
+      ctx,
+      errMsg.MISSING_HEADER
+    );
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("should not return pending requests because user is unauthorised", async () => {
+    ctx = {
+      request: {
+        header: {},
+      },
+    } as unknown as Context;
+    ctx.request.header.id = String(middlewareMockData.Engineering.staffId);
+
+    employeeServiceMock.getEmployee.mockResolvedValue(
+      middlewareMockData.Engineering as any
+    );
+    await checkUserRolePermMiddleware(ctx, next);
+    expect(UtilsController.throwAPIError).toHaveBeenCalledWith(
+      ctx,
+      errMsg.UNAUTHORISED
+    );
+    expect(next).not.toHaveBeenCalled();
   });
 
   it("should return user's direct subordinates pending requests", async () => {

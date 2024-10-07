@@ -27,13 +27,9 @@ class RequestController {
   }
 
   public async getPendingRequests(ctx: Context) {
-    const { staffId } = ctx.query;
-    if (!staffId) {
-      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
-    }
-
+    const { id } = ctx.request.header;
     const pendingRequests = await this.requestService.getPendingRequests(
-      Number(staffId)
+      Number(id)
     );
     ctx.body = pendingRequests;
   }

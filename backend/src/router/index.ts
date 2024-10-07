@@ -91,23 +91,25 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
 
 /**
  * @openapi
- * /api/v1/getPendingRequests?staffId={INSERT ID HERE}:
+ * /api/v1/getPendingRequests:
  *   get:
  *     description: Get pending request from direct subordinates
  *     tags: [Pending Requests]
  *     parameters:
- *       - in: query
- *         name: staffId
+ *       - in: header
+ *         name: id
  *         schema:
- *           type: number
+ *           type: string
  *         required: true
- *         description: Returns all pending requests from direct subordinates
+ *         description: User's staffId
  *     responses:
  *       200:
  *         description: Returns all pending requests from direct subordinates
  */
-router.get("/getPendingRequests", (ctx) =>
-  requestController.getPendingRequests(ctx)
+router.get(
+  "/getPendingRequests",
+  checkUserRolePermission(AccessControl.VIEW_PENDING_REQUEST),
+  (ctx) => requestController.getPendingRequests(ctx)
 );
 
 /**

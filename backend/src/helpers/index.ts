@@ -24,13 +24,22 @@ const successMsg = "Selected dates submitted successfully.";
 enum AccessControl {
   VIEW_OWN_SCHEDULE = "VIEW_OWN_SCHEDULE",
   VIEW_OVERALL_SCHEDULE = "VIEW_OVERALL_SCHEDULE",
+  VIEW_PENDING_REQUEST = "VIEW_PENDING_REQUEST",
 }
 
 // TODO: Add more permission
 const PERMISSIONS: Record<string, string[]> = {
-  1: [AccessControl.VIEW_OWN_SCHEDULE, AccessControl.VIEW_OVERALL_SCHEDULE],
+  1: [
+    AccessControl.VIEW_OWN_SCHEDULE,
+    AccessControl.VIEW_OVERALL_SCHEDULE,
+    AccessControl.VIEW_PENDING_REQUEST,
+  ],
   2: [AccessControl.VIEW_OWN_SCHEDULE],
-  3: [AccessControl.VIEW_OWN_SCHEDULE, AccessControl.VIEW_OVERALL_SCHEDULE],
+  3: [
+    AccessControl.VIEW_OWN_SCHEDULE,
+    AccessControl.VIEW_OVERALL_SCHEDULE,
+    AccessControl.VIEW_PENDING_REQUEST,
+  ],
 };
 
 enum RequestType {
@@ -67,6 +76,6 @@ export {
   Role,
   Status,
   errMsg,
-  successMsg,
   noteMsg,
+  successMsg,
 };
