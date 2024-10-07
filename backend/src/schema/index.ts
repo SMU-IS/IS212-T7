@@ -10,10 +10,10 @@ const numberSchema = z.string().transform((val) => {
 });
 
 const requestSchema = z.object({
-  staffId: z.number(), 
-  staffName: z.string(), 
-  reportingManager: z.number(), 
-  managerName: z.string(), 
+  staffId: z.number(),
+  staffName: z.string(),
+  reportingManager: z.number(),
+  managerName: z.string(),
   dept: z.nativeEnum(Dept),
   requestedDates: z.array(z.tuple([z.string(), z.string()])),
   reason: z.string(),
@@ -21,6 +21,7 @@ const requestSchema = z.object({
 
 const teamSchema = z.object({
   reportingManager: z.string(),
+  dept: z.string(),
 });
 
 const deptSchema = z.object({

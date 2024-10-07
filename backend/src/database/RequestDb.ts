@@ -1,6 +1,7 @@
 import { Dept, Status } from "@/helpers";
-import Request from "@/models/Request";
-import { weekMap, checkDate } from "@/helpers/date";
+import { checkDate, weekMap } from "@/helpers/date";
+import Request, { IRequest } from "@/models/Request";
+import dayjs from "dayjs";
 
 interface RequestDetails {
   staffId: number;
@@ -8,18 +9,18 @@ interface RequestDetails {
   reportingManager: number;
   managerName: string;
   dept: string;
-  requestedDates: [Date, string][];
+  requestedDates: [string, string][];
   reason: string;
 }
 
 interface ResponseDates {
-  successDates: [Date, string][];
-  noteDates: [Date, string][];
-  errorDates: [Date, string][];
+  successDates: [string, string][];
+  noteDates: [string, string][];
+  errorDates: [string, string][];
 }
 
 class RequestDb {
-  public async getMySchedule(myId: number) {
+  public async getMySchedule(myId: number): Promise<IRequest[]> {
     const schedule = await Request.find(
       { staffId: myId },
       "-_id -createdAt -updatedAt"
@@ -30,16 +31,24 @@ class RequestDb {
   public async getPendingOrApprovedRequests(myId: number) {
     const schedule = await Request.find({
       staffId: myId,
-      status: { $nin: ["CANCELLED", "WITHDRAWN", "REJECTED"] },
+      status: {
+        $nin: [
+          Status.CANCELLED,
+          Status.WITHDRAWN,
+          Status.REJECTED,
+          Status.EXPIRED,
+        ],
+      },
     });
 
     return schedule;
   }
 
-  public async getTeamSchedule(reportingManager: number) {
+  public async getTeamSchedule(reportingManager: number, dept: Dept) {
     const teamSchedule = await Request.find(
       {
         reportingManager,
+        dept,
         status: Status.APPROVED,
       },
       "-_id -createdAt -updatedAt"
@@ -109,6 +118,21 @@ class RequestDb {
       }
     }
     return responseDates;
+  }
+
+  public async updateRequestStatusToExpired(): Promise<void> {
+    const now = dayjs().utc(true).startOf("day");
+    await Request.updateMany(
+      {
+        status: Status.PENDING,
+        requestedDate: now.toDate(),
+      },
+      {
+        $set: {
+          status: Status.EXPIRED,
+        },
+      }
+    );
   }
 }
 

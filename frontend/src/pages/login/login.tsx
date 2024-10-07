@@ -7,6 +7,7 @@ const Login = () => {
     <AuthPage
       type="login"
       registerLink={false}
+      forgotPasswordLink={false}
       wrapperProps={{
         style: {
           background: "#131049",

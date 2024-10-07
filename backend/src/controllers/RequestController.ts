@@ -7,15 +7,15 @@ import { Context } from "koa";
 interface ResponseMessage {
   success: {
     message: string;
-    dates: [Date, string][];
+    dates: [string, string][];
   };
   note: {
     message: string;
-    dates: [Date, string][];
+    dates: [string, string][];
   };
   error: {
     message: string;
-    dates: [Date, string][];
+    dates: [string, string][];
   };
 }
 
@@ -37,8 +37,11 @@ class RequestController {
   }
 
   public async getTeamSchedule(ctx: Context) {
-    const { reportingManager } = ctx.query;
-    const validation = teamSchema.safeParse({ reportingManager });
+    const { reportingManager, dept } = ctx.query;
+    const validation =
+      teamSchema.safeParse({ reportingManager }) &&
+      deptSchema.safeParse({ dept });
+
     if (!validation.success) {
       ctx.body = {
         errMsg: validation.error.format(),
@@ -47,7 +50,8 @@ class RequestController {
     }
 
     const result = await this.requestService.getTeamSchedule(
-      Number(reportingManager)
+      Number(reportingManager),
+      dept as Dept
     );
     ctx.body = result;
   }

@@ -26,8 +26,11 @@ class RequestService {
     return schedule;
   }
 
-  public async getTeamSchedule(reportingManager: number) {
-    const teamSchedule = await this.requestDb.getTeamSchedule(reportingManager);
+  public async getTeamSchedule(reportingManager: number, dept: Dept) {
+    const teamSchedule = await this.requestDb.getTeamSchedule(
+      reportingManager,
+      dept
+    );
     return teamSchedule;
   }
 

@@ -10,8 +10,24 @@ const generateMockEmployee = async (overrides = {}) => ({
   email: "test@example.com",
   hashedPassword: await hashPassword("test-password"),
   reportingManager: null,
+  reportingManagerName: null,
   role: 1,
+  tempReportingManager: null,
+  tempReportingManagerName: null,
   ...overrides,
 });
 
-export default generateMockEmployee;
+const mockRequest = {
+  staffId: 140003,
+  staffName: "Janice Chan",
+  reportingManager: 140894,
+  managerName: "Rahim Khalid",
+  dept: "Sales",
+  requestedDate: "2024-10-08T00:00:00.000Z",
+  requestType: "FULL",
+  reason: "Raining",
+  status: "APPROVED",
+  requestId: 22,
+};
+
+export { generateMockEmployee, mockRequest };

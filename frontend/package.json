@@ -19,6 +19,7 @@
     "@refinedev/simple-rest": "^5.0.1",
     "@schedule-x/calendar": "^1.63.1",
     "@schedule-x/event-modal": "^1.63.1",
+    "@schedule-x/events-service": "^2.2.1",
     "@schedule-x/react": "^1.63.1",
     "@schedule-x/theme-default": "^1.63.1",
     "@uiw/react-md-editor": "^3.19.5",
@@ -36,8 +37,8 @@
     "@commitlint/config-conventional": "^19.4.1",
     "@tanstack/react-query": "^5.56.2",
     "@testing-library/dom": "^10.4.0",
-    "@testing-library/react": "^16.0.1",
     "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.5.2",
     "@types/jest": "^29.5.13",
     "@types/node": "^18.16.2",
@@ -46,6 +47,7 @@
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
     "@vitejs/plugin-react": "^4.0.0",
+    "@vitest/coverage-v8": "^2.1.1",
     "eslint": "^8.38.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
@@ -56,7 +58,8 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2",
-    "vite": "^4.3.1"
+    "vite": "^4.3.1",
+    "vitest": "^2.1.1"
   },
   "scripts": {
     "dev": "refine dev",
@@ -64,7 +67,7 @@
     "start": "refine start",
     "refine": "refine",
     "prettier": "npx prettier . --write",
-    "test": "jest --coverage"
+    "test": "vitest --coverage"
   },
   "browserslist": {
     "production": [
