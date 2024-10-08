@@ -1,4 +1,4 @@
-import { Dept, Status } from "@/helpers";
+import { Dept, HttpStatusResponse, Status } from "@/helpers";
 import { checkDate, weekMap } from "@/helpers/date";
 import Request, { IRequest } from "@/models/Request";
 import dayjs from "dayjs";
@@ -133,6 +133,39 @@ class RequestDb {
         },
       }
     );
+  }
+
+  public async getRequestByRequestId(requestId: number) {
+    const requestDetail = await Request.findOne(
+      {
+        requestId,
+        status: Status.PENDING,
+      },
+      "-_id -createdAt -updatedAt"
+    );
+    return requestDetail;
+  }
+
+  public async approveRequest(
+    performedBy: number,
+    requestId: number
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.APPROVED,
+          performedBy: performedBy,
+        },
+      }
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
   }
 }
 

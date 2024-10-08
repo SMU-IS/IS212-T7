@@ -1,6 +1,6 @@
 import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
-import { Dept, errMsg } from "@/helpers";
+import { Dept, errMsg, HttpStatusResponse } from "@/helpers";
 import EmployeeService from "./EmployeeService";
 
 class RequestService {
@@ -47,6 +47,36 @@ class RequestService {
   public async postRequest(requestDetails: any) {
     const requestInsert = await this.requestDb.postRequest(requestDetails);
     return requestInsert;
+  }
+
+  public async getRequestByRequestId(requestId: number) {
+    const requestDetail = await this.requestDb.getRequestByRequestId(requestId);
+    return requestDetail;
+  }
+
+  public async approveRequest(
+    performedBy: number,
+    requestId: number
+  ): Promise<string | null> {
+    const request = await this.requestDb.getRequestByRequestId(requestId);
+    if (!request) {
+      return null;
+    }
+    const employee = await this.employeeDb.getEmployee(request.staffId);
+    if (!employee) {
+      return null;
+    }
+    if (
+      employee.reportingManager !== performedBy &&
+      employee.tempReportingManager !== performedBy
+    ) {
+      return null;
+    }
+    const result = await this.requestDb.approveRequest(performedBy, requestId);
+    if (!result) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
   }
 }
 

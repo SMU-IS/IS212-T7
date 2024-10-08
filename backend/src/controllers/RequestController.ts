@@ -1,5 +1,16 @@
-import { Dept, errMsg, successMsg, noteMsg } from "@/helpers";
-import { deptSchema, requestSchema, teamSchema } from "@/schema";
+import {
+  Dept,
+  errMsg,
+  HttpStatusResponse,
+  noteMsg,
+  successMsg,
+} from "@/helpers";
+import {
+  deptSchema,
+  requestSchema,
+  teamSchema,
+  approvalSchema,
+} from "@/schema";
 import RequestService from "@/services/RequestService";
 import UtilsController from "@/controllers/UtilsController";
 import { Context } from "koa";
@@ -113,6 +124,26 @@ class RequestController {
     }
 
     ctx.body = responseMessage;
+  }
+
+  public async approveRequest(ctx: Context) {
+    const approvalDetails = ctx.request.body;
+    const validation = approvalSchema.safeParse(approvalDetails);
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+    const { performedBy, requestId } = approvalDetails as any;
+    const result = await this.requestService.approveRequest(
+      Number(performedBy),
+      Number(requestId)
+    );
+    ctx.body =
+      result == HttpStatusResponse.OK
+        ? HttpStatusResponse.OK
+        : HttpStatusResponse.NOT_MODIFIED;
   }
 }
 
