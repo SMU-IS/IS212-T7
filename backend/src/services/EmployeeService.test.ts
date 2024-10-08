@@ -3,7 +3,7 @@ import { errMsg } from "@/helpers";
 import EmployeeService from "@/services/EmployeeService";
 import { generateMockEmployee } from "@/tests/mockData";
 
-describe("EmployeeController", () => {
+describe("EmployeeService", () => {
   let employeeService: EmployeeService;
   let employeeDbMock: jest.Mocked<EmployeeDb>;
   let mockEmployee: any;
