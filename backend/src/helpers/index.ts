@@ -1,3 +1,9 @@
+enum HttpStatusResponse {
+  OK = "OK",
+  NOT_MODIFIED = "NOT_MODIFIED",
+  UNKNOWN_ERROR = "UNKNOWN_ERROR",
+}
+
 enum Role {
   HR = 1,
   Staff = 2,
@@ -71,6 +77,7 @@ enum Dept {
 export {
   AccessControl,
   Dept,
+  HttpStatusResponse,
   PERMISSIONS,
   RequestType,
   Role,
