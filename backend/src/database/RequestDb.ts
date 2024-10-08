@@ -43,7 +43,9 @@ class RequestDb {
     });
     return pendingRequests;
 
-public async cancelPendingRequests(
+  }
+
+  public async cancelPendingRequests(
     staffId: number,
     requestId: number
   ): Promise<string | null> {
