@@ -114,6 +114,27 @@ router.get(
 
 /**
  * @openapi
+ * /api/v1/getOwnPendingRequests?myId={INSERT ID HERE}:
+ *   get:
+ *     description: Get own pending request
+ *     tags: [Pending Requests]
+ *     parameters:
+ *       - in: query
+ *         name: myId
+ *         schema:
+ *           type: number
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200: 
+ *         description: Returns own pending requests
+ */
+router.get("/getOwnPendingRequests", (ctx) =>
+  requestController.getOwnPendingRequests(ctx)
+);
+
+/**
+ * @openapi
  * /api/v1/getEmployee?staffId={INSERT ID HERE}:
  *   get:
  *     description: Get employee data
@@ -130,7 +151,6 @@ router.get(
  *         description: Returns an employee object
  */
 router.get("/getEmployee", (ctx) => employeeController.getEmployee(ctx));
-
 
 /**
  * @openapi

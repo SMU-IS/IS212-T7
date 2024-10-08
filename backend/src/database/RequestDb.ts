@@ -36,6 +36,14 @@ class RequestDb {
     return pendingRequests;
   }
 
+  public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
+    const pendingRequests = await Request.find({
+      staffId: myId,
+      status: Status.PENDING,
+    });
+    return pendingRequests;
+  }
+
   public async getPendingOrApprovedRequests(myId: number) {
     const schedule = await Request.find({
       staffId: myId,

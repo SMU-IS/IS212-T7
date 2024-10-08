@@ -32,6 +32,11 @@ class RequestService {
     return pendingRequests;
   }
 
+  public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
+    const pendingRequests = await this.requestDb.getOwnPendingRequests(myId);
+    return pendingRequests;
+  }
+
   public async getTeamSchedule(reportingManager: number, dept: Dept) {
     const teamSchedule = await this.requestDb.getTeamSchedule(
       reportingManager,

@@ -34,6 +34,17 @@ class RequestController {
     ctx.body = pendingRequests;
   }
 
+  public async getOwnPendingRequests(ctx: Context) {
+    const { myId } = ctx.query;
+    if (!myId) {
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
+    }
+    const pendingRequests = await this.requestService.getOwnPendingRequests(
+      Number(myId)
+    );
+    ctx.body = pendingRequests;
+  }
+
   public async getMySchedule(ctx: Context) {
     const { myId } = ctx.query;
     if (!myId) {
