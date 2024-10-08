@@ -1,3 +1,4 @@
+import { Status } from "@/helpers";
 import { hashPassword } from "@/tests/utils";
 
 const generateMockEmployee = async (overrides = {}) => ({
@@ -17,17 +18,31 @@ const generateMockEmployee = async (overrides = {}) => ({
   ...overrides,
 });
 
-const mockRequest = {
-  staffId: 140003,
-  staffName: "Janice Chan",
-  reportingManager: 140894,
-  managerName: "Rahim Khalid",
-  dept: "Sales",
-  requestedDate: "2024-10-08T00:00:00.000Z",
-  requestType: "FULL",
-  reason: "Raining",
-  status: "APPROVED",
-  requestId: 22,
+const mockRequestData = {
+  [Status.PENDING]: {
+    staffId: 140003,
+    staffName: "Janice Chan",
+    reportingManager: 140894,
+    managerName: "Rahim Khalid",
+    dept: "Sales",
+    requestedDate: "2024-10-08T00:00:00.000Z",
+    requestType: "FULL",
+    reason: "Raining",
+    status: "PENDING",
+    requestId: 22,
+  },
+  [Status.APPROVED]: {
+    staffId: 140003,
+    staffName: "Janice Chan",
+    reportingManager: 140894,
+    managerName: "Rahim Khalid",
+    dept: "Sales",
+    requestedDate: "2024-10-08T00:00:00.000Z",
+    requestType: "FULL",
+    reason: "Raining",
+    status: "APPROVED",
+    requestId: 22,
+  },
 };
 
-export { generateMockEmployee, mockRequest };
+export { generateMockEmployee, mockRequestData };

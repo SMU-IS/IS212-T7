@@ -1,3 +1,4 @@
+import UtilsController from "@/controllers/UtilsController";
 import {
   Dept,
   errMsg,
@@ -12,7 +13,6 @@ import {
   approvalSchema,
 } from "@/schema";
 import RequestService from "@/services/RequestService";
-import UtilsController from "@/controllers/UtilsController";
 import { Context } from "koa";
 
 interface ResponseMessage {
@@ -35,6 +35,38 @@ class RequestController {
 
   constructor(requestService: RequestService) {
     this.requestService = requestService;
+  }
+
+  public async cancelPendingRequests(ctx: Context) {
+    const { staffId, requestId } = ctx.request.body as any;
+    const result = await this.requestService.cancelPendingRequests(
+      Number(staffId),
+      Number(requestId)
+    );
+
+    ctx.body =
+      result == HttpStatusResponse.OK
+        ? HttpStatusResponse.OK
+        : HttpStatusResponse.NOT_MODIFIED;
+  }
+
+  public async getPendingRequests(ctx: Context) {
+    const { id } = ctx.request.header;
+    const pendingRequests = await this.requestService.getPendingRequests(
+      Number(id)
+    );
+    ctx.body = pendingRequests;
+  }
+
+  public async getOwnPendingRequests(ctx: Context) {
+    const { myId } = ctx.query;
+    if (!myId) {
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
+    }
+    const pendingRequests = await this.requestService.getOwnPendingRequests(
+      Number(myId)
+    );
+    ctx.body = pendingRequests;
   }
 
   public async getMySchedule(ctx: Context) {

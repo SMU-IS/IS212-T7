@@ -1,6 +1,7 @@
 import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
 import { Dept, errMsg, HttpStatusResponse } from "@/helpers";
+import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
 
 class RequestService {
@@ -24,6 +25,32 @@ class RequestService {
     }
 
     return schedule;
+  }
+
+  public async cancelPendingRequests(
+    staffId: number,
+    requestId: number
+  ): Promise<string | null> {
+    const result = await this.requestDb.cancelPendingRequests(
+      staffId,
+      requestId
+    );
+
+    if (!result) {
+      return null;
+    }
+
+    return HttpStatusResponse.OK;
+  }
+
+  public async getPendingRequests(staffId: number): Promise<IRequest[]> {
+    const pendingRequests = await this.requestDb.getPendingRequests(staffId);
+    return pendingRequests;
+  }
+
+  public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
+    const pendingRequests = await this.requestDb.getOwnPendingRequests(myId);
+    return pendingRequests;
   }
 
   public async getTeamSchedule(reportingManager: number, dept: Dept) {

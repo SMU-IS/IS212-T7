@@ -28,6 +28,46 @@ class RequestDb {
     return schedule;
   }
 
+  public async getPendingRequests(staffId: number): Promise<IRequest[]> {
+    const pendingRequests = await Request.find({
+      reportingManager: staffId,
+      status: Status.PENDING,
+    });
+    return pendingRequests;
+  }
+
+  public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
+    const pendingRequests = await Request.find({
+      staffId: myId,
+      status: Status.PENDING,
+    });
+    return pendingRequests;
+  }
+
+  public async cancelPendingRequests(
+    staffId: number,
+    requestId: number
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        staffId,
+        requestId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.CANCELLED,
+        },
+      }
+    );
+
+    if (modifiedCount == 0) {
+      return null;
+    }
+
+    return HttpStatusResponse.OK;
+  }
+
   public async getPendingOrApprovedRequests(myId: number) {
     const schedule = await Request.find({
       staffId: myId,
