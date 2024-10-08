@@ -91,6 +91,33 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
 
 /**
  * @openapi
+ * /api/v1/cancelPendingRequests:
+ *   post:
+ *     description: Cancel user's own pending requests
+ *     tags: [Pending Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               staffId:
+ *                 type: number
+ *                 description: The user's own staffId
+ *               requestId:
+ *                 type: string
+ *                 description: RequestId to be cancelled
+ *             required:
+ *               - staffId
+ *               - requestId
+ */
+router.post("/cancelPendingRequests", (ctx) =>
+  requestController.cancelPendingRequests(ctx)
+);
+
+/**
+ * @openapi
  * /api/v1/getPendingRequests:
  *   get:
  *     description: Get pending request from direct subordinates

@@ -1,5 +1,11 @@
 import UtilsController from "@/controllers/UtilsController";
-import { Dept, errMsg, noteMsg, successMsg } from "@/helpers";
+import {
+  Dept,
+  errMsg,
+  HttpStatusResponse,
+  noteMsg,
+  successMsg,
+} from "@/helpers";
 import { deptSchema, requestSchema, teamSchema } from "@/schema";
 import RequestService from "@/services/RequestService";
 import { Context } from "koa";
@@ -24,6 +30,19 @@ class RequestController {
 
   constructor(requestService: RequestService) {
     this.requestService = requestService;
+  }
+
+  public async cancelPendingRequests(ctx: Context) {
+    const { staffId, requestId } = ctx.request.body as any;
+    const result = await this.requestService.cancelPendingRequests(
+      Number(staffId),
+      Number(requestId)
+    );
+
+    ctx.body =
+      result == HttpStatusResponse.OK
+        ? HttpStatusResponse.OK
+        : HttpStatusResponse.NOT_MODIFIED;
   }
 
   public async getPendingRequests(ctx: Context) {

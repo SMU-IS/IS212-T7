@@ -1,4 +1,4 @@
-import { Dept, Status } from "@/helpers";
+import { Dept, HttpStatusResponse, Status } from "@/helpers";
 import { checkDate, weekMap } from "@/helpers/date";
 import Request, { IRequest } from "@/models/Request";
 import dayjs from "dayjs";
@@ -42,6 +42,30 @@ class RequestDb {
       status: Status.PENDING,
     });
     return pendingRequests;
+
+public async cancelPendingRequests(
+    staffId: number,
+    requestId: number
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        staffId,
+        requestId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.CANCELLED,
+        },
+      }
+    );
+
+    if (modifiedCount == 0) {
+      return null;
+    }
+
+    return HttpStatusResponse.OK;
+
   }
 
   public async getPendingOrApprovedRequests(myId: number) {

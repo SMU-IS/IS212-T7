@@ -1,7 +1,7 @@
 import UtilsController from "@/controllers/UtilsController";
 import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
-import { AccessControl, errMsg } from "@/helpers";
+import { AccessControl, errMsg, HttpStatusResponse } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import RequestService from "@/services/RequestService";
 import { middlewareMockData } from "@/tests/middlewareMockData";
@@ -123,6 +123,47 @@ describe("post requests", () => {
     // Assert
     expect(result).toEqual(expectedResponse);
     expect(requestDbMock.postRequest).toHaveBeenCalledWith(requestDetails);
+  });
+});
+
+describe("cancel pending requests", () => {
+  let requestService: RequestService;
+  let requestDbMock: jest.Mocked<RequestDb>;
+
+  beforeEach(() => {
+    requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
+    requestService = new RequestService(requestDbMock);
+
+    /**
+     * Mock Database Calls
+     */
+    requestDbMock.cancelPendingRequests = jest.fn();
+    EmployeeService.prototype.getEmployee = jest.fn() as any;
+    UtilsController.throwAPIError = jest.fn();
+
+    jest.resetAllMocks();
+  });
+
+  it("should return status not modified if there is no pending request", async () => {
+    const { staffId, requestId } = mockRequestData.APPROVED;
+    requestDbMock.cancelPendingRequests.mockResolvedValue(null);
+    const result = await requestService.cancelPendingRequests(
+      staffId,
+      requestId
+    );
+    expect(result).toEqual(null);
+  });
+
+  it("should cancel user's pending request", async () => {
+    const { staffId, requestId } = mockRequestData.PENDING;
+    requestDbMock.cancelPendingRequests.mockResolvedValue(
+      mockRequestData.APPROVED as any
+    );
+    const result = await requestService.cancelPendingRequests(
+      staffId,
+      requestId
+    );
+    expect(result).toEqual(HttpStatusResponse.OK);
   });
 });
 
