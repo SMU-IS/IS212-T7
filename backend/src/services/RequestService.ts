@@ -75,6 +75,41 @@ class RequestService {
     const requestInsert = await this.requestDb.postRequest(requestDetails);
     return requestInsert;
   }
+
+  public async getRequestByRequestId(requestId: number) {
+    const requestDetail = await this.requestDb.getRequestByRequestId(requestId);
+    return requestDetail;
+  }
+
+  public async rejectRequest(
+    performedBy: number,
+    requestId: number,
+    reason: string
+  ): Promise<string | null> {
+    const request = await this.requestDb.getRequestByRequestId(requestId);
+    if (!request) {
+      return null;
+    }
+    const employee = await this.employeeDb.getEmployee(request.staffId);
+    if (!employee) {
+      return null;
+    }
+    if (
+      employee.reportingManager !== performedBy &&
+      employee.tempReportingManager !== performedBy
+    ) {
+      return null;
+    }
+    const result = await this.requestDb.rejectRequest(
+      performedBy,
+      requestId,
+      reason
+    );
+    if (!result) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
 }
 
 export default RequestService;

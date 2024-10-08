@@ -13,6 +13,7 @@ export interface IRequest {
   requestType: RequestType;
   reason: string;
   status: Status;
+  performedBy: number | null;
 }
 
 const Schema = mongoose.Schema;
@@ -42,6 +43,11 @@ const RequestSchema = new Schema<IRequest>(
       required: true,
       enum: ["PENDING", "APPROVED", "REJECTED", "CANCELLED", "WITHDRAWN"],
       default: Status.PENDING,
+    },
+    performedBy: {
+      type: Number,
+      ref: "Employee",
+      required: false,
     },
   },
   {

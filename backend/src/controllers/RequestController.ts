@@ -6,7 +6,12 @@ import {
   noteMsg,
   successMsg,
 } from "@/helpers";
-import { deptSchema, requestSchema, teamSchema } from "@/schema";
+import {
+  deptSchema,
+  requestSchema,
+  teamSchema,
+  rejectionSchema,
+} from "@/schema";
 import RequestService from "@/services/RequestService";
 import { Context } from "koa";
 
@@ -151,6 +156,28 @@ class RequestController {
     }
 
     ctx.body = responseMessage;
+  }
+
+  public async rejectRequest(ctx: Context) {
+    const rejectionDetails = ctx.request.body;
+    const validation = rejectionSchema.safeParse(rejectionDetails);
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+    const { performedBy, requestId, reason } = rejectionDetails as any;
+
+    const result = await this.requestService.rejectRequest(
+      Number(performedBy),
+      Number(requestId),
+      reason
+    );
+    ctx.body =
+      result == HttpStatusResponse.OK
+        ? HttpStatusResponse.OK
+        : HttpStatusResponse.NOT_MODIFIED;
   }
 }
 
