@@ -11,6 +11,7 @@ import {
   requestSchema,
   teamSchema,
   approvalSchema,
+  rejectionSchema,
 } from "@/schema";
 import RequestService from "@/services/RequestService";
 import { Context } from "koa";
@@ -167,10 +168,32 @@ class RequestController {
       };
       return;
     }
-    const { performedBy, requestId } = approvalDetails as any;
+    const { performedBy, requestId } = ctx.request.body as any;
     const result = await this.requestService.approveRequest(
       Number(performedBy),
       Number(requestId)
+    );
+    ctx.body =
+      result == HttpStatusResponse.OK
+        ? HttpStatusResponse.OK
+        : HttpStatusResponse.NOT_MODIFIED;
+  }
+  
+  public async rejectRequest(ctx: Context) {
+    const rejectionDetails = ctx.request.body;
+    const validation = rejectionSchema.safeParse(rejectionDetails);
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+    const { performedBy, requestId, reason } = rejectionDetails as any;
+
+    const result = await this.requestService.rejectRequest(
+      Number(performedBy),
+      Number(requestId),
+      reason
     );
     ctx.body =
       result == HttpStatusResponse.OK

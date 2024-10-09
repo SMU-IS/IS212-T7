@@ -153,7 +153,7 @@ router.get(
  *         required: true
  *         description: User's staffId
  *     responses:
- *       200: 
+ *       200:
  *         description: Returns own pending requests
  */
 router.get("/getOwnPendingRequests", (ctx) =>
@@ -315,5 +315,34 @@ router.post("/postRequest", async (ctx) => {
  *               - requestId
  */
 router.post("/approveRequest", (ctx) => requestController.approveRequest(ctx));
+
+/**
+ * @openapi
+ * /api/v1/rejectRequest:
+ *   post:
+ *     description: reject subordinates' pending requests
+ *     tags: [Pending Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               requestId:
+ *                 type: string
+ *                 description: RequestId to be rejected
+ *               reason:
+ *                 type: string
+ *                 description: Reason for rejection
+ *             required:
+ *               - performedBy
+ *               - requestId
+ *               - reason
+ */
+router.post("/rejectRequest", (ctx) => requestController.rejectRequest(ctx));
 
 export default router;

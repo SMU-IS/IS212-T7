@@ -297,3 +297,34 @@ describe("get schedules", () => {
     expect(result).toEqual(mockRequestData.APPROVED as any);
   });
 });
+
+describe("get own pending requests", () => {
+  let requestService: RequestService;
+  let requestDbMock: jest.Mocked<RequestDb>;
+
+  beforeEach(() => {
+    requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
+    requestService = new RequestService(requestDbMock);
+    /**
+     * Mock Database Calls
+     */
+    requestDbMock.getOwnPendingRequests = jest.fn();
+    jest.resetAllMocks();
+  });
+
+  it("should return user's pending requests", async () => {
+    const { staffId } = mockRequestData.PENDING;
+    requestDbMock.getOwnPendingRequests.mockResolvedValue(
+      mockRequestData.PENDING as any
+    );
+    const result = await requestService.getOwnPendingRequests(staffId);
+    expect(result).toEqual(mockRequestData.PENDING as any);
+  });
+
+  it("should not return user's requests that have been approved", async () => {
+    const { staffId } = mockRequestData.APPROVED;
+    requestDbMock.getOwnPendingRequests.mockResolvedValue([]);
+    const result = await requestService.getOwnPendingRequests(staffId);
+    expect(result).toEqual([]);
+  });
+});

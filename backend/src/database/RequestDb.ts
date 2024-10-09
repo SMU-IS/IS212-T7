@@ -42,6 +42,7 @@ class RequestDb {
       status: Status.PENDING,
     });
     return pendingRequests;
+
   }
 
   public async cancelPendingRequests(
@@ -66,6 +67,7 @@ class RequestDb {
     }
 
     return HttpStatusResponse.OK;
+
   }
 
   public async getPendingOrApprovedRequests(myId: number) {
@@ -175,17 +177,6 @@ class RequestDb {
     );
   }
 
-  public async getRequestByRequestId(requestId: number) {
-    const requestDetail = await Request.findOne(
-      {
-        requestId,
-        status: Status.PENDING,
-      },
-      "-_id -createdAt -updatedAt"
-    );
-    return requestDetail;
-  }
-
   public async approveRequest(
     performedBy: number,
     requestId: number
@@ -198,6 +189,41 @@ class RequestDb {
       {
         $set: {
           status: Status.APPROVED,
+          performedBy: performedBy,
+        },
+      }
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+  
+  public async getPendingRequestByRequestId(requestId: number) {
+    const requestDetail = await Request.findOne(
+      {
+        requestId,
+        status: Status.PENDING,
+      },
+      "-_id -createdAt -updatedAt"
+    );
+    return requestDetail;
+  }
+
+  public async rejectRequest(
+    performedBy: number,
+    requestId: number,
+    reason: string
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.REJECTED,
+          reason: reason,
           performedBy: performedBy,
         },
       }

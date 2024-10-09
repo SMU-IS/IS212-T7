@@ -33,4 +33,10 @@ const approvalSchema = z.object({
   requestId: z.number(),
 });
 
-export { deptSchema, numberSchema, requestSchema, teamSchema, approvalSchema };
+const rejectionSchema = z.object({
+  performedBy: z.number(),
+  requestId: z.number(),
+  reason: z.string(),
+});
+
+export { deptSchema, numberSchema, requestSchema, teamSchema, approvalSchema, rejectionSchema };
