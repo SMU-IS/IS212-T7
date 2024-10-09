@@ -18,6 +18,23 @@ const generateMockEmployee = async (overrides = {}) => ({
   ...overrides,
 });
 
+const generateMockEmployeeTest = async (overrides = {}) => ({
+  staffId: 140003,
+  staffFName: "Janice",
+  staffLName: "Chan",
+  dept: "Sales",
+  position: "Account Manager",
+  country: "Singapore",
+  email: "test@example.com",
+  hashedPassword: await hashPassword("test-password"),
+  reportingManager: 140894,
+  reportingManagerName: "Rahim Khalid",
+  role: 2,
+  tempReportingManager: null,
+  tempReportingManagerName: null,
+  ...overrides,
+});
+
 const mockRequestData = {
   [Status.PENDING]: {
     staffId: 140003,
@@ -43,6 +60,19 @@ const mockRequestData = {
     status: "APPROVED",
     requestId: 22,
   },
+  [Status.REJECTED]: {
+    staffId: 140003,
+    staffName: "Janice Chan",
+    reportingManager: 140894,
+    managerName: "Rahim Khalid",
+    dept: "Sales",
+    requestedDate: "2024-10-08T00:00:00.000Z",
+    requestType: "FULL",
+    reason: "Raining",
+    status: "REJECTED",
+    requestId: 22,
+    performedBy: 140894,
+  },
 };
 
-export { generateMockEmployee, mockRequestData };
+export { generateMockEmployee, generateMockEmployeeTest, mockRequestData };
