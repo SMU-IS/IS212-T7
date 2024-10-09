@@ -1,4 +1,4 @@
-import { Dept, Status } from "@/helpers";
+import { Dept, HttpStatusResponse, Status } from "@/helpers";
 import { checkDate, weekMap } from "@/helpers/date";
 import Request, { IRequest } from "@/models/Request";
 import dayjs from "dayjs";
@@ -26,6 +26,48 @@ class RequestDb {
       "-_id -createdAt -updatedAt"
     );
     return schedule;
+  }
+
+  public async getPendingRequests(staffId: number): Promise<IRequest[]> {
+    const pendingRequests = await Request.find({
+      reportingManager: staffId,
+      status: Status.PENDING,
+    });
+    return pendingRequests;
+  }
+
+  public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
+    const pendingRequests = await Request.find({
+      staffId: myId,
+      status: Status.PENDING,
+    });
+    return pendingRequests;
+
+  }
+
+  public async cancelPendingRequests(
+    staffId: number,
+    requestId: number
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        staffId,
+        requestId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.CANCELLED,
+        },
+      }
+    );
+
+    if (modifiedCount == 0) {
+      return null;
+    }
+
+    return HttpStatusResponse.OK;
+
   }
 
   public async getPendingOrApprovedRequests(myId: number) {
@@ -133,6 +175,63 @@ class RequestDb {
         },
       }
     );
+  }
+
+  public async approveRequest(
+    performedBy: number,
+    requestId: number
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.APPROVED,
+          performedBy: performedBy,
+        },
+      }
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+  
+  public async getPendingRequestByRequestId(requestId: number) {
+    const requestDetail = await Request.findOne(
+      {
+        requestId,
+        status: Status.PENDING,
+      },
+      "-_id -createdAt -updatedAt"
+    );
+    return requestDetail;
+  }
+
+  public async rejectRequest(
+    performedBy: number,
+    requestId: number,
+    reason: string
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.REJECTED,
+          reason: reason,
+          performedBy: performedBy,
+        },
+      }
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
   }
 }
 
