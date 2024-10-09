@@ -20,7 +20,9 @@ jobs:
           node-version: 20.x
 
       - name: Change directory to backend folder.
-        run: cd backend
+        run: |
+          cd backend
+          ls
 
       - name: Install dependencies.
         run: npm i
