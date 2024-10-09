@@ -20,12 +20,13 @@ jobs:
           node-version: 22.x
 
       - name: Change directory to backend folder.
-        run: |
-          cd backend
-          ls
+        run: cd backend
 
       - name: Install dependencies.
         run: npm i
+
+      - name: List scripts.
+        run: npm run
 
       - name: Format the code.
         run: npm run prettier
