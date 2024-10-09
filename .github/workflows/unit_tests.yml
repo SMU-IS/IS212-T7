@@ -10,6 +10,10 @@ jobs:
   run_unit_tests:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
       - name: Check out the code.
         uses: actions/checkout@v4.2.1
@@ -23,16 +27,11 @@ jobs:
         with:
           node-version: 22.x
 
-      - name: Change directory to backend folder.
-        run: cd backend
-
       - name: Install dependencies.
-        run: npm i
+        run: npm ci
 
       - name: List scripts.
-        run: |
-          ls
-          npm run
+        run: npm run
 
       - name: Format the code.
         run: npm run prettier
