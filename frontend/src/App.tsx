@@ -41,6 +41,8 @@ import {
 } from "./pages/schedule"
 import { Header } from "@/components"; // Custom header if you have one
 import { WFHForm } from "./pages/wfh-application"
+
+import { MyRequests } from "./pages/my-requests/list";
 import { TeamScheduleList } from "./pages/team-schedule"
 import { Typography } from 'antd';
 import logo from "@/assets/logo.png"
@@ -110,20 +112,28 @@ const App = () => {
                     label: "Apply for WFH"
                   },
                 },
-              ]}
-              options={{
-                syncWithLocation: true,
-                warnWhenUnsavedChanges: true,
-              }}
-            >
-              <Routes>
-                {/* Authenticated routes with layout */}
-                <Route
-                  element={
-                    <Authenticated
-                      key="authentication-inner"
-                      fallback={<CatchAllNavigate to="/login" />}
-                    >
+              {
+                name: "myRequests",
+                list: MyRequests,
+                meta: {
+                  canDelete: false,
+                  label: "My Requests"
+                },
+              },
+            ]}
+            options={{
+              syncWithLocation: true,
+              warnWhenUnsavedChanges: true,
+            }}
+          >
+            <Routes>
+              {/* Authenticated routes with layout */}
+              <Route
+                element={
+                  <Authenticated
+                    key="authentication-inner"
+                    fallback={<CatchAllNavigate to="/login" />}
+                  >
                       <ThemedLayoutV2
                         Title={CustomTitle}
                         Header={Header}
@@ -147,6 +157,7 @@ const App = () => {
                   <Route index element={<DepartmentSchedule />} />
                 </Route>
                 <Route path="/wfhform" element={ < WFHForm/>}/>
+                <Route path="/myRequests" element={ < MyRequests/>}/>
                 {/* Blog Posts Routes */}
                 <Route path="/blog-posts">
                   <Route index element={<BlogPostList />} />
