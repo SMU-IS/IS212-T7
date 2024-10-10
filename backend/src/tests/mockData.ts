@@ -73,6 +73,20 @@ const mockRequestData = {
     requestId: 22,
     performedBy: 140894,
   },
+  testing: {
+    staffId: 140003,
+    staffName: "Janice Chan",
+    reportingManager: 140894,
+    managerName: "Rahim Khalid",
+    dept: "Sales",
+    requestedDate: new Date(),
+    requestType: "FULL",
+    reason: "Raining",
+    status: "REJECTED",
+    requestId: 22,
+    performedBy: 140894,
+  },
+
 };
 
 export { generateMockEmployee, generateMockEmployeeTest, mockRequestData };
