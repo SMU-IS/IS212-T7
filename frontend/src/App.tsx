@@ -134,7 +134,6 @@ const App = () => {
                     >
                       <ThemedLayoutV2
                         Title={CustomTitle}
-                      Title={CustomTitle}
                       Header={Header}
                         Sider={(props) => <ThemedSiderV2 {...props} fixed />}
                       >
