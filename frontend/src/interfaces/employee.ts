@@ -1,6 +1,5 @@
 export interface EmployeeJWT {
     staffId: string,
-
     role: number,
     name: string;
     dept: string;
@@ -10,5 +9,4 @@ export interface EmployeeJWT {
     reportingManagerName: string;
     tempReportingManager: string | null;
     tempReportingManagerName: number | null;
-
 }

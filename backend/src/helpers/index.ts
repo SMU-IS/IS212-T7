@@ -1,3 +1,9 @@
+enum HttpStatusResponse {
+  OK = "OK",
+  NOT_MODIFIED = "NOT_MODIFIED",
+  UNKNOWN_ERROR = "UNKNOWN_ERROR",
+}
+
 enum Role {
   HR = 1,
   Staff = 2,
@@ -12,6 +18,11 @@ enum errMsg {
   USER_DOES_NOT_EXIST = "User does not exist.",
   REQUESTS_NOT_FOUND = "No requests found",
   SAME_DAY_REQUEST = "Existing request for selected day found.",
+  PAST_DATE = "Selected date must be at least 24 hours ahead",
+  WEEKEND_REQUEST = "Applying WFH for the weekends is not allowed.",
+  PAST_DEADLINE = "The application deadline for the selected day has passed.",
+  DUPLICATE_DATE = "The same date has already been applied in this request",
+  INSERT_ERROR = "Database insertion error.",
   DIFFERENT_DEPARTMENT = "User is from a different department and has no additional privilege to view data.",
   DIFFERENT_TEAM = "User is from a different team and has no additional privilege to view data.",
 }
@@ -24,13 +35,22 @@ const successMsg = "Selected dates submitted successfully.";
 enum AccessControl {
   VIEW_OWN_SCHEDULE = "VIEW_OWN_SCHEDULE",
   VIEW_OVERALL_SCHEDULE = "VIEW_OVERALL_SCHEDULE",
+  VIEW_PENDING_REQUEST = "VIEW_PENDING_REQUEST",
 }
 
 // TODO: Add more permission
 const PERMISSIONS: Record<string, string[]> = {
-  1: [AccessControl.VIEW_OWN_SCHEDULE, AccessControl.VIEW_OVERALL_SCHEDULE],
+  1: [
+    AccessControl.VIEW_OWN_SCHEDULE,
+    AccessControl.VIEW_OVERALL_SCHEDULE,
+    AccessControl.VIEW_PENDING_REQUEST,
+  ],
   2: [AccessControl.VIEW_OWN_SCHEDULE],
-  3: [AccessControl.VIEW_OWN_SCHEDULE, AccessControl.VIEW_OVERALL_SCHEDULE],
+  3: [
+    AccessControl.VIEW_OWN_SCHEDULE,
+    AccessControl.VIEW_OVERALL_SCHEDULE,
+    AccessControl.VIEW_PENDING_REQUEST,
+  ],
 };
 
 enum RequestType {
@@ -62,11 +82,12 @@ enum Dept {
 export {
   AccessControl,
   Dept,
+  HttpStatusResponse,
   PERMISSIONS,
   RequestType,
   Role,
   Status,
   errMsg,
-  successMsg,
   noteMsg,
+  successMsg,
 };
