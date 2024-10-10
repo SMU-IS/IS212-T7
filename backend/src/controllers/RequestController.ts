@@ -1,7 +1,19 @@
-import { Dept, errMsg, successMsg, noteMsg } from "@/helpers";
-import { deptSchema, requestSchema, teamSchema } from "@/schema";
-import RequestService from "@/services/RequestService";
 import UtilsController from "@/controllers/UtilsController";
+import {
+  Dept,
+  errMsg,
+  HttpStatusResponse,
+  noteMsg,
+  successMsg,
+} from "@/helpers";
+import {
+  deptSchema,
+  requestSchema,
+  teamSchema,
+  approvalSchema,
+  rejectionSchema,
+} from "@/schema";
+import RequestService from "@/services/RequestService";
 import { Context } from "koa";
 
 interface MessageDates {
@@ -22,6 +34,38 @@ class RequestController {
     this.requestService = requestService;
   }
 
+  public async cancelPendingRequests(ctx: Context) {
+    const { staffId, requestId } = ctx.request.body as any;
+    const result = await this.requestService.cancelPendingRequests(
+      Number(staffId),
+      Number(requestId)
+    );
+
+    ctx.body =
+      result == HttpStatusResponse.OK
+        ? HttpStatusResponse.OK
+        : HttpStatusResponse.NOT_MODIFIED;
+  }
+
+  public async getPendingRequests(ctx: Context) {
+    const { id } = ctx.request.header;
+    const pendingRequests = await this.requestService.getPendingRequests(
+      Number(id)
+    );
+    ctx.body = pendingRequests;
+  }
+
+  public async getOwnPendingRequests(ctx: Context) {
+    const { myId } = ctx.query;
+    if (!myId) {
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
+    }
+    const pendingRequests = await this.requestService.getOwnPendingRequests(
+      Number(myId)
+    );
+    ctx.body = pendingRequests;
+  }
+
   public async getMySchedule(ctx: Context) {
     const { myId } = ctx.query;
     if (!myId) {
@@ -33,8 +77,11 @@ class RequestController {
   }
 
   public async getTeamSchedule(ctx: Context) {
-    const { reportingManager } = ctx.query;
-    const validation = teamSchema.safeParse({ reportingManager });
+    const { reportingManager, dept } = ctx.query;
+    const validation =
+      teamSchema.safeParse({ reportingManager }) &&
+      deptSchema.safeParse({ dept });
+
     if (!validation.success) {
       ctx.body = {
         errMsg: validation.error.format(),
@@ -43,7 +90,8 @@ class RequestController {
     }
 
     const result = await this.requestService.getTeamSchedule(
-      Number(reportingManager)
+      Number(reportingManager),
+      dept as Dept
     );
     ctx.body = result;
   }
@@ -79,7 +127,7 @@ class RequestController {
     const result = await this.requestService.postRequest(requestDetails);
     let responseMessage: ResponseMessage = {
       success: { message: "", dates: [] },
-      error: [], // Correctly initialized as an array of objects
+      error: [], 
       note: { message: "", dates: [] },
     };
 
@@ -140,6 +188,48 @@ class RequestController {
     }
 
     ctx.body = responseMessage;
+  }
+
+  public async approveRequest(ctx: Context) {
+    const approvalDetails = ctx.request.body;
+    const validation = approvalSchema.safeParse(approvalDetails);
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+    const { performedBy, requestId } = ctx.request.body as any;
+    const result = await this.requestService.approveRequest(
+      Number(performedBy),
+      Number(requestId)
+    );
+    ctx.body =
+      result == HttpStatusResponse.OK
+        ? HttpStatusResponse.OK
+        : HttpStatusResponse.NOT_MODIFIED;
+  }
+  
+  public async rejectRequest(ctx: Context) {
+    const rejectionDetails = ctx.request.body;
+    const validation = rejectionSchema.safeParse(rejectionDetails);
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+    const { performedBy, requestId, reason } = rejectionDetails as any;
+
+    const result = await this.requestService.rejectRequest(
+      Number(performedBy),
+      Number(requestId),
+      reason
+    );
+    ctx.body =
+      result == HttpStatusResponse.OK
+        ? HttpStatusResponse.OK
+        : HttpStatusResponse.NOT_MODIFIED;
   }
 }
 

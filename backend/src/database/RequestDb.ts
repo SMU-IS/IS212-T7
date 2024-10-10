@@ -1,5 +1,7 @@
-import { Dept, RequestType, Status } from "@/helpers";
-import Request from "@/models/Request";
+import { Dept, HttpStatusResponse, RequestType, Status } from "@/helpers";
+import { checkDate, weekMap } from "@/helpers/date";
+import Request, { IRequest } from "@/models/Request";
+import dayjs from "dayjs";
 
 interface InsertDocument {
   staffId: number;
@@ -13,7 +15,7 @@ interface InsertDocument {
 }
 
 class RequestDb {
-  public async getMySchedule(myId: number) {
+  public async getMySchedule(myId: number): Promise<IRequest[]> {
     const schedule = await Request.find(
       { staffId: myId },
       "-_id -createdAt -updatedAt"
@@ -21,19 +23,69 @@ class RequestDb {
     return schedule;
   }
 
+  public async getPendingRequests(staffId: number): Promise<IRequest[]> {
+    const pendingRequests = await Request.find({
+      reportingManager: staffId,
+      status: Status.PENDING,
+    });
+    return pendingRequests;
+  }
+
+  public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
+    const pendingRequests = await Request.find({
+      staffId: myId,
+      status: Status.PENDING,
+    });
+    return pendingRequests;
+
+  }
+
+  public async cancelPendingRequests(
+    staffId: number,
+    requestId: number
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        staffId,
+        requestId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.CANCELLED,
+        },
+      }
+    );
+
+    if (modifiedCount == 0) {
+      return null;
+    }
+
+    return HttpStatusResponse.OK;
+
+  }
+
   public async getPendingOrApprovedRequests(myId: number) {
     const schedule = await Request.find({
       staffId: myId,
-      status: { $nin: ["CANCELLED", "WITHDRAWN", "REJECTED"] },
+      status: {
+        $nin: [
+          Status.CANCELLED,
+          Status.WITHDRAWN,
+          Status.REJECTED,
+          Status.EXPIRED,
+        ],
+      },
     });
 
     return schedule;
   }
 
-  public async getTeamSchedule(reportingManager: number) {
+  public async getTeamSchedule(reportingManager: number, dept: Dept) {
     const teamSchedule = await Request.find(
       {
         reportingManager,
+        dept,
         status: Status.APPROVED,
       },
       "-_id -createdAt -updatedAt"
@@ -67,6 +119,78 @@ class RequestDb {
     } catch (error) {
       return false;
     }
+  }
+
+  public async updateRequestStatusToExpired(): Promise<void> {
+    const now = dayjs().utc(true).startOf("day");
+    await Request.updateMany(
+      {
+        status: Status.PENDING,
+        requestedDate: now.toDate(),
+      },
+      {
+        $set: {
+          status: Status.EXPIRED,
+        },
+      }
+    );
+  }
+
+  public async approveRequest(
+    performedBy: number,
+    requestId: number
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.APPROVED,
+          performedBy: performedBy,
+        },
+      }
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+  
+  public async getPendingRequestByRequestId(requestId: number) {
+    const requestDetail = await Request.findOne(
+      {
+        requestId,
+        status: Status.PENDING,
+      },
+      "-_id -createdAt -updatedAt"
+    );
+    return requestDetail;
+  }
+
+  public async rejectRequest(
+    performedBy: number,
+    requestId: number,
+    reason: string
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.REJECTED,
+          reason: reason,
+          performedBy: performedBy,
+        },
+      }
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
   }
 }
 

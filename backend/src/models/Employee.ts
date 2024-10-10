@@ -6,7 +6,7 @@ export interface LoginBody {
   staffPassword: string;
 }
 
-interface IEmployee {
+export interface IEmployee {
   staffId: number;
   staffFName: string;
   staffLName: string;
@@ -15,8 +15,10 @@ interface IEmployee {
   country: string;
   email: string;
   hashedPassword: string;
-  reportingManager: number | null;
+  reportingManager: number;
   reportingManagerName: string;
+  tempReportingManager: number | null;
+  tempReportingManagerName: string | null;
   role: Role;
 }
 
@@ -37,6 +39,12 @@ const EmployeeSchema = new Schema<IEmployee>(
       required: false,
     },
     reportingManagerName: { type: String, required: true },
+    tempReportingManager: {
+      type: Number,
+      ref: "Employee",
+      required: false,
+    },
+    tempReportingManagerName: { type: String, required: false },
     role: { type: Number, required: true, enum: [1, 2, 3] },
   },
   {

@@ -41,10 +41,33 @@ class EmployeeController {
       return UtilsController.throwAPIError(ctx, errMsg.WRONG_PASSWORD);
     }
 
-    const { staffId, role } = result;
+    const {
+      staffId,
+      staffFName,
+      staffLName,
+      dept,
+      position,
+      email,
+      reportingManager,
+      reportingManagerName,
+      role,
+      tempReportingManager,
+      tempReportingManagerName,
+    } = result;
+
+    const name = `${staffFName} ${staffLName}`;
+
     ctx.body = {
       staffId,
+      name,
+      dept,
+      position,
+      email,
+      reportingManager,
+      reportingManagerName,
       role,
+      tempReportingManager,
+      tempReportingManagerName,
     };
   }
 }

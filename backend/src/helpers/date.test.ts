@@ -121,3 +121,4 @@ describe("checkLatestDate", () => {
     expect(checkLatestDate(tuesday, testFriday)).toBe(false);
   });
 });
+

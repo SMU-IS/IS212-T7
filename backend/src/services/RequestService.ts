@@ -1,6 +1,7 @@
 import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
-import { Dept, errMsg } from "@/helpers";
+import { Dept, errMsg, HttpStatusResponse } from "@/helpers";
+import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
 import {
   weekMap,
@@ -44,8 +45,37 @@ class RequestService {
     return schedule;
   }
 
-  public async getTeamSchedule(reportingManager: number) {
-    const teamSchedule = await this.requestDb.getTeamSchedule(reportingManager);
+  public async cancelPendingRequests(
+    staffId: number,
+    requestId: number
+  ): Promise<string | null> {
+    const result = await this.requestDb.cancelPendingRequests(
+      staffId,
+      requestId
+    );
+
+    if (!result) {
+      return null;
+    }
+
+    return HttpStatusResponse.OK;
+  }
+
+  public async getPendingRequests(staffId: number): Promise<IRequest[]> {
+    const pendingRequests = await this.requestDb.getPendingRequests(staffId);
+    return pendingRequests;
+  }
+
+  public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
+    const pendingRequests = await this.requestDb.getOwnPendingRequests(myId);
+    return pendingRequests;
+  }
+
+  public async getTeamSchedule(reportingManager: number, dept: Dept) {
+    const teamSchedule = await this.requestDb.getTeamSchedule(
+      reportingManager,
+      dept
+    );
     return teamSchedule;
   }
 
@@ -136,6 +166,72 @@ class RequestService {
       }
     }
     return responseDates;
+  }
+
+  public async getPendingRequestByRequestId(requestId: number) {
+    const requestDetail = await this.requestDb.getPendingRequestByRequestId(
+      requestId
+    );
+    return requestDetail;
+  }
+  
+    public async approveRequest(
+    performedBy: number,
+    requestId: number
+  ): Promise<string | null> {
+    const request = await this.getPendingRequestByRequestId(
+      requestId
+    );
+    if (!request) {
+      return null;
+    }
+    const employee = await this.employeeService.getEmployee(request.staffId);
+    if (!employee) {
+      return null;
+    }
+    if (
+      employee.reportingManager !== performedBy &&
+      employee.tempReportingManager !== performedBy
+    ) {
+      return null;
+    }
+    const result = await this.requestDb.approveRequest(performedBy, requestId);
+    if (!result) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+
+  public async rejectRequest(
+    performedBy: number,
+    requestId: number,
+    reason: string
+  ): Promise<string | null> {
+    const request = await this.getPendingRequestByRequestId(
+      requestId
+    );
+    if (!request) {
+      return null;
+    }
+    const employee = await this.employeeService.getEmployee(request.staffId);
+    if (!employee) {
+      return null;
+    }
+    if (
+      employee.reportingManager !== performedBy &&
+      employee.tempReportingManager !== performedBy
+    ) {
+      return null;
+    }
+    const result = await this.requestDb.rejectRequest(
+      performedBy,
+      requestId,
+      reason
+    );
+    if (!result) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
   }
 }
 export default RequestService;
