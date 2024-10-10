@@ -13,9 +13,8 @@ import {
   mockRequestData,
   generateMockEmployeeTest,
 } from "@/tests/mockData";
-import * as dateUtils from "@/helpers/date"; 
+import * as dateUtils from "@/helpers/date";
 import { AccessControl, errMsg, HttpStatusResponse } from "@/helpers";
-
 
 describe("postRequest", () => {
   let requestService: RequestService;
@@ -63,7 +62,7 @@ describe("postRequest", () => {
     requestService = new RequestService(requestDbMock);
     requestDbMock.postRequest = jest.fn();
     requestDbMock.getPendingOrApprovedRequests = jest.fn();
-    jest.mock("@/helpers/date"); 
+    jest.mock("@/helpers/date");
     jest.resetAllMocks();
   });
 
@@ -727,5 +726,32 @@ describe("approve pending requests", () => {
     expect(requestDbMock.getPendingRequestByRequestId).toHaveBeenCalledWith(
       requestId
     );
+  });
+});
+
+describe("getPendingRequestByRequestId", () => {
+  let requestService: RequestService;
+  let requestDbMock: jest.Mocked<RequestDb>;
+
+  beforeEach(() => {
+    requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
+    requestService = new RequestService(requestDbMock);
+    requestDbMock.getPendingRequestByRequestId = jest.fn();
+    jest.resetAllMocks();
+  });
+
+  it("should return request for a valid requestId", async () => {
+    const { requestId } = mockRequestData.PENDING;
+    requestDbMock.getPendingRequestByRequestId.mockResolvedValue([
+      mockRequestData.PENDING,
+    ] as any);
+    const result = await requestService.getPendingRequestByRequestId(requestId);
+    expect(result).toEqual([mockRequestData.PENDING] as any);
+  });
+
+  it("should return [] for an invalid staffId", async () => {
+    requestDbMock.getPendingRequestByRequestId.mockResolvedValue(null);
+    const result = await requestService.getPendingRequestByRequestId(1044);
+    expect(result).toEqual(null);
   });
 });

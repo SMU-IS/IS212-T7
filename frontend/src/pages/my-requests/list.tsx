@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Table, Button, Typography, Tabs, Space } from "antd";
+import { Table, Button, Typography, Tabs, Tag } from "antd";
 import axios from "axios";
 import { useGetIdentity } from "@refinedev/core";
 import { EmployeeJWT } from "@/interfaces/employee";
@@ -115,9 +115,25 @@ export const MyRequestsContent = () => {
             key: "date",
         },
         {
-            title: "Type",
+            title: "Request Type",
             dataIndex: "type",
             key: "type",
+            render: (type: any) => {
+                let color = "";
+                switch (type) {
+                    case "FULL":
+                        color = "purple";
+                        break;
+                    case "PM":
+                    case "AM":
+                        color = "gold";
+                        break;
+                    default:
+                        color = "gray";
+                        break;
+                }
+                return <Tag color={color}>{type}</Tag>;
+            },
         },
         {
             title: "Date Applied",
@@ -143,7 +159,7 @@ export const MyRequestsContent = () => {
     return (
         <div style={{ padding: '16px' }}>
             <Title level={3} style={{ marginBottom: '20px' }}>Status Of My Requests</Title>
-            <Tabs defaultActiveKey="1" type="card">
+            <Tabs defaultActiveKey="1"  >
                 <TabPane tab="Pending" key="1">
                     <Table
                         columns={columns}
