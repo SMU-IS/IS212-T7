@@ -5,7 +5,11 @@ import { AccessControl, errMsg, HttpStatusResponse } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import RequestService from "@/services/RequestService";
 import { middlewareMockData } from "@/tests/middlewareMockData";
-import { generateMockEmployee, mockRequestData } from "@/tests/mockData";
+import {
+  generateMockEmployee,
+  mockRequestData,
+  generateMockEmployeeTest,
+} from "@/tests/mockData";
 import { jest } from "@jest/globals";
 import { Context, Next } from "koa";
 import EmployeeService from "./EmployeeService";
@@ -295,5 +299,222 @@ describe("get schedules", () => {
     );
     const result = await requestService.getCompanySchedule();
     expect(result).toEqual(mockRequestData.APPROVED as any);
+  });
+});
+
+describe("get own pending requests", () => {
+  let requestService: RequestService;
+  let requestDbMock: jest.Mocked<RequestDb>;
+
+  beforeEach(() => {
+    requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
+    requestService = new RequestService(requestDbMock);
+    /**
+     * Mock Database Calls
+     */
+    requestDbMock.getOwnPendingRequests = jest.fn();
+    jest.resetAllMocks();
+  });
+
+  it("should return user's pending requests", async () => {
+    const { staffId } = mockRequestData.PENDING;
+    requestDbMock.getOwnPendingRequests.mockResolvedValue(
+      mockRequestData.PENDING as any
+    );
+    const result = await requestService.getOwnPendingRequests(staffId);
+    expect(result).toEqual(mockRequestData.PENDING as any);
+  });
+
+  it("should not return user's requests that have been approved", async () => {
+    const { staffId } = mockRequestData.APPROVED;
+    requestDbMock.getOwnPendingRequests.mockResolvedValue([]);
+    const result = await requestService.getOwnPendingRequests(staffId);
+    expect(result).toEqual([]);
+  });
+});
+
+describe("reject pending requests", () => {
+  let requestService: RequestService;
+  let requestDbMock: jest.Mocked<RequestDb>;
+  let employeeDbMock: EmployeeDb;
+  let employeeServiceMock: jest.Mocked<EmployeeService>;
+  let mockEmployee: any;
+
+  beforeEach(async () => {
+    mockEmployee = await generateMockEmployeeTest();
+    requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
+    requestService = new RequestService(requestDbMock);
+    employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    employeeServiceMock = new EmployeeService(
+      employeeDbMock
+    ) as jest.Mocked<EmployeeService>;
+    requestDbMock.getPendingRequestByRequestId = jest.fn();
+    requestDbMock.rejectRequest = jest.fn();
+    EmployeeService.prototype.getEmployee = jest.fn() as any;
+    UtilsController.throwAPIError = jest.fn();
+    jest.resetAllMocks();
+  });
+
+  it("should return status not modified if there is no pending request", async () => {
+    const { reportingManager, requestId, reason } = mockRequestData.APPROVED;
+    requestDbMock.getPendingRequestByRequestId.mockResolvedValue(null);
+    const result = await requestService.rejectRequest(
+      reportingManager,
+      requestId,
+      reason
+    );
+    expect(result).toEqual(null);
+    expect(requestDbMock.getPendingRequestByRequestId).toHaveBeenCalledWith(
+      requestId
+    );
+  });
+
+  it("should reject user's pending request", async () => {
+    const { reportingManager, requestId, reason } = mockRequestData.PENDING;
+    requestDbMock.rejectRequest.mockResolvedValue(
+      mockRequestData.REJECTED as any
+    );
+    requestDbMock.getPendingRequestByRequestId.mockResolvedValue(
+      mockRequestData.PENDING as any
+    );
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
+    const result = await requestService.rejectRequest(
+      reportingManager,
+      requestId,
+      reason
+    );
+    expect(result).toEqual(HttpStatusResponse.OK);
+    expect(requestDbMock.getPendingRequestByRequestId).toHaveBeenCalledWith(
+      requestId
+    );
+    expect(EmployeeService.prototype.getEmployee).toHaveBeenCalledWith(
+      mockRequestData.PENDING.staffId
+    );
+  });
+
+  it("should return status not modified if employee not found", async () => {
+    const { reportingManager, requestId, reason } = mockRequestData.PENDING;
+    requestDbMock.getPendingRequestByRequestId.mockResolvedValue(
+      mockRequestData.PENDING as any
+    );
+    employeeServiceMock.getEmployee.mockResolvedValue(null);
+    const result = await requestService.rejectRequest(
+      reportingManager,
+      requestId,
+      reason
+    );
+    expect(result).toEqual(null);
+    expect(requestDbMock.getPendingRequestByRequestId).toHaveBeenCalledWith(
+      requestId
+    );
+  });
+
+  it("should return null if performedBy is not authorized", async () => {
+    const { reportingManager, requestId, reason } = mockRequestData.PENDING;
+    requestDbMock.getPendingRequestByRequestId.mockResolvedValue(
+      mockRequestData.PENDING as any
+    );
+    mockEmployee.reportingManager = null;
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee);
+    const result = await requestService.rejectRequest(
+      reportingManager,
+      requestId,
+      reason
+    );
+    expect(result).toEqual(null);
+    expect(requestDbMock.getPendingRequestByRequestId).toHaveBeenCalledWith(
+      requestId
+    );
+  });
+});
+
+describe("approve pending requests", () => {
+  let requestService: RequestService;
+  let requestDbMock: jest.Mocked<RequestDb>;
+  let employeeDbMock: EmployeeDb;
+  let employeeServiceMock: jest.Mocked<EmployeeService>;
+  let mockEmployee: any;
+
+  beforeEach(async () => {
+    mockEmployee = await generateMockEmployeeTest();
+    requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
+    requestService = new RequestService(requestDbMock);
+    employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    employeeServiceMock = new EmployeeService(
+      employeeDbMock
+    ) as jest.Mocked<EmployeeService>;
+    requestDbMock.getPendingRequestByRequestId = jest.fn();
+    requestDbMock.approveRequest = jest.fn();
+    EmployeeService.prototype.getEmployee = jest.fn() as any;
+    UtilsController.throwAPIError = jest.fn();
+    jest.resetAllMocks();
+  });
+
+  it("should return status not modified if there is no pending request", async () => {
+    const { reportingManager, requestId } = mockRequestData.APPROVED;
+    requestDbMock.getPendingRequestByRequestId.mockResolvedValue(null);
+    const result = await requestService.approveRequest(
+      reportingManager,
+      requestId
+    );
+    expect(result).toEqual(null);
+    expect(requestDbMock.getPendingRequestByRequestId).toHaveBeenCalledWith(
+      requestId
+    );
+  });
+
+  it("should approve user's pending request", async () => {
+    const { reportingManager, requestId } = mockRequestData.PENDING;
+    requestDbMock.approveRequest.mockResolvedValue(
+      mockRequestData.APPROVED as any
+    );
+    requestDbMock.getPendingRequestByRequestId.mockResolvedValue(
+      mockRequestData.PENDING as any
+    );
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
+    const result = await requestService.approveRequest(
+      reportingManager,
+      requestId
+    );
+    expect(result).toEqual(HttpStatusResponse.OK);
+    expect(requestDbMock.getPendingRequestByRequestId).toHaveBeenCalledWith(
+      requestId
+    );
+    expect(EmployeeService.prototype.getEmployee).toHaveBeenCalledWith(
+      mockRequestData.PENDING.staffId
+    );
+  });
+
+  it("should return status not modified if employee not found", async () => {
+    const { reportingManager, requestId } = mockRequestData.PENDING;
+    requestDbMock.getPendingRequestByRequestId.mockResolvedValue(
+      mockRequestData.PENDING as any
+    );
+    employeeServiceMock.getEmployee.mockResolvedValue(null);
+    const result = await requestService.approveRequest(
+      reportingManager,
+      requestId
+    );
+    expect(result).toEqual(null);
+    expect(requestDbMock.getPendingRequestByRequestId).toHaveBeenCalledWith(
+      requestId
+    );
+  });
+
+  it("should return null if performedBy is not authorized", async () => {
+    const { reportingManager, requestId } = mockRequestData.PENDING;
+    requestDbMock.getPendingRequestByRequestId.mockResolvedValue(
+      mockRequestData.PENDING as any
+    );
+    mockEmployee.reportingManager = null;
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee);
+    const result = await requestService.approveRequest(
+      reportingManager,
+      requestId
+    );
+    expect(result).toEqual(null);
+    expect(requestDbMock.getPendingRequestByRequestId).toHaveBeenCalledWith(
+      requestId
+    );
   });
 });

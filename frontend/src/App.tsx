@@ -102,6 +102,14 @@ const App = () => {
                   },
                 },
                 {
+                name: "teamSchedule",
+                list: TeamScheduleList,
+                meta: {
+                  canDelete: false,
+                  label: "Team Schedule"
+                },
+              },
+              {
                   name: "WFH Request",
                   list: "/wfhform",
                   create: "/wfhform",
@@ -136,7 +144,7 @@ const App = () => {
                   >
                       <ThemedLayoutV2
                         Title={CustomTitle}
-                        Header={Header}
+                      Header={Header}
                         Sider={(props) => <ThemedSiderV2 {...props} fixed />}
                       >
                         <Outlet />
@@ -155,6 +163,9 @@ const App = () => {
                   </Route>
                   <Route path="/department-schedule" >
                   <Route index element={<DepartmentSchedule />} />
+                </Route>
+                <Route path="/teamSchedule" >
+                  <Route index element={<TeamScheduleList />} />
                 </Route>
                 <Route path="/wfhform" element={ < WFHForm/>}/>
                 <Route path="/myRequests" element={ < MyRequests/>}/>
