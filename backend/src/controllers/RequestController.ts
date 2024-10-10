@@ -4,19 +4,15 @@ import RequestService from "@/services/RequestService";
 import UtilsController from "@/controllers/UtilsController";
 import { Context } from "koa";
 
+interface MessageDates {
+  message: string;
+  dates: [string, string][];
+}
+
 interface ResponseMessage {
-  success: {
-    message: string;
-    dates: [string, string][];
-  };
-  note: {
-    message: string;
-    dates: [string, string][];
-  };
-  error: {
-    message: string;
-    dates: [string, string][];
-  };
+  success: MessageDates;
+  error: MessageDates[];
+  note: MessageDates;
 }
 
 class RequestController {
@@ -83,7 +79,7 @@ class RequestController {
     const result = await this.requestService.postRequest(requestDetails);
     let responseMessage: ResponseMessage = {
       success: { message: "", dates: [] },
-      error: { message: "", dates: [] },
+      error: [], // Correctly initialized as an array of objects
       note: { message: "", dates: [] },
     };
 
@@ -94,11 +90,46 @@ class RequestController {
       };
     }
 
+    if (result.weekendDates.length > 0) {
+      responseMessage.error.push({
+        message: errMsg.WEEKEND_REQUEST,
+        dates: result.weekendDates,
+      });
+    }
+
+    if (result.pastDates.length > 0) {
+      responseMessage.error.push({
+        message: errMsg.PAST_DATE,
+        dates: result.pastDates,
+      });
+    }
+
+    if (result.pastDeadlineDates.length > 0) {
+      responseMessage.error.push({
+        message: errMsg.PAST_DEADLINE,
+        dates: result.pastDeadlineDates,
+      });
+    }
+
     if (result.errorDates.length > 0) {
-      responseMessage.error = {
+      responseMessage.error.push({
         message: errMsg.SAME_DAY_REQUEST,
         dates: result.errorDates,
-      };
+      });
+    }
+
+    if (result.duplicateDates.length > 0) {
+      responseMessage.error.push({
+        message: errMsg.DUPLICATE_DATE,
+        dates: result.duplicateDates,
+      });
+    }
+
+    if (result.insertErrorDates.length > 0) {
+      responseMessage.error.push({
+        message: errMsg.INSERT_ERROR,
+        dates: result.insertErrorDates,
+      });
     }
 
     if (result.noteDates.length > 0) {

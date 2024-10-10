@@ -12,6 +12,11 @@ enum errMsg {
   USER_DOES_NOT_EXIST = "User does not exist.",
   REQUESTS_NOT_FOUND = "No requests found",
   SAME_DAY_REQUEST = "Existing request for selected day found.",
+  PAST_DATE = "Selected date must be at least 24 hours ahead",
+  WEEKEND_REQUEST = "Applying WFH for the weekends is not allowed.",
+  PAST_DEADLINE = "The application deadline for the selected day has passed.",
+  DUPLICATE_DATE = "The same date has already been applied in this request",
+  INSERT_ERROR = "Database insertion error.",
 }
 
 const noteMsg =

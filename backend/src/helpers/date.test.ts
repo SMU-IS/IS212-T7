@@ -1,4 +1,10 @@
-import { weekMap, checkDate } from "./date";
+import {
+  weekMap,
+  checkDate,
+  checkWeekend,
+  checkLatestDate,
+  checkPastDate,
+} from "./date";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
@@ -53,5 +59,65 @@ describe("checkDate", () => {
     const newDate = new Date("2024-09-20");
     const result = checkDate(newDate, weekMapping);
     expect(result).toBe(false);
+  });
+});
+
+describe("checkWeekend", () => {
+  it("should return true it is a weekend", () => {
+    const dates = new Date("2024-10-12");
+    const checkwkend = checkWeekend(dates);
+    expect(checkwkend).toBe(true);
+  });
+
+  it("should return false if it is a weekday", () => {
+    const dates = new Date("2024-10-10");
+    const checkwkend = checkWeekend(dates);
+    expect(checkwkend).toBe(false);
+  });
+});
+
+describe("checkPastDate", () => {
+  it("should return true it is a past date", () => {
+    const dates = new Date("2022-10-12");
+    const checkwkend = checkPastDate(dates);
+    expect(checkwkend).toBe(true);
+  });
+
+  it("should return true if it is not 24 hrs ahead of application", () => {
+    const today = new Date();
+    const checkToday = checkPastDate(today);
+    expect(checkToday).toBe(true);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const checkTomorrow = checkPastDate(tomorrow);
+    expect(checkTomorrow).toBe(true);
+  });
+
+  it("should return false if it is a future date", () => {
+    const today = new Date();
+    const future = new Date(today);
+    future.setDate(today.getDate() + 2);
+    const checkFuture = checkPastDate(future);
+    expect(checkFuture).toBe(false);
+  });
+});
+
+describe("checkLatestDate", () => {
+  it("should return true if it is not 24 business hours before", () => {
+    const monday = dayjs().tz("Asia/Singapore").day(1).add(1, "week").toDate();
+    const testFriday = dayjs(monday).subtract(3, "day").toDate();
+    expect(checkLatestDate(monday, testFriday)).toBe(true);
+    const tuesday = dayjs().tz("Asia/Singapore").day(2).add(1, "week").toDate();
+    const testMonday = dayjs(tuesday).subtract(1, "day").toDate();
+    expect(checkLatestDate(monday, testMonday)).toBe(true);
+  });
+
+  it("should return false if it is 24 business hours before", () => {
+    const monday = dayjs().tz("Asia/Singapore").day(1).add(1, "week").toDate();
+    const testThursday = dayjs(monday).subtract(4, "day").toDate();
+    expect(checkLatestDate(monday, testThursday)).toBe(false);
+    const tuesday = dayjs().tz("Asia/Singapore").day(2).add(1, "week").toDate();
+    const testFriday = dayjs(tuesday).subtract(4, "day").toDate();
+    expect(checkLatestDate(tuesday, testFriday)).toBe(false);
   });
 });
