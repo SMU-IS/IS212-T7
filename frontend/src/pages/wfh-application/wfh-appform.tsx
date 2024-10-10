@@ -65,11 +65,11 @@ export const WFHForm: React.FC = () => {
 
   const [modalContent, setModalContent] = useState<{
     success: { message: string; dates: [string, string][] };
-    error: { message: string; dates: [string, string][] };
+   error: Array<{ message: string; dates: [string, string][] }>; 
     note: { message: string; dates: [string, string][] };
   }>({
     success: { message: "", dates: [] },
-    error: { message: "", dates: [] },
+    error: [],
     note: { message: "", dates: [] },
   });
 
@@ -243,7 +243,7 @@ export const WFHForm: React.FC = () => {
       setModalContent({ success, error, note });
 
       // toast notification
-      if (!error || !error.message) {
+      if (!error || error.length === 0) {
         showToast(
           "Success",
           "WFH application submitted successfully",
@@ -395,24 +395,26 @@ export const WFHForm: React.FC = () => {
                   )}
                 </Box>
               )}
-              {modalContent.error.message && (
+              {modalContent.error.length > 0 && (
                 <Box>
                   <Text fontWeight="bold" color="red.500">
                     Error:
                   </Text>
-                  <Text>{modalContent.error.message}</Text>
-                  {modalContent.error.dates.length > 0 && (
-                    <List mt={2}>
-                      {modalContent.error.dates.map(
-                        ([date, timeOfDay], index) => (
-                          <ListItem key={index}>
-                            {date} -{" "}
-                            <Badge colorScheme="red">{timeOfDay}</Badge>
-                          </ListItem>
-                        ),
+                  {modalContent.error.map((err, index) => (
+                    <Box key={index}>
+                      <Text>{err.message}</Text>
+                      {err.dates.length > 0 && (
+                        <List mt={2}>
+                          {err.dates.map(([date, timeOfDay], dateIndex) => (
+                            <ListItem key={dateIndex}>
+                              {date} -{" "}
+                              <Badge colorScheme="red">{timeOfDay}</Badge>
+                            </ListItem>
+                          ))}
+                        </List>
                       )}
-                    </List>
-                  )}
+                    </Box>
+                  ))}
                   <Text>
                     {" "}
                     <br />
