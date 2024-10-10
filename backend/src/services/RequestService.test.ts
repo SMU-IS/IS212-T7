@@ -93,7 +93,6 @@ describe("postRequest", () => {
       mockRequestData.PENDING,
     ] as any);
     const result = await requestService.postRequest(requestDetails);
-    console.log(result);
     expect(result).toEqual(expectedResponse);
   });
 
@@ -123,7 +122,6 @@ describe("postRequest", () => {
       mockRequestData.PENDING,
     ] as any);
     const result = await requestService.postRequest(requestDetails);
-    console.log(result);
     expect(result).toEqual(expectedResponse);
   });
 
@@ -154,7 +152,6 @@ describe("postRequest", () => {
     ] as any);
     requestDbMock.postRequest.mockResolvedValue(true);
     const result = await requestService.postRequest(requestDetails);
-    console.log(result);
     expect(result).toEqual(expectedResponse);
   });
 
@@ -188,7 +185,6 @@ describe("postRequest", () => {
     ] as any);
     requestDbMock.postRequest.mockResolvedValue(true);
     const result = await requestService.postRequest(requestDetails);
-    console.log(result);
     expect(result).toEqual(expectedResponse);
   });
 
@@ -225,7 +221,6 @@ describe("postRequest", () => {
     ] as any);
     requestDbMock.postRequest.mockResolvedValue(true);
     const result = await requestService.postRequest(requestDetails);
-    console.log(result);
     expect(result).toEqual(expectedResponse);
   });
 
@@ -256,7 +251,6 @@ describe("postRequest", () => {
     ] as any);
     requestDbMock.postRequest.mockResolvedValue(false);
     const result = await requestService.postRequest(requestDetails);
-    console.log(result);
     expect(result).toEqual(expectedResponse);
   });
 
@@ -287,7 +281,6 @@ describe("postRequest", () => {
     ] as any);
     jest.spyOn(dateUtils, "checkLatestDate").mockReturnValue(true);
     const result = await requestService.postRequest(requestDetails);
-    console.log(result);
     expect(result).toEqual(expectedResponse);
   });
 
@@ -317,7 +310,6 @@ describe("postRequest", () => {
       mockRequestData.testing,
     ] as any);
     const result = await requestService.postRequest(requestDetails);
-    console.log(result);
     expect(result).toEqual(expectedResponse);
   });
 });
@@ -339,14 +331,12 @@ describe("getPendingOrApprovedRequests", () => {
       mockRequestData.PENDING,
     ] as any);
     const result = await requestService.getPendingOrApprovedRequests(staffId);
-    console.log(result);
     expect(result).toEqual([mockRequestData.PENDING] as any);
   });
 
   it("should return [] for an invalid staffId", async () => {
     requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([]);
     const result = await requestService.getPendingOrApprovedRequests(1044);
-    console.log(result);
     expect(result).toEqual([]);
   });
 });
