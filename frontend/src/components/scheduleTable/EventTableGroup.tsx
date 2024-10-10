@@ -12,7 +12,12 @@ interface EventTableGroupProps {
 const EventTableGroup: React.FC<EventTableGroupProps> = ({ sortedDates, groupedData, columns }) => {
     return (
         <div>
-            {sortedDates.map((date) => {
+            {sortedDates.length === 0 ? (
+            <div style={{ textAlign: 'center', margin: '20px' }}>
+                <Title level={5} style={{ color: 'gray' }}>No Data Available</Title>
+            </div>
+        ) : (
+            sortedDates.map((date) => {
                 const eventDate = new Date(date);
                 const currentDate = new Date();
                 // Calculate the difference in time
@@ -43,8 +48,9 @@ const EventTableGroup: React.FC<EventTableGroupProps> = ({ sortedDates, groupedD
                                 })}
                             </span>
                             {!isPastDate && (
-                                
-                                <Tag color="blue" style={{marginLeft: '0.5rem'}}>{dayDiff > 1 ? `In ${dayDiff} days` : dayDiff > 1 ? `In ${dayDiff} day` : "today"}</Tag>
+                                <Tag color="blue" style={{ marginLeft: '0.5rem' }}>
+                                    {dayDiff > 1 ? `In ${dayDiff} days` : dayDiff === 1 ? 'In 1 day' : 'Today'}
+                                </Tag>
                             )}
                         </Title>
                         <Table
@@ -57,7 +63,8 @@ const EventTableGroup: React.FC<EventTableGroupProps> = ({ sortedDates, groupedD
                         />
                     </div>
                 );
-            })}
+            })
+        )}
         </div>
     );
 };
