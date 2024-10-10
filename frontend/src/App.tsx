@@ -39,13 +39,14 @@ import {
 import {
   ScheduleList
 } from "./pages/schedule"
-import { Header } from "./components/header"; // Custom header if you have one
+import { Header } from "@/components"; // Custom header if you have one
 import { WFHForm } from "./pages/wfh-application"
 import { TeamScheduleList } from "./pages/team-schedule"
 import { Typography } from 'antd';
 import logo from "@/assets/logo.png"
 
-// import { useCustomNotificationProvider } from "./components/toast";
+import { useCustomNotificationProvider } from "./components/toast";
+import DepartmentSchedule from "@/pages/department-schedule/department-schedule";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 const App = () => {
@@ -73,25 +74,32 @@ const App = () => {
 );
   return (
     <BrowserRouter>
-    <ChakraProvider>
-    <ColorModeContextProvider>
-      <ConfigProvider>
-        <ChakraProvider>
-          <Refine
-            dataProvider={dataProvider(API_URL)}
-            routerProvider={routerProvider}
-            authProvider={authProvider}
-            // notificationProvider={useCustomNotificationProvider} // Use ChakraUI's notification provider
-            resources={[
-              {
-                name: "schedule",
-                list: ScheduleList,
-                meta: {
-                  canDelete: false,
-                  label: "My Schedule"
+      <ColorModeContextProvider>
+        <ConfigProvider>
+          <ChakraProvider>
+            <Refine
+              dataProvider={dataProvider(API_URL)}
+              routerProvider={routerProvider}
+              authProvider={authProvider}
+              notificationProvider={useCustomNotificationProvider} // Use ChakraUI's notification provider
+              resources={[
+                {
+                  name: "schedule",
+                  list: ScheduleList,
+                  meta: {
+                    canDelete: false,
+                    label: "My Schedule"
+                  },
                 },
-              },
-              {
+                {
+                  name: "teamSchedule",
+                  list: TeamScheduleList,
+                  meta: {
+                    canDelete: false,
+                    label: "Team Schedule"
+                  },
+                },
+                {
                 name: "teamSchedule",
                 list: TeamScheduleList,
                 meta: {
@@ -100,45 +108,52 @@ const App = () => {
                 },
               },
               {
-                name: "WFH Request",
-                list: "/wfhform",
-                create: "/wfhform",
-                edit: "/wfhform",
-                show: "/wfhform",
-                meta: {
-                  canDelete: false,
-                  label: "Apply for WFH"
+                  name: "WFH Request",
+                  list: "/wfhform",
+                  create: "/wfhform",
+                  edit: "/wfhform",
+                  show: "/wfhform",
+                  meta: {
+                    canDelete: false,
+                    label: "Apply for WFH"
+                  },
                 },
-              },
-            ]}
-            options={{
-              syncWithLocation: true,
-              warnWhenUnsavedChanges: true,
-            }}
-          >
-            <Routes>
-              {/* Authenticated routes with layout */}
-              <Route
-                element={
-                  <Authenticated
-                    key="authentication-inner"
-                    fallback={<CatchAllNavigate to="/login" />}
-                  >
-                    <ThemedLayoutV2
-                    Title={CustomTitle}
-                      Header={Header}
-                      Sider={(props) => <ThemedSiderV2 {...props} fixed />}
+              ]}
+              options={{
+                syncWithLocation: true,
+                warnWhenUnsavedChanges: true,
+              }}
+            >
+              <Routes>
+                {/* Authenticated routes with layout */}
+                <Route
+                  element={
+                    <Authenticated
+                      key="authentication-inner"
+                      fallback={<CatchAllNavigate to="/login" />}
                     >
-                      <Outlet />
-                    </ThemedLayoutV2>
-                  </Authenticated>
-                }
-              >
-                {/* Default route to the dashboard */}
-                {/* <Route index element={<DashboardPage />} /> */}
-                {/* Schedule Routes */}
-                <Route path="/schedule" >
-                  <Route index element={<ScheduleList />} />
+                      <ThemedLayoutV2
+                        Title={CustomTitle}
+                      Title={CustomTitle}
+                      Header={Header}
+                        Sider={(props) => <ThemedSiderV2 {...props} fixed />}
+                      >
+                        <Outlet />
+                      </ThemedLayoutV2>
+                    </Authenticated>
+                  }
+                >
+                  {/* Default route to the dashboard */}
+                  {/* <Route index element={<DashboardPage />} /> */}
+                  {/* Schedule Routes */}
+                  <Route path="/schedule" >
+                    <Route index element={<ScheduleList />} />
+                  </Route>
+                  <Route path="/teamSchedule" >
+                    <Route index element={<TeamScheduleList />} />
+                  </Route>
+                  <Route path="/department-schedule" >
+                  <Route index element={<DepartmentSchedule />} />
                 </Route>
                 <Route path="/teamSchedule" >
                   <Route index element={<TeamScheduleList />} />
@@ -182,7 +197,6 @@ const App = () => {
         </ChakraProvider>
       </ConfigProvider>
     </ColorModeContextProvider>
-    </ChakraProvider>
     </BrowserRouter>
   );
 };

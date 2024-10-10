@@ -91,6 +91,77 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
 
 /**
  * @openapi
+ * /api/v1/cancelPendingRequests:
+ *   post:
+ *     description: Cancel user's own pending requests
+ *     tags: [Pending Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               staffId:
+ *                 type: number
+ *                 description: The user's own staffId
+ *               requestId:
+ *                 type: string
+ *                 description: RequestId to be cancelled
+ *             required:
+ *               - staffId
+ *               - requestId
+ */
+router.post("/cancelPendingRequests", (ctx) =>
+  requestController.cancelPendingRequests(ctx)
+);
+
+/**
+ * @openapi
+ * /api/v1/getPendingRequests:
+ *   get:
+ *     description: Get pending request from direct subordinates
+ *     tags: [Pending Requests]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200:
+ *         description: Returns all pending requests from direct subordinates
+ */
+router.get(
+  "/getPendingRequests",
+  checkUserRolePermission(AccessControl.VIEW_PENDING_REQUEST),
+  (ctx) => requestController.getPendingRequests(ctx)
+);
+
+/**
+ * @openapi
+ * /api/v1/getOwnPendingRequests?myId={INSERT ID HERE}:
+ *   get:
+ *     description: Get own pending request
+ *     tags: [Pending Requests]
+ *     parameters:
+ *       - in: query
+ *         name: myId
+ *         schema:
+ *           type: number
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200:
+ *         description: Returns own pending requests
+ */
+router.get("/getOwnPendingRequests", (ctx) =>
+  requestController.getOwnPendingRequests(ctx)
+);
+
+/**
+ * @openapi
  * /api/v1/getEmployee?staffId={INSERT ID HERE}:
  *   get:
  *     description: Get employee data
@@ -106,7 +177,6 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
  *       200:
  *         description: Returns an employee object
  */
-
 router.get("/getEmployee", (ctx) => employeeController.getEmployee(ctx));
 
 /**
@@ -220,5 +290,59 @@ router.get(
 router.post("/postRequest", async (ctx) => {
   await requestController.postRequest(ctx);
 });
+
+/**
+ * @openapi
+ * /api/v1/approveRequest:
+ *   post:
+ *     description: approve subordinates' pending requests
+ *     tags: [Pending Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               requestId:
+ *                 type: string
+ *                 description: RequestId to be approved
+ *             required:
+ *               - performedBy
+ *               - requestId
+ */
+router.post("/approveRequest", (ctx) => requestController.approveRequest(ctx));
+
+/**
+ * @openapi
+ * /api/v1/rejectRequest:
+ *   post:
+ *     description: reject subordinates' pending requests
+ *     tags: [Pending Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               requestId:
+ *                 type: string
+ *                 description: RequestId to be rejected
+ *               reason:
+ *                 type: string
+ *                 description: Reason for rejection
+ *             required:
+ *               - performedBy
+ *               - requestId
+ *               - reason
+ */
+router.post("/rejectRequest", (ctx) => requestController.rejectRequest(ctx));
 
 export default router;
