@@ -270,9 +270,9 @@ router.get("/getDeptSchedule", (ctx) => requestController.getDeptSchedule(ctx));
  *         description: Returns a request object
  */
 router.get(
-  "/getDeptScheduleByStaffId",
+  "/getDeptByManager",
   checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
-  (ctx) => employeeController.getDeptScheduleByStaffId(ctx)
+  (ctx) => employeeController.getDeptByManager(ctx)
 );
 
 /**

@@ -19,7 +19,7 @@ class EmployeeDb {
     ).exec();
   }
 
-  public async getDeptScheduleByStaffId(staffId: number) {
+  public async getDeptByManager(staffId: number) {
     const employeeHierarchy = await Employee.aggregate([
       { $match: { staffId } },
       {
@@ -40,7 +40,7 @@ class EmployeeDb {
     }
 
     const root = new EmployeeTreeNode(
-      employeeHierarchy[0].staffId, null
+      employeeHierarchy[0].staffId, employeeHierarchy[0].dept, null
     );
 
     let queue: Array<EmployeeTreeNode> = [root];
@@ -60,13 +60,14 @@ class EmployeeDb {
 
       for (const subordinate of directSubordinates) {
         const subordinateStaffId = subordinate.staffId;
+        const subordinateDept = subordinate.dept;
         if (subordinateStaffId in seen) {
           continue;
         }
 
         seen.push(subordinateStaffId);
         const subordinateTreeNode = new EmployeeTreeNode(
-          subordinateStaffId, null
+          subordinateStaffId, subordinateDept, null
         );
 
         current.addSubordinate(subordinateTreeNode);

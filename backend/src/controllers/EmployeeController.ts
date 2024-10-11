@@ -72,7 +72,7 @@ class EmployeeController {
     };
   }
 
-  public async getDeptScheduleByStaffId(ctx: Context) {
+  public async getDeptByManager(ctx: Context) {
     const { staffId } = ctx.query;
     const validation = numberSchema.safeParse(staffId);
     if (!validation.success) {
@@ -82,7 +82,24 @@ class EmployeeController {
       return;
     }
 
-    ctx.body = await this.employeeService.getDeptScheduleByStaffId(Number(staffId));
+    let result = null;
+
+    try {
+      result = await this.employeeService.getDeptByManager(Number(staffId));
+    } catch (e) {
+      if (e instanceof Error) {
+        ctx.body = {
+          error: e.message
+        };
+      } else {
+        ctx.body = {
+          error: 'An unknown error occurred'
+        };
+      }
+      return;
+    }
+
+    ctx.body = result;
   }
 }
 
