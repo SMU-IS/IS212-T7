@@ -118,10 +118,10 @@ router.post("/cancelPendingRequests", (ctx) =>
 
 /**
  * @openapi
- * /api/v1/getPendingRequests:
+ * /api/v1/getAllSubordinatesRequests:
  *   get:
  *     description: Get pending request from direct subordinates
- *     tags: [Pending Requests]
+ *     tags: [All Subordinates Requests]
  *     parameters:
  *       - in: header
  *         name: id
@@ -131,12 +131,12 @@ router.post("/cancelPendingRequests", (ctx) =>
  *         description: User's staffId
  *     responses:
  *       200:
- *         description: Returns all pending requests from direct subordinates
+ *         description: Returns all subordinates requests from direct subordinates
  */
 router.get(
-  "/getPendingRequests",
+  "/getAllSubordinatesRequests",
   checkUserRolePermission(AccessControl.VIEW_PENDING_REQUEST),
-  (ctx) => requestController.getPendingRequests(ctx)
+  (ctx) => requestController.getAllSubordinatesRequests(ctx)
 );
 
 /**

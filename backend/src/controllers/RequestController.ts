@@ -16,19 +16,15 @@ import {
 import RequestService from "@/services/RequestService";
 import { Context } from "koa";
 
+interface MessageDates {
+  message: string;
+  dates: [string, string][];
+}
+
 interface ResponseMessage {
-  success: {
-    message: string;
-    dates: [string, string][];
-  };
-  note: {
-    message: string;
-    dates: [string, string][];
-  };
-  error: {
-    message: string;
-    dates: [string, string][];
-  };
+  success: MessageDates;
+  error: MessageDates[];
+  note: MessageDates;
 }
 
 class RequestController {
@@ -51,12 +47,11 @@ class RequestController {
         : HttpStatusResponse.NOT_MODIFIED;
   }
 
-  public async getPendingRequests(ctx: Context) {
+  public async getAllSubordinatesRequests(ctx: Context) {
     const { id } = ctx.request.header;
-    const pendingRequests = await this.requestService.getPendingRequests(
-      Number(id)
-    );
-    ctx.body = pendingRequests;
+    const subordinatesRequests =
+      await this.requestService.getAllSubordinatesRequests(Number(id));
+    ctx.body = subordinatesRequests;
   }
 
   public async getOwnPendingRequests(ctx: Context) {
@@ -131,7 +126,7 @@ class RequestController {
     const result = await this.requestService.postRequest(requestDetails);
     let responseMessage: ResponseMessage = {
       success: { message: "", dates: [] },
-      error: { message: "", dates: [] },
+      error: [],
       note: { message: "", dates: [] },
     };
 
@@ -142,11 +137,46 @@ class RequestController {
       };
     }
 
+    if (result.weekendDates.length > 0) {
+      responseMessage.error.push({
+        message: errMsg.WEEKEND_REQUEST,
+        dates: result.weekendDates,
+      });
+    }
+
+    if (result.pastDates.length > 0) {
+      responseMessage.error.push({
+        message: errMsg.PAST_DATE,
+        dates: result.pastDates,
+      });
+    }
+
+    if (result.pastDeadlineDates.length > 0) {
+      responseMessage.error.push({
+        message: errMsg.PAST_DEADLINE,
+        dates: result.pastDeadlineDates,
+      });
+    }
+
     if (result.errorDates.length > 0) {
-      responseMessage.error = {
+      responseMessage.error.push({
         message: errMsg.SAME_DAY_REQUEST,
         dates: result.errorDates,
-      };
+      });
+    }
+
+    if (result.duplicateDates.length > 0) {
+      responseMessage.error.push({
+        message: errMsg.DUPLICATE_DATE,
+        dates: result.duplicateDates,
+      });
+    }
+
+    if (result.insertErrorDates.length > 0) {
+      responseMessage.error.push({
+        message: errMsg.INSERT_ERROR,
+        dates: result.insertErrorDates,
+      });
     }
 
     if (result.noteDates.length > 0) {
@@ -178,7 +208,7 @@ class RequestController {
         ? HttpStatusResponse.OK
         : HttpStatusResponse.NOT_MODIFIED;
   }
-  
+
   public async rejectRequest(ctx: Context) {
     const rejectionDetails = ctx.request.body;
     const validation = rejectionSchema.safeParse(rejectionDetails);
