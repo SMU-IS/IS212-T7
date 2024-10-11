@@ -20,8 +20,8 @@ const employeeDb = new EmployeeDb();
 /**
  * Services
  */
-const requestService = new RequestService(requestDb);
 const employeeService = new EmployeeService(employeeDb);
+const requestService = new RequestService(employeeService, requestDb);
 
 /**
  * Controllers
