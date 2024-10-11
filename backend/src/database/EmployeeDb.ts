@@ -1,7 +1,7 @@
-import Employee from "@/models/Employee";
+import Employee, { IEmployee } from "@/models/Employee";
 
 class EmployeeDb {
-  public async getEmployee(staffId: number) {
+  public async getEmployee(staffId: number): Promise<IEmployee | null> {
     const employee = await Employee.findOne(
       { staffId },
       "-_id -createdAt -updatedAt -hashedPassword"
@@ -14,7 +14,7 @@ class EmployeeDb {
       {
         email: userEmail,
       },
-      "staffId reportingManager hashedPassword role"
+      "-_id -createdAt -updatedAt"
     ).exec();
   }
 }

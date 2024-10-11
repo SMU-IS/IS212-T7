@@ -1,5 +1,6 @@
 import EmployeeDb from "@/database/EmployeeDb";
 import { errMsg } from "@/helpers";
+import { IEmployee } from "@/models/Employee";
 import bcrpyt from "bcrypt";
 
 class EmployeeService {
@@ -9,7 +10,7 @@ class EmployeeService {
     this.employeeDb = employeeDb;
   }
 
-  public async getEmployee(staffId: number) {
+  public async getEmployee(staffId: number): Promise<IEmployee | null> {
     const employee = await this.employeeDb.getEmployee(staffId);
     return employee;
   }

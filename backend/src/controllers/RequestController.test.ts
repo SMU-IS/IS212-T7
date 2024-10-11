@@ -1,5 +1,5 @@
 import RequestController from "@/controllers/RequestController";
-import { errMsg, successMsg, noteMsg } from "@/helpers";
+import { successMsg, noteMsg, errMsg } from "@/helpers";
 import RequestService from "@/services/RequestService";
 import RequestDb from "@/database/RequestDb";
 import { Context } from "koa";
@@ -13,6 +13,11 @@ describe("RequestController", () => {
     successDates: [string, string][];
     noteDates: [string, string][];
     errorDates: [string, string][];
+    weekendDates: [string, string][];
+    pastDates: [string, string][];
+    pastDeadlineDates: [string, string][];
+    duplicateDates: [string, string][];
+    insertErrorDates: [string, string][];
   };
 
   beforeEach(() => {
@@ -33,10 +38,7 @@ describe("RequestController", () => {
   });
 
   it("should return an error when missing parameters", async () => {
-    // Act
     await requestController.postRequest(ctx);
-
-    // Assert
     expect(ctx.body).toEqual({
       errMsg: {
         _errors: [],
@@ -65,8 +67,7 @@ describe("RequestController", () => {
     });
   });
 
-  it("Happy Case: should return a (success{message, dates}, error, note) object when a valid date is inputted", async () => {
-    // Arrange
+  it("should return a (success{message, dates}, error, note) object when a valid date is inputted", async () => {
     ctx.request.body = {
       staffId: 3,
       staffName: "Amy Cheong",
@@ -87,6 +88,11 @@ describe("RequestController", () => {
       ],
       noteDates: [],
       errorDates: [],
+      weekendDates: [],
+      pastDates: [],
+      pastDeadlineDates: [],
+      duplicateDates: [],
+      insertErrorDates: [],
     };
 
     const expectedResponse = {
@@ -97,10 +103,7 @@ describe("RequestController", () => {
           ["2024-09-20", "FULL"],
         ],
       },
-      error: {
-        message: "",
-        dates: [],
-      },
+      error: [],
       note: {
         message: "",
         dates: [],
@@ -108,19 +111,14 @@ describe("RequestController", () => {
     };
 
     requestServiceMock.postRequest.mockResolvedValue(expectedServiceResponse);
-
-    // Act
     await requestController.postRequest(ctx);
-
-    // Assert
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
       ctx.request.body
     );
   });
 
-  it("Happy Case: should return a (success{message, dates}, error, note{message, dates}) object when a valid date is inputted but there is already >= 2 requests in that week", async () => {
-    // Arrange
+  it("should return a (success{message, dates}, error, note{message, dates}) object when a valid date is inputted", async () => {
     ctx.request.body = {
       staffId: 3,
       staffName: "Amy Cheong",
@@ -139,11 +137,13 @@ describe("RequestController", () => {
         ["2024-09-19", "FULL"],
         ["2024-09-20", "FULL"],
       ],
-      noteDates: [
-        ["2024-09-19", "FULL"],
-        ["2024-09-20", "FULL"],
-      ],
+      noteDates: [["2024-09-20", "FULL"]],
       errorDates: [],
+      weekendDates: [],
+      pastDates: [],
+      pastDeadlineDates: [],
+      duplicateDates: [],
+      insertErrorDates: [],
     };
 
     const expectedResponse = {
@@ -154,33 +154,22 @@ describe("RequestController", () => {
           ["2024-09-20", "FULL"],
         ],
       },
-      error: {
-        message: "",
-        dates: [],
-      },
+      error: [],
       note: {
         message: noteMsg,
-        dates: [
-          ["2024-09-19", "FULL"],
-          ["2024-09-20", "FULL"],
-        ],
+        dates: [["2024-09-20", "FULL"]],
       },
     };
 
     requestServiceMock.postRequest.mockResolvedValue(expectedServiceResponse);
-
-    // Act
     await requestController.postRequest(ctx);
-
-    // Assert
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
       ctx.request.body
     );
   });
 
-  it("Sad Case: should return a (success, error{message, dates}, note) object when an invalid date is received", async () => {
-    // Arrange
+  it("should return a (success{message, dates}, error[duplicate], note) object when a duplicated date is inputted", async () => {
     ctx.request.body = {
       staffId: 3,
       staffName: "Amy Cheong",
@@ -188,8 +177,245 @@ describe("RequestController", () => {
       managerName: "John Doe",
       dept: "IT",
       requestedDates: [
-        ["2024-09-19", "FULL"],
         ["2024-09-20", "FULL"],
+        ["2024-09-20", "FULL"],
+      ],
+      reason: "Take care of mother",
+    };
+
+    const expectedServiceResponse: ResponseDates = {
+      successDates: [["2024-09-20", "FULL"]],
+      noteDates: [],
+      errorDates: [],
+      weekendDates: [],
+      pastDates: [],
+      pastDeadlineDates: [],
+      duplicateDates: [["2024-09-20", "FULL"]],
+      insertErrorDates: [],
+    };
+
+    const expectedResponse = {
+      success: {
+        message: successMsg,
+        dates: [["2024-09-20", "FULL"]],
+      },
+      error: [
+        {
+          message: errMsg.DUPLICATE_DATE,
+          dates: [["2024-09-20", "FULL"]],
+        },
+      ],
+      note: {
+        message: "",
+        dates: [],
+      },
+    };
+
+    requestServiceMock.postRequest.mockResolvedValue(expectedServiceResponse);
+    await requestController.postRequest(ctx);
+    expect(ctx.body).toEqual(expectedResponse);
+    expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
+      ctx.request.body
+    );
+  });
+
+  it("should return a (success, error[weekend], note) object when a weekend is inputted", async () => {
+    ctx.request.body = {
+      staffId: 3,
+      staffName: "Amy Cheong",
+      reportingManager: 1,
+      managerName: "John Doe",
+      dept: "IT",
+      requestedDates: [["2024-09-21", "FULL"]],
+      reason: "Take care of mother",
+    };
+
+    const expectedServiceResponse: ResponseDates = {
+      successDates: [],
+      noteDates: [],
+      errorDates: [],
+      weekendDates: [["2024-09-21", "FULL"]],
+      pastDates: [],
+      pastDeadlineDates: [],
+      duplicateDates: [],
+      insertErrorDates: [],
+    };
+
+    const expectedResponse = {
+      success: {
+        message: "",
+        dates: [],
+      },
+      error: [
+        {
+          message: errMsg.WEEKEND_REQUEST,
+          dates: [["2024-09-21", "FULL"]],
+        },
+      ],
+      note: {
+        message: "",
+        dates: [],
+      },
+    };
+
+    requestServiceMock.postRequest.mockResolvedValue(expectedServiceResponse);
+    await requestController.postRequest(ctx);
+    expect(ctx.body).toEqual(expectedResponse);
+    expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
+      ctx.request.body
+    );
+  });
+
+  it("should return a (success, error[pastDate], note) object when a past date is inputted", async () => {
+    ctx.request.body = {
+      staffId: 3,
+      staffName: "Amy Cheong",
+      reportingManager: 1,
+      managerName: "John Doe",
+      dept: "IT",
+      requestedDates: [["2024-08-21", "FULL"]],
+      reason: "Take care of mother",
+    };
+
+    const expectedServiceResponse: ResponseDates = {
+      successDates: [],
+      noteDates: [],
+      errorDates: [],
+      weekendDates: [],
+      pastDates: [["2024-08-21", "FULL"]],
+      pastDeadlineDates: [],
+      duplicateDates: [],
+      insertErrorDates: [],
+    };
+
+    const expectedResponse = {
+      success: {
+        message: "",
+        dates: [],
+      },
+      error: [
+        {
+          message: errMsg.PAST_DATE,
+          dates: [["2024-08-21", "FULL"]],
+        },
+      ],
+      note: {
+        message: "",
+        dates: [],
+      },
+    };
+
+    requestServiceMock.postRequest.mockResolvedValue(expectedServiceResponse);
+    await requestController.postRequest(ctx);
+    expect(ctx.body).toEqual(expectedResponse);
+    expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
+      ctx.request.body
+    );
+  });
+
+  it("should return a (success, error[pastDeadline], note) object when a date that is past application deadline is inputted", async () => {
+    ctx.request.body = {
+      staffId: 3,
+      staffName: "Amy Cheong",
+      reportingManager: 1,
+      managerName: "John Doe",
+      dept: "IT",
+      requestedDates: [["2024-09-21", "FULL"]],
+      reason: "Take care of mother",
+    };
+
+    const expectedServiceResponse: ResponseDates = {
+      successDates: [],
+      noteDates: [],
+      errorDates: [],
+      weekendDates: [],
+      pastDates: [],
+      pastDeadlineDates: [["2024-08-21", "FULL"]],
+      duplicateDates: [],
+      insertErrorDates: [],
+    };
+
+    const expectedResponse = {
+      success: {
+        message: "",
+        dates: [],
+      },
+      error: [
+        {
+          message: errMsg.PAST_DEADLINE,
+          dates: [["2024-08-21", "FULL"]],
+        },
+      ],
+      note: {
+        message: "",
+        dates: [],
+      },
+    };
+    requestServiceMock.postRequest.mockResolvedValue(expectedServiceResponse);
+    await requestController.postRequest(ctx);
+    expect(ctx.body).toEqual(expectedResponse);
+    expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
+      ctx.request.body
+    );
+  });
+
+  it("should return a (success, error[insertError], note) object when a there is a DB insert error", async () => {
+    ctx.request.body = {
+      staffId: 3,
+      staffName: "Amy Cheong",
+      reportingManager: 1,
+      managerName: "John Doe",
+      dept: "IT",
+      requestedDates: [["2024-09-21", "FULL"]],
+      reason: "Take care of mother",
+    };
+
+    const expectedServiceResponse: ResponseDates = {
+      successDates: [],
+      noteDates: [],
+      errorDates: [],
+      weekendDates: [],
+      pastDates: [],
+      pastDeadlineDates: [],
+      duplicateDates: [],
+      insertErrorDates: [["2024-09-21", "FULL"]],
+    };
+
+    const expectedResponse = {
+      success: {
+        message: "",
+        dates: [],
+      },
+      error: [
+        {
+          message: errMsg.INSERT_ERROR,
+          dates: [["2024-09-21", "FULL"]],
+        },
+      ],
+      note: {
+        message: "",
+        dates: [],
+      },
+    };
+
+    requestServiceMock.postRequest.mockResolvedValue(expectedServiceResponse);
+    await requestController.postRequest(ctx);
+    expect(ctx.body).toEqual(expectedResponse);
+    expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
+      ctx.request.body
+    );
+  });
+
+  it("should return a (success, error[insertError, pastDate], note) object when a there is a DB insert error and a past date is inputted", async () => {
+    ctx.request.body = {
+      staffId: 3,
+      staffName: "Amy Cheong",
+      reportingManager: 1,
+      managerName: "John Doe",
+      dept: "IT",
+      requestedDates: [
+        ["2024-09-21", "FULL"],
+        ["2023-09-21", "FULL"],
       ],
       reason: "Take care of mother",
     };
@@ -197,10 +423,12 @@ describe("RequestController", () => {
     const expectedServiceResponse: ResponseDates = {
       successDates: [],
       noteDates: [],
-      errorDates: [
-        ["2024-09-19", "FULL"],
-        ["2024-09-20", "FULL"],
-      ],
+      errorDates: [],
+      weekendDates: [],
+      pastDates: [["2023-09-21", "FULL"]],
+      pastDeadlineDates: [],
+      duplicateDates: [],
+      insertErrorDates: [["2024-09-21", "FULL"]],
     };
 
     const expectedResponse = {
@@ -208,13 +436,16 @@ describe("RequestController", () => {
         message: "",
         dates: [],
       },
-      error: {
-        message: errMsg.SAME_DAY_REQUEST,
-        dates: [
-          ["2024-09-19", "FULL"],
-          ["2024-09-20", "FULL"],
-        ],
-      },
+      error: [
+        {
+          message: errMsg.PAST_DATE,
+          dates: [["2023-09-21", "FULL"]],
+        },
+        {
+          message: errMsg.INSERT_ERROR,
+          dates: [["2024-09-21", "FULL"]],
+        },
+      ],
       note: {
         message: "",
         dates: [],
@@ -222,11 +453,53 @@ describe("RequestController", () => {
     };
 
     requestServiceMock.postRequest.mockResolvedValue(expectedServiceResponse);
-
-    // Act
     await requestController.postRequest(ctx);
+    expect(ctx.body).toEqual(expectedResponse);
+    expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
+      ctx.request.body
+    );
+  });
 
-    // Assert
+  it("should return a (success, error[sameDayRequest], note) object when a there is an existing request for the inputted date", async () => {
+    ctx.request.body = {
+      staffId: 3,
+      staffName: "Amy Cheong",
+      reportingManager: 1,
+      managerName: "John Doe",
+      dept: "IT",
+      requestedDates: [["2024-09-21", "FULL"]],
+      reason: "Take care of mother",
+    };
+
+    const expectedServiceResponse: ResponseDates = {
+      successDates: [],
+      noteDates: [],
+      errorDates: [["2023-09-21", "FULL"]],
+      weekendDates: [],
+      pastDates: [],
+      pastDeadlineDates: [],
+      duplicateDates: [],
+      insertErrorDates: [],
+    };
+
+    const expectedResponse = {
+      success: {
+        message: "",
+        dates: [],
+      },
+      error: [
+        {
+          message: errMsg.SAME_DAY_REQUEST,
+          dates: [["2023-09-21", "FULL"]],
+        },
+      ],
+      note: {
+        message: "",
+        dates: [],
+      },
+    };
+    requestServiceMock.postRequest.mockResolvedValue(expectedServiceResponse);
+    await requestController.postRequest(ctx);
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
       ctx.request.body
