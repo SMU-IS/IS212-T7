@@ -28,4 +28,15 @@ const deptSchema = z.object({
   dept: z.nativeEnum(Dept),
 });
 
-export { deptSchema, numberSchema, requestSchema, teamSchema };
+const approvalSchema = z.object({
+  performedBy: z.number(),
+  requestId: z.number(),
+});
+
+const rejectionSchema = z.object({
+  performedBy: z.number(),
+  requestId: z.number(),
+  reason: z.string(),
+});
+
+export { deptSchema, numberSchema, requestSchema, teamSchema, approvalSchema, rejectionSchema };

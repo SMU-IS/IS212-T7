@@ -3,6 +3,7 @@ import RequestController from "@/controllers/RequestController";
 import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
 import { AccessControl } from "@/helpers";
+import { checkSameTeam } from "@/middleware/checkSameTeam";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import EmployeeService from "@/services/EmployeeService";
 import RequestService from "@/services/RequestService";
@@ -90,6 +91,77 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
 
 /**
  * @openapi
+ * /api/v1/cancelPendingRequests:
+ *   post:
+ *     description: Cancel user's own pending requests
+ *     tags: [Pending Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               staffId:
+ *                 type: number
+ *                 description: The user's own staffId
+ *               requestId:
+ *                 type: string
+ *                 description: RequestId to be cancelled
+ *             required:
+ *               - staffId
+ *               - requestId
+ */
+router.post("/cancelPendingRequests", (ctx) =>
+  requestController.cancelPendingRequests(ctx)
+);
+
+/**
+ * @openapi
+ * /api/v1/getAllSubordinatesRequests:
+ *   get:
+ *     description: Get pending request from direct subordinates
+ *     tags: [All Subordinates Requests]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200:
+ *         description: Returns all subordinates requests from direct subordinates
+ */
+router.get(
+  "/getAllSubordinatesRequests",
+  checkUserRolePermission(AccessControl.VIEW_PENDING_REQUEST),
+  (ctx) => requestController.getAllSubordinatesRequests(ctx)
+);
+
+/**
+ * @openapi
+ * /api/v1/getOwnPendingRequests?myId={INSERT ID HERE}:
+ *   get:
+ *     description: Get own pending request
+ *     tags: [Pending Requests]
+ *     parameters:
+ *       - in: query
+ *         name: myId
+ *         schema:
+ *           type: number
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200:
+ *         description: Returns own pending requests
+ */
+router.get("/getOwnPendingRequests", (ctx) =>
+  requestController.getOwnPendingRequests(ctx)
+);
+
+/**
+ * @openapi
  * /api/v1/getEmployee?staffId={INSERT ID HERE}:
  *   get:
  *     description: Get employee data
@@ -105,7 +177,6 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
  *       200:
  *         description: Returns an employee object
  */
-
 router.get("/getEmployee", (ctx) => employeeController.getEmployee(ctx));
 
 /**
@@ -146,12 +217,20 @@ router.get("/getMySchedule", (ctx) => requestController.getMySchedule(ctx));
  *           type: string
  *           enum: [CEO, Consultancy, Engineering, Finance, HR, IT, Sales, Solutioning]
  *         required: true
- *         description: Pass in staff's department
+ *         description: User's department
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
  *     responses:
  *       200:
  *         description: Returns a request object
  */
-router.get("/getTeamSchedule", (ctx) => requestController.getTeamSchedule(ctx));
+router.get("/getTeamSchedule", checkSameTeam(), (ctx) =>
+  requestController.getTeamSchedule(ctx)
+);
 
 /**
  * @openapi
@@ -211,5 +290,59 @@ router.get(
 router.post("/postRequest", async (ctx) => {
   await requestController.postRequest(ctx);
 });
+
+/**
+ * @openapi
+ * /api/v1/approveRequest:
+ *   post:
+ *     description: approve subordinates' pending requests
+ *     tags: [Pending Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               requestId:
+ *                 type: string
+ *                 description: RequestId to be approved
+ *             required:
+ *               - performedBy
+ *               - requestId
+ */
+router.post("/approveRequest", (ctx) => requestController.approveRequest(ctx));
+
+/**
+ * @openapi
+ * /api/v1/rejectRequest:
+ *   post:
+ *     description: reject subordinates' pending requests
+ *     tags: [Pending Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               requestId:
+ *                 type: string
+ *                 description: RequestId to be rejected
+ *               reason:
+ *                 type: string
+ *                 description: Reason for rejection
+ *             required:
+ *               - performedBy
+ *               - requestId
+ *               - reason
+ */
+router.post("/rejectRequest", (ctx) => requestController.rejectRequest(ctx));
 
 export default router;

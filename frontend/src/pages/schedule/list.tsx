@@ -23,13 +23,16 @@ import { customCalendarConfig } from "@/config/calendarType";
 import {calendarVar, RequestType} from '../../helper/scheduleVar'
 import '@schedule-x/theme-default/dist/index.css'
 import { IEvent, IResponseData } from "@/interfaces/schedule";
-
+ 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 export const ScheduleList = () => {
 
   const { data: user } = useGetIdentity<EmployeeJWT>();
   const [calendarEvents, setCalendarEvents] = useState<IEvent[]>([]); // State for calendar events
+  const [eventsLoaded, setEventsLoaded] = useState(false); // State for calendar events
+  
+  
   useEffect(() => {
     if (user?.staffId) {
       fetchScheduleData(user.staffId)
@@ -42,8 +45,7 @@ export const ScheduleList = () => {
         params: { myId: staffId },
         timeout: 300000,
       });
-      const eventArr: IResponseData[] = responseData?.data
-
+      const eventArr: IResponseData[] = Array.isArray(responseData?.data) ? responseData.data : [];
       const formattedData: IEvent[] = eventArr.map((item) => {
         const formatDate = (date: Date, time?: string) => 
           `${date.toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" })}${time ? ` ${time}` : ''}`;
@@ -85,10 +87,9 @@ export const ScheduleList = () => {
       });
       // Update calendar events
       setCalendarEvents(formattedData || []);
-      
+      setEventsLoaded(true);
     } catch (error) {
       console.error("Error fetching schedule data:", error);
-
     }
   };
 
@@ -99,7 +100,7 @@ export const ScheduleList = () => {
 
   // Create the Calendar
   useEffect(() => {
-    if (!calendarRef.current && calendarEvents.length > 0) {
+    if (!calendarRef.current && eventsLoaded) {
       calendarRef.current = createCalendar({
         views: [createViewWeek(), createViewMonthGrid(), createViewMonthAgenda()],
         events: calendarEvents, // Initially empty
@@ -119,7 +120,7 @@ export const ScheduleList = () => {
       });
       calendarRef.current.render(document.getElementById('calendar'));
     }
-  }, [calendarEvents, calendarTheme]);
+  }, [calendarEvents, eventsLoaded, calendarTheme]);
 
   useEffect(() => {
     if (calendarRef.current) {

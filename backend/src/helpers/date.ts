@@ -10,10 +10,10 @@ dayjs.extend(timezone);
 dayjs.extend(localeData);
 
 const localeObject = {
-  name: "es", 
-  weekdays: "Domingo_Lunes ...".split("_"), 
-  weekStart: 1, 
-  months: "Enero_Febrero ... ".split("_"), 
+  name: "es",
+  weekdays: "Domingo_Lunes ...".split("_"),
+  weekStart: 1,
+  months: "Enero_Febrero ... ".split("_"),
   formats: {
     LTS: "h:mm:ss A",
     LT: "h:mm A",
@@ -27,13 +27,13 @@ const localeObject = {
     llll: "ddd, MMM D, YYYY h:mm A",
   },
   relativeTime: {
-    future: "in %s", 
+    future: "in %s",
     past: "%s ago",
     s: "a few seconds",
     m: "a minute",
     mm: "%d minutes",
     h: "an hour",
-    hh: "%d hours", 
+    hh: "%d hours",
     d: "a day",
     dd: "%d days",
     M: "a month",
@@ -79,4 +79,45 @@ function checkDate(date: Date, weekMap: any) {
   return false;
 }
 
-export { weekMap, checkDate };
+function checkPastDate(date: Date) {
+  let singaporeTime = dayjs().tz("Asia/Singapore");
+  singaporeTime = singaporeTime.hour(0).minute(0).second(0).millisecond(0);
+  const tomorrowInSingapore = singaporeTime.add(1, "day");
+  let dateInput = dayjs(date).tz("Asia/Singapore");
+  dateInput = dateInput.hour(0).minute(0).second(0).millisecond(0);
+  if (
+    dateInput.isBefore(tomorrowInSingapore) ||
+    dateInput.isSame(tomorrowInSingapore, "day")
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function checkWeekend(date: Date) {
+  let dateInput = dayjs(date).tz("Asia/Singapore");
+  let dayOfWeek = dateInput.day();
+  if (dayOfWeek == 0 || dayOfWeek == 6) {
+    return true;
+  }
+  return false;
+}
+
+function checkLatestDate(date: Date, testDate: Date | null = null) {
+  let singaporeTime = dayjs(testDate || new Date()).tz(
+    "Asia/Singapore"
+  );
+  singaporeTime = singaporeTime.hour(0).minute(0).second(0).millisecond(0);
+  let dateInput = dayjs(date).tz("Asia/Singapore");
+  dateInput = dateInput.hour(0).minute(0).second(0).millisecond(0);
+  let dayOfWeek = dateInput.day();
+  if (dayOfWeek === 1 || dayOfWeek == 2) {
+    const latestApplicationDate = dateInput.subtract(4, "day");
+    if (singaporeTime.isAfter(latestApplicationDate)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export { weekMap, checkDate, checkPastDate, checkLatestDate, checkWeekend };

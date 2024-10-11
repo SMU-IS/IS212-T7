@@ -1,5 +1,6 @@
 import { AuthProvider } from "@refinedev/core";
 import axios, { AxiosInstance } from "axios";
+import { Role } from "@/helper/loginVar";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
