@@ -11,6 +11,8 @@ import {
 } from "antd";
 import React, { useContext } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { usePendingCount } from "@/pages/approve-reject/requestsCount";
+
 import { Button } from "antd";
 import {
   AlertOutlined,
@@ -33,15 +35,13 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   sticky = true,
 }) => {
   const { token } = useToken();
-  let count = 1;
   const { data: user } = useGetIdentity<IUser>();
   const { mode, setMode } = useContext(ColorModeContext);
   const navigate = useNavigate(); // Hook to handle navigation
+  const count = 1;
+  const [pendingCount] = usePendingCount(); // Read the global state
 
-  const handleIncomingNotif = () => {
-    count++;
-  };
-
+  console.log(pendingCount);
   const headerStyles: React.CSSProperties = {
     backgroundColor: token.colorBgElevated,
     display: "flex",
@@ -60,7 +60,7 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
-        <Badge count={count} offset={[-8, 0]}>
+        <Badge count={pendingCount} offset={[-8, 0]}>
           <Button
             type="primary"
             icon={<AlertOutlined />}
@@ -75,15 +75,11 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
           {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
         </Space>
         <Switch
-          // checkedChildren="🌛"
-          // unCheckedChildren="🔆"
+          checkedChildren="🌛"
+          unCheckedChildren="🔆"
           onChange={() => setMode(mode === "light" ? "dark" : "light")}
           defaultChecked={mode === "dark"}
         />
-        <Space style={{ marginLeft: "8px" }} size="middle">
-          {user?.name && <Text strong>{user.name}</Text>}
-          {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
-        </Space>
       </Space>
     </AntdLayout.Header>
   );

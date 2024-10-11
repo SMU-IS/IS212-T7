@@ -1,31 +1,24 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import { Refine, Authenticated } from "@refinedev/core";
+import { ErrorComponent, ThemedLayoutV2, ThemedSiderV2 } from "@refinedev/antd";
+import { Authenticated, Refine } from "@refinedev/core";
 import dataProvider from "@refinedev/simple-rest";
-import {
-  // AuthPage,
-  ThemedLayoutV2,
-  ThemedTitleV2,
-  RefineThemes,
-  ErrorComponent,
-  ThemedSiderV2,
-} from "@refinedev/antd";
 
-import { ColorModeContextProvider } from "./contexts/color-mode";
 import { CalendarOutlined, ClockCircleTwoTone } from "@ant-design/icons";
+import { ColorModeContextProvider } from "./contexts/color-mode";
 
 import routerProvider, {
   CatchAllNavigate,
+  DocumentTitleHandler,
   NavigateToResource,
   UnsavedChangesNotifier,
-  DocumentTitleHandler,
 } from "@refinedev/react-router-v6";
-import { ConfigProvider, theme } from "antd";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { ConfigProvider } from "antd";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 
 import { authProvider } from "./authProvider";
-import Login from "./pages/login/login"; // Import your new Login component
 import { IncomingList } from "./pages/approve-reject";
-// import { DashboardPage } from "./pages/dashboard"; // Your custom dashboard page
+import Login from "./pages/login/login";
+import { Header } from "@/components";
 import {
   BlogPostCreate,
   BlogPostEdit,
@@ -39,16 +32,15 @@ import {
   CategoryShow,
 } from "./pages/categories";
 import { ScheduleList } from "./pages/schedule";
-import { Header } from "@/components"; // Custom header if you have one
 import { WFHForm } from "./pages/wfh-application";
 
+import logo from "@/assets/logo.png";
+import { Typography } from "antd";
 import { MyRequests } from "./pages/my-requests/list";
 import { TeamScheduleList } from "./pages/team-schedule";
-import { Typography } from "antd";
-import logo from "@/assets/logo.png";
 
-import { useCustomNotificationProvider } from "./components/toast";
 import DepartmentSchedule from "@/pages/department-schedule/department-schedule";
+import { useCustomNotificationProvider } from "./components/toast";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 const App = () => {
@@ -59,7 +51,7 @@ const App = () => {
         <img
           src={logo}
           alt="Sayless Logo"
-          style={{ height: "30px", marginRight: "5px" }} // Adjust width and height as needed
+          style={{ height: "30px", marginRight: "5px" }}
         />
       </div>
       <Title
@@ -85,7 +77,7 @@ const App = () => {
               dataProvider={dataProvider(API_URL)}
               routerProvider={routerProvider}
               authProvider={authProvider}
-              notificationProvider={useCustomNotificationProvider} // Use ChakraUI's notification provider
+              notificationProvider={useCustomNotificationProvider}
               resources={[
                 {
                   name: "schedule",
@@ -132,7 +124,6 @@ const App = () => {
               }}
             >
               <Routes>
-                {/* Authenticated routes with layout */}
                 <Route
                   element={
                     <Authenticated
@@ -149,9 +140,6 @@ const App = () => {
                     </Authenticated>
                   }
                 >
-                  {/* Default route to the dashboard */}
-                  {/* <Route index element={<DashboardPage />} /> */}
-                  {/* Schedule Routes */}
                   <Route path="/schedule">
                     <Route index element={<ScheduleList />} />
                   </Route>
@@ -166,9 +154,7 @@ const App = () => {
                   </Route>
                   <Route path="/wfhform" element={<WFHForm />} />
                   <Route path="/myRequests" element={<MyRequests />} />
-                  {/* Approve/Reject List Route */}
                   <Route path="/incomingRequests" element={<IncomingList />} />
-                  {/* Blog Posts Routes */}
                   <Route path="/blog-posts">
                     <Route index element={<BlogPostList />} />
                     <Route path="create" element={<BlogPostCreate />} />
@@ -176,7 +162,6 @@ const App = () => {
                     <Route path="show/:id" element={<BlogPostShow />} />
                   </Route>
 
-                  {/* Categories Routes */}
                   <Route path="/categories">
                     <Route index element={<CategoryList />} />
                     <Route path="create" element={<CategoryCreate />} />
@@ -184,14 +169,10 @@ const App = () => {
                     <Route path="show/:id" element={<CategoryShow />} />
                   </Route>
 
-                  {/* Error page */}
                   <Route path="*" element={<ErrorComponent />} />
                 </Route>
 
-                {/* Unauthenticated route (Login Page) */}
                 <Route path="/login" element={<Login />} />
-
-                {/* Redirect to resource if authenticated */}
                 <Route
                   element={
                     <Authenticated
