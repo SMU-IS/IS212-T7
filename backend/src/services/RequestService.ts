@@ -159,14 +159,21 @@ class RequestService {
       const employee = await this.employeeService.getEmployee(
         Number(requestDetails.staffId),
       );
-      const { position } = employee!;
+      const {
+        staffFName,
+        staffLName,
+        reportingManager,
+        reportingManagerName,
+        dept,
+        position,
+      } = employee!;
 
       const document = {
         staffId: requestDetails.staffId,
-        staffName: requestDetails.staffName,
-        reportingManager: requestDetails.reportingManager,
-        managerName: requestDetails.managerName,
-        dept: requestDetails.dept,
+        staffName: `${staffFName} ${staffLName}`,
+        reportingManager,
+        managerName: reportingManagerName,
+        dept,
         requestedDate: date,
         requestType: type,
         reason: requestDetails.reason,

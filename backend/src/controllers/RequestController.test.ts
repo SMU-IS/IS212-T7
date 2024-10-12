@@ -1,10 +1,10 @@
 import RequestController from "@/controllers/RequestController";
-import { successMsg, noteMsg, errMsg } from "@/helpers";
-import RequestService from "@/services/RequestService";
-import RequestDb from "@/database/RequestDb";
-import { Context } from "koa";
-import EmployeeService from "@/services/EmployeeService";
 import EmployeeDb from "@/database/EmployeeDb";
+import RequestDb from "@/database/RequestDb";
+import { errMsg, noteMsg, successMsg } from "@/helpers";
+import EmployeeService from "@/services/EmployeeService";
+import RequestService from "@/services/RequestService";
+import { Context } from "koa";
 
 describe("RequestController", () => {
   let requestController: RequestController;
@@ -52,18 +52,6 @@ describe("RequestController", () => {
       errMsg: {
         _errors: [],
         staffId: {
-          _errors: ["Required"],
-        },
-        staffName: {
-          _errors: ["Required"],
-        },
-        reportingManager: {
-          _errors: ["Required"],
-        },
-        managerName: {
-          _errors: ["Required"],
-        },
-        dept: {
           _errors: ["Required"],
         },
         requestedDates: {
