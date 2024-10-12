@@ -18,4 +18,5 @@ export interface IResponseData {
     reason: string;
     status: string;
     requestId: number;
+    position: string;
 }
