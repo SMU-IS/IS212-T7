@@ -201,22 +201,9 @@ router.get("/getMySchedule", (ctx) => requestController.getMySchedule(ctx));
  * @openapi
  * /api/v1/getSchedule:
  *   get:
- *     description: Get your own team's schedule
+ *     description: Get schedule depending on your role
  *     tags: [Schedule]
  *     parameters:
- *       - in: query
- *         name: reportingManager
- *         schema:
- *           type: number
- *         required: true
- *         description: Reporting manager Id
- *       - in: query
- *         name: dept
- *         schema:
- *           type: string
- *           enum: [CEO, Consultancy, Engineering, Finance, HR, IT, Sales, Solutioning]
- *         required: true
- *         description: User's department
  *       - in: header
  *         name: id
  *         schema:

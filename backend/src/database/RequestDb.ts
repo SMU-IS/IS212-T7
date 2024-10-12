@@ -95,7 +95,6 @@ class RequestDb {
   public async getDeptSchedule(dept: Dept) {
     const deptSchedule = await Request.find(
       {
-        // reportingManager,
         dept,
         status: Status.APPROVED,
       },

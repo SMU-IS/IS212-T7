@@ -80,12 +80,23 @@ class RequestService {
       return errMsg.USER_DOES_NOT_EXIST;
     }
 
+    let schedule;
     const { role, position, reportingManager, dept } = employee;
+    if (role === Role.HR || role === Role.Manager) {
+      const department = await this.employeeService.getTeamCountByDept(
+        dept as Dept,
+      );
+      const wfh_arrangements = await this.requestDb.getDeptSchedule(
+        dept as Dept,
+      );
+      schedule = {
+        department,
+        wfh_arrangements,
+      };
+    } else {
+      await this.requestDb.getTeamSchedule(reportingManager, position);
+    }
 
-    const schedule =
-      role === Role.HR || role === Role.Manager
-        ? await this.requestDb.getDeptSchedule(dept as Dept)
-        : await this.requestDb.getTeamSchedule(reportingManager, position);
     return schedule;
   }
 
