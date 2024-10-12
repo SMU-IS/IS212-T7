@@ -1,12 +1,12 @@
-name: ci-unit-tests-backend
+name: Run prettier for WFH Application System to format frontend code after merge.
 
 on:
-  pull_request:
+  push:
     branches:
       - master
 
 jobs:
-  run_unit_tests:
+  run_formatter:
     runs-on: ubuntu-latest
 
     defaults:
@@ -16,13 +16,9 @@ jobs:
     steps:
       - name: Check out the code.
         uses: actions/checkout@v4.2.1
-        with:
-          fetch-depth: 0
-          ref: ${{github.event.pull_request.head.ref}}
-          repository: ${{github.event.pull_request.head.repo.full_name}}
 
       - name: Set up NodeJS latest stable version.
-        uses: actions/setup-node@v3.8.2
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 22.x
 
@@ -31,11 +27,5 @@ jobs:
           npm install --package-lock-only
           npm ci
 
-      - name: List scripts.
-        run: npm run
-
       - name: Format the code.
         run: npm run prettier
-
-      - name: Run the tests.
-        run: npm run test
