@@ -9,19 +9,16 @@ export const api: AxiosInstance = axios.create({
   timeout: 300000,
   headers: {
     "Content-Type": "application/json",
-  }
+  },
 });
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
     // Axios post to 'baseURL/api/v1/login' with email and password
-    const response = await api.post(
-      "/api/v1/login",
-      {
-        staffEmail: email,
-        staffPassword: password
-      }
-    );
+    const response = await api.post("/api/v1/login", {
+      staffEmail: email,
+      staffPassword: password,
+    });
 
     if (response.data.error == undefined) {
       localStorage.setItem("auth", JSON.stringify(response.data));
@@ -30,13 +27,13 @@ export const authProvider: AuthProvider = {
       if (role == Role.Manager) {
         return {
           success: true,
-          redirectTo: "/department-schedule"
-        }
+          redirectTo: "/department-schedule",
+        };
       }
 
       return {
         success: true,
-        redirectTo: "/schedule",
+        redirectTo: response.data.role == 2 ? "/schedule" : "/teamSchedule",
       };
     } else {
       return {

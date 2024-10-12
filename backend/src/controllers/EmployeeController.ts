@@ -3,6 +3,7 @@ import { errMsg } from "@/helpers";
 import { LoginBody } from "@/models/Employee";
 import EmployeeService from "@/services/EmployeeService";
 import { Context } from "koa";
+import { numberSchema } from "@/schema";
 
 class EmployeeController {
   private employeeService: EmployeeService;
@@ -69,6 +70,36 @@ class EmployeeController {
       tempReportingManager,
       tempReportingManagerName,
     };
+  }
+
+  public async getDeptByManager(ctx: Context) {
+    const { staffId } = ctx.query;
+    const validation = numberSchema.safeParse(staffId);
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+
+    let result = null;
+
+    try {
+      result = await this.employeeService.getDeptByManager(Number(staffId));
+    } catch (e) {
+      if (e instanceof Error) {
+        ctx.body = {
+          error: e.message
+        };
+      } else {
+        ctx.body = {
+          error: 'An unknown error occurred'
+        };
+      }
+      return;
+    }
+
+    ctx.body = result;
   }
 }
 
