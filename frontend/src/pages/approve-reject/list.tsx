@@ -40,8 +40,6 @@ export const IncomingList: React.FC = () => {
   const [description, setDescription] = useState<string>(""); // New state for description
   const [showDescription, setShowDescription] = useState<boolean>(false); // New state for description visibility
 
-  console.log(user?.staffId);
-
   const fetchRequests = async (staffId: any) => {
     try {
       const response = await axios.get(
@@ -118,8 +116,6 @@ export const IncomingList: React.FC = () => {
       };
     }
 
-    console.log(dataSource);
-
     return {
       pending: dataSource.filter(
         (post) => post.status.toLowerCase() === "pending",
@@ -152,7 +148,6 @@ export const IncomingList: React.FC = () => {
   };
 
   const handleSave = async (values: any) => {
-    console.log("Updated values:", values);
     const updatedPost = {
       ...currentPost,
       ...values,
@@ -169,7 +164,6 @@ export const IncomingList: React.FC = () => {
             performedBy: currentPost?.reportingManager,
           },
         );
-        console.log("Request approved successfully.", response.data);
       } else if (values.status === "Rejected") {
         const response = await axios.post(
           `${backendUrl}/api/v1/rejectRequest`,
@@ -179,7 +173,6 @@ export const IncomingList: React.FC = () => {
             reason: description,
           },
         );
-        console.log("Request rejected successfully.", response.data);
       }
 
       // Re-fetch requests to get the latest status after approval or rejection

@@ -65,7 +65,7 @@ export const WFHForm: React.FC = () => {
 
   const [modalContent, setModalContent] = useState<{
     success: { message: string; dates: [string, string][] };
-   error: Array<{ message: string; dates: [string, string][] }>; 
+    error: Array<{ message: string; dates: [string, string][] }>;
     note: { message: string; dates: [string, string][] };
   }>({
     success: { message: "", dates: [] },
@@ -219,8 +219,6 @@ export const WFHForm: React.FC = () => {
       wfhDate.timeOfDay,
     ]);
 
-    console.log(requestedDates);
-
     const payload = {
       staffId: Number(employeeData.staffID),
       staffName: employeeData.name,
@@ -236,8 +234,6 @@ export const WFHForm: React.FC = () => {
         `${backendUrl}/api/v1/postRequest`,
         payload,
       );
-      // console.log('Incoming request data:', payload);
-      // console.log(response.data);
 
       const { success, error, note } = response.data;
       setModalContent({ success, error, note });

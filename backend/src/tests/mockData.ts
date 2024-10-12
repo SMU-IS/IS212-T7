@@ -54,6 +54,7 @@ const mockRequestData = {
     reportingManager: 140894,
     managerName: "Rahim Khalid",
     dept: "Sales",
+    position: "Account Manager",
     requestedDate: "2024-10-08T00:00:00.000Z",
     requestType: "FULL",
     reason: "Raining",
@@ -66,6 +67,7 @@ const mockRequestData = {
     reportingManager: 140894,
     managerName: "Rahim Khalid",
     dept: "Sales",
+    position: "Account Manager",
     requestedDate: "2024-10-08T00:00:00.000Z",
     requestType: "FULL",
     reason: "Raining",
@@ -79,6 +81,7 @@ const mockRequestData = {
     reportingManager: 140894,
     managerName: "Rahim Khalid",
     dept: "Sales",
+    position: "Account Manager",
     requestedDate: new Date(),
     requestType: "FULL",
     reason: "Raining",
@@ -86,7 +89,6 @@ const mockRequestData = {
     requestId: 22,
     performedBy: 140894,
   },
-
 };
 
 export { generateMockEmployee, generateMockEmployeeTest, mockRequestData };

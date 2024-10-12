@@ -1,17 +1,10 @@
 import UtilsController from "@/controllers/UtilsController";
+import { errMsg, HttpStatusResponse, noteMsg, successMsg } from "@/helpers";
 import {
-  Dept,
-  errMsg,
-  HttpStatusResponse,
-  noteMsg,
-  successMsg,
-} from "@/helpers";
-import {
-  deptSchema,
-  requestSchema,
-  teamSchema,
   approvalSchema,
   rejectionSchema,
+  requestSchema,
+  staffIdSchema,
 } from "@/schema";
 import RequestService from "@/services/RequestService";
 import { Context } from "koa";
@@ -38,7 +31,7 @@ class RequestController {
     const { staffId, requestId } = ctx.request.body as any;
     const result = await this.requestService.cancelPendingRequests(
       Number(staffId),
-      Number(requestId)
+      Number(requestId),
     );
 
     ctx.body =
@@ -60,7 +53,7 @@ class RequestController {
       return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
     }
     const pendingRequests = await this.requestService.getOwnPendingRequests(
-      Number(myId)
+      Number(myId),
     );
     ctx.body = pendingRequests;
   }
@@ -75,11 +68,9 @@ class RequestController {
     ctx.body = result;
   }
 
-  public async getTeamSchedule(ctx: Context) {
-    const { reportingManager, dept } = ctx.query;
-    const validation =
-      teamSchema.safeParse({ reportingManager }) &&
-      deptSchema.safeParse({ dept });
+  public async getSchedule(ctx: Context) {
+    const { id } = ctx.request.header;
+    const validation = staffIdSchema.safeParse({ id });
 
     if (!validation.success) {
       ctx.body = {
@@ -88,29 +79,7 @@ class RequestController {
       return;
     }
 
-    const result = await this.requestService.getTeamSchedule(
-      Number(reportingManager),
-      dept as Dept
-    );
-    ctx.body = result;
-  }
-
-  public async getDeptSchedule(ctx: Context) {
-    const { dept } = ctx.query;
-    const validation = deptSchema.safeParse({ dept });
-    if (!validation.success) {
-      ctx.body = {
-        errMsg: validation.error.format(),
-      };
-      return;
-    }
-
-    const result = await this.requestService.getDeptSchedule(dept as Dept);
-    ctx.body = result;
-  }
-
-  public async getCompanySchedule(ctx: Context) {
-    const result = await this.requestService.getCompanySchedule();
+    const result = await this.requestService.getSchedule(Number(id));
     ctx.body = result;
   }
 
@@ -201,7 +170,7 @@ class RequestController {
     const { performedBy, requestId } = ctx.request.body as any;
     const result = await this.requestService.approveRequest(
       Number(performedBy),
-      Number(requestId)
+      Number(requestId),
     );
     ctx.body =
       result == HttpStatusResponse.OK
@@ -223,7 +192,7 @@ class RequestController {
     const result = await this.requestService.rejectRequest(
       Number(performedBy),
       Number(requestId),
-      reason
+      reason,
     );
     ctx.body =
       result == HttpStatusResponse.OK

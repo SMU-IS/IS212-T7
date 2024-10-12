@@ -1,14 +1,15 @@
 import RequestDb from "@/database/RequestDb";
-import { Dept, errMsg, HttpStatusResponse } from "@/helpers";
+import { errMsg, HttpStatusResponse } from "@/helpers";
+import { Role } from "@/helpers/";
+import {
+  checkDate,
+  checkLatestDate,
+  checkPastDate,
+  checkWeekend,
+  weekMap,
+} from "@/helpers/date";
 import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
-import {
-  weekMap,
-  checkDate,
-  checkPastDate,
-  checkLatestDate,
-  checkWeekend,
-} from "@/helpers/date";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -25,10 +26,7 @@ class RequestService {
   private employeeService: EmployeeService;
   private requestDb: RequestDb;
 
-  constructor(
-    employeeService: EmployeeService,
-    requestDb: RequestDb
-  ) {
+  constructor(employeeService: EmployeeService, requestDb: RequestDb) {
     this.employeeService = employeeService;
     this.requestDb = requestDb;
   }
@@ -49,11 +47,11 @@ class RequestService {
 
   public async cancelPendingRequests(
     staffId: number,
-    requestId: number
+    requestId: number,
   ): Promise<string | null> {
     const result = await this.requestDb.cancelPendingRequests(
       staffId,
-      requestId
+      requestId,
     );
 
     if (!result) {
@@ -64,7 +62,7 @@ class RequestService {
   }
 
   public async getAllSubordinatesRequests(
-    staffId: number
+    staffId: number,
   ): Promise<IRequest[]> {
     const surbodinatesRequests =
       await this.requestDb.getAllSubordinatesRequests(staffId);
@@ -76,17 +74,23 @@ class RequestService {
     return pendingRequests;
   }
 
-  public async getTeamSchedule(reportingManager: number, dept: Dept) {
-    const teamSchedule = await this.requestDb.getTeamSchedule(
-      reportingManager,
-      dept
-    );
-    return teamSchedule;
-  }
+  public async getSchedule(staffId: number) {
+    const employee = await this.employeeService.getEmployee(staffId);
+    if (!employee) {
+      return errMsg.USER_DOES_NOT_EXIST;
+    }
 
-  public async getDeptSchedule(dept: Dept) {
-    const deptSchedule = await this.requestDb.getDeptSchedule(dept);
-    return deptSchedule;
+    let schedule;
+    const { role, position, reportingManager } = employee;
+    if (role === Role.HR || role === Role.Manager) {
+      schedule = await this.requestDb.getDeptSchedule(staffId);
+    } else {
+      schedule = await this.requestDb.getTeamSchedule(
+        reportingManager,
+        position,
+      );
+    }
+    return schedule;
   }
 
   public async getCompanySchedule() {
@@ -111,8 +115,9 @@ class RequestService {
       insertErrorDates: [],
     };
     const result = await this.getPendingOrApprovedRequests(
-      requestDetails.staffId
+      requestDetails.staffId,
     );
+
     const dateList = result.map((request) => request.requestedDate);
     const weekMapping = weekMap(dateList);
     const seenDates = new Set();
@@ -151,6 +156,11 @@ class RequestService {
         responseDates.noteDates.push(dateType);
       }
 
+      const employee = await this.employeeService.getEmployee(
+        Number(requestDetails.staffId),
+      );
+      const { position } = employee!;
+
       const document = {
         staffId: requestDetails.staffId,
         staffName: requestDetails.staffName,
@@ -160,6 +170,7 @@ class RequestService {
         requestedDate: date,
         requestType: type,
         reason: requestDetails.reason,
+        position,
       };
 
       const requestInsert = await this.requestDb.postRequest(document);
@@ -174,15 +185,14 @@ class RequestService {
   }
 
   public async getPendingRequestByRequestId(requestId: number) {
-    const requestDetail = await this.requestDb.getPendingRequestByRequestId(
-      requestId
-    );
+    const requestDetail =
+      await this.requestDb.getPendingRequestByRequestId(requestId);
     return requestDetail;
   }
 
   public async approveRequest(
     performedBy: number,
-    requestId: number
+    requestId: number,
   ): Promise<string | null> {
     const request = await this.getPendingRequestByRequestId(requestId);
     if (!request) {
@@ -208,7 +218,7 @@ class RequestService {
   public async rejectRequest(
     performedBy: number,
     requestId: number,
-    reason: string
+    reason: string,
   ): Promise<string | null> {
     const request = await this.getPendingRequestByRequestId(requestId);
     if (!request) {
@@ -227,7 +237,7 @@ class RequestService {
     const result = await this.requestDb.rejectRequest(
       performedBy,
       requestId,
-      reason
+      reason,
     );
     if (!result) {
       return null;

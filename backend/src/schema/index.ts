@@ -1,6 +1,10 @@
 import { Dept } from "@/helpers";
 import { z } from "zod";
 
+const staffIdSchema = z.object({
+  id: z.string(),
+});
+
 const numberSchema = z.string().transform((val) => {
   const number = Number(val);
   if (isNaN(number)) {
@@ -39,4 +43,12 @@ const rejectionSchema = z.object({
   reason: z.string(),
 });
 
-export { deptSchema, numberSchema, requestSchema, teamSchema, approvalSchema, rejectionSchema };
+export {
+  approvalSchema,
+  deptSchema,
+  numberSchema,
+  rejectionSchema,
+  requestSchema,
+  staffIdSchema,
+  teamSchema,
+};
