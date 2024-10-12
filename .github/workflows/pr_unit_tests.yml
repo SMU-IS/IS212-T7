@@ -1,10 +1,10 @@
-name: Run unit tests for WFH Application System backend.
+name: Run unit tests for WFH Application System backend before merge.
 
 on:
   pull_request:
     branches:
-      - main
       - feat(no-ticket)-set-up-ci
+      - master
 
 jobs:
   run_unit_tests:
