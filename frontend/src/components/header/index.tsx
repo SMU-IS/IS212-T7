@@ -41,7 +41,6 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   const count = 1;
   const [pendingCount] = usePendingCount(); // Read the global state
 
-  console.log(pendingCount);
   const headerStyles: React.CSSProperties = {
     backgroundColor: token.colorBgElevated,
     display: "flex",

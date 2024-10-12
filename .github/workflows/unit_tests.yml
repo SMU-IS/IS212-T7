@@ -1,4 +1,4 @@
-name: Run unit tests for WFH Application System backend.
+name: ci-unit-tests-backend
 
 on:
   pull_request:
@@ -39,4 +39,3 @@ jobs:
 
       - name: Run the tests.
         run: npm run test
-

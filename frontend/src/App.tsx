@@ -93,7 +93,7 @@ const App = () => {
                   icon: <CalendarOutlined />,
                   meta: {
                     canDelete: false,
-                    label: "Team Schedule",
+                    label: "Co-workers Schedule",
                   },
                 },
                 {

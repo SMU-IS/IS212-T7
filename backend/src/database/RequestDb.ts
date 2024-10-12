@@ -1,4 +1,4 @@
-import { Dept, HttpStatusResponse, RequestType, Status } from "@/helpers";
+import { HttpStatusResponse, RequestType, Status } from "@/helpers";
 import Request, { IRequest } from "@/models/Request";
 import dayjs from "dayjs";
 
@@ -11,19 +11,20 @@ interface InsertDocument {
   requestedDate: Date;
   requestType: RequestType;
   reason: string;
+  position: string;
 }
 
 class RequestDb {
   public async getMySchedule(myId: number): Promise<IRequest[]> {
     const schedule = await Request.find(
       { staffId: myId },
-      "-_id -createdAt -updatedAt"
+      "-_id -createdAt -updatedAt",
     );
     return schedule;
   }
 
   public async getAllSubordinatesRequests(
-    staffId: number
+    staffId: number,
   ): Promise<IRequest[]> {
     const subordinatesRequests = await Request.find({
       reportingManager: staffId,
@@ -41,7 +42,7 @@ class RequestDb {
 
   public async cancelPendingRequests(
     staffId: number,
-    requestId: number
+    requestId: number,
   ): Promise<string | null> {
     const { modifiedCount } = await Request.updateMany(
       {
@@ -53,7 +54,7 @@ class RequestDb {
         $set: {
           status: Status.CANCELLED,
         },
-      }
+      },
     );
 
     if (modifiedCount == 0) {
@@ -79,25 +80,25 @@ class RequestDb {
     return schedule;
   }
 
-  public async getTeamSchedule(reportingManager: number, dept: Dept) {
+  public async getTeamSchedule(reportingManager: number, position: string) {
     const teamSchedule = await Request.find(
       {
         reportingManager,
-        dept,
+        position,
         status: Status.APPROVED,
       },
-      "-_id -createdAt -updatedAt"
+      "-_id -createdAt -updatedAt",
     );
     return teamSchedule;
   }
 
-  public async getDeptSchedule(dept: Dept) {
+  public async getDeptSchedule(reportingManager: number) {
     const deptSchedule = await Request.find(
       {
-        dept,
+        reportingManager,
         status: Status.APPROVED,
       },
-      "-_id -createdAt -updatedAt"
+      "-_id -createdAt -updatedAt",
     );
     return deptSchedule;
   }
@@ -105,7 +106,7 @@ class RequestDb {
   public async getCompanySchedule() {
     const request = await Request.find(
       { status: Status.APPROVED },
-      "-_id -createdAt -updatedAt"
+      "-_id -createdAt -updatedAt",
     );
     return request;
   }
@@ -130,13 +131,13 @@ class RequestDb {
         $set: {
           status: Status.EXPIRED,
         },
-      }
+      },
     );
   }
 
   public async approveRequest(
     performedBy: number,
-    requestId: number
+    requestId: number,
   ): Promise<string | null> {
     const { modifiedCount } = await Request.updateMany(
       {
@@ -148,7 +149,7 @@ class RequestDb {
           status: Status.APPROVED,
           performedBy: performedBy,
         },
-      }
+      },
     );
     if (modifiedCount == 0) {
       return null;
@@ -162,7 +163,7 @@ class RequestDb {
         requestId,
         status: Status.PENDING,
       },
-      "-_id -createdAt -updatedAt"
+      "-_id -createdAt -updatedAt",
     );
     return requestDetail;
   }
@@ -170,7 +171,7 @@ class RequestDb {
   public async rejectRequest(
     performedBy: number,
     requestId: number,
-    reason: string
+    reason: string,
   ): Promise<string | null> {
     const { modifiedCount } = await Request.updateMany(
       {
@@ -183,7 +184,7 @@ class RequestDb {
           reason: reason,
           performedBy: performedBy,
         },
-      }
+      },
     );
     if (modifiedCount == 0) {
       return null;
