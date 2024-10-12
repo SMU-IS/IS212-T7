@@ -53,7 +53,7 @@ const RequestSchema = new Schema<IRequest>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 RequestSchema.pre("save", async function (next) {
@@ -61,7 +61,7 @@ RequestSchema.pre("save", async function (next) {
     const counter = await Counter.findByIdAndUpdate(
       "requestId",
       { $inc: { seq: 1 } },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
     this.requestId = counter.seq;
   }
