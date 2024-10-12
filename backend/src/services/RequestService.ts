@@ -1,5 +1,5 @@
 import RequestDb from "@/database/RequestDb";
-import { errMsg, HttpStatusResponse } from "@/helpers";
+import { Dept, errMsg, HttpStatusResponse } from "@/helpers";
 import { Role } from "@/helpers/";
 import {
   checkDate,
@@ -80,10 +80,11 @@ class RequestService {
       return errMsg.USER_DOES_NOT_EXIST;
     }
 
-    const { role, position, reportingManager } = employee;
+    const { role, position, reportingManager, dept } = employee;
+
     const schedule =
       role === Role.HR || role === Role.Manager
-        ? await this.requestDb.getDeptSchedule(staffId)
+        ? await this.requestDb.getDeptSchedule(dept as Dept)
         : await this.requestDb.getTeamSchedule(reportingManager, position);
     return schedule;
   }
