@@ -1,3 +1,4 @@
+import { Dept } from "@/helpers";
 import Employee, { IEmployee } from "@/models/Employee";
 import EmployeeTreeNode from "@/models/EmployeeTreeNode";
 
@@ -17,6 +18,33 @@ class EmployeeDb {
       },
       "-_id -createdAt -updatedAt",
     ).exec();
+  }
+
+  public async getTeamCountByDept(dept: Dept) {
+    const result = await Employee.aggregate([
+      {
+        $match: { dept },
+      },
+      {
+        $group: {
+          _id: { position: "$position" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { "_id.position": 1 },
+      },
+    ]);
+
+    let sanitisedResult: any = {
+      dept: dept,
+    };
+
+    result.forEach((item) => {
+      sanitisedResult[item._id.position] = item.count;
+    });
+
+    return sanitisedResult;
   }
 
   public async getDeptByManager(staffId: number) {
