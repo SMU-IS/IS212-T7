@@ -11,6 +11,7 @@ export interface IRequest {
   dept: string;
   requestedDate: Date;
   requestType: RequestType;
+  position: string;
   reason: string;
   status: Status;
   performedBy: number | null;
@@ -37,6 +38,7 @@ const RequestSchema = new Schema<IRequest>(
     dept: { type: String, required: true },
     requestedDate: { type: Date, required: true },
     requestType: { type: String, required: true },
+    position: { type: String, required: true },
     reason: { type: String, required: true },
     status: {
       type: String,
@@ -53,7 +55,7 @@ const RequestSchema = new Schema<IRequest>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 RequestSchema.pre("save", async function (next) {
@@ -61,7 +63,7 @@ RequestSchema.pre("save", async function (next) {
     const counter = await Counter.findByIdAndUpdate(
       "requestId",
       { $inc: { seq: 1 } },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
     this.requestId = counter.seq;
   }

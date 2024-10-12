@@ -5,7 +5,7 @@ class EmployeeDb {
   public async getEmployee(staffId: number): Promise<IEmployee | null> {
     const employee = await Employee.findOne(
       { staffId },
-      "-_id -createdAt -updatedAt -hashedPassword"
+      "-_id -createdAt -updatedAt -hashedPassword",
     );
     return employee;
   }
@@ -15,7 +15,7 @@ class EmployeeDb {
       {
         email: userEmail,
       },
-      "-_id -createdAt -updatedAt"
+      "-_id -createdAt -updatedAt",
     ).exec();
   }
 
@@ -24,23 +24,25 @@ class EmployeeDb {
       { $match: { staffId } },
       {
         $graphLookup: {
-          from: 'employees',
+          from: "employees",
           startWith: staffId,
-          connectFromField: 'staffId',
-          connectToField: 'reportingManager',
-          as: 'subordinates',
+          connectFromField: "staffId",
+          connectToField: "reportingManager",
+          as: "subordinates",
           maxDepth: 100,
-          depthField: 'level'
-        }
-      }
+          depthField: "level",
+        },
+      },
     ]);
 
     if (employeeHierarchy.length === 0) {
-      throw new Error('Employee not found');
+      throw new Error("Employee not found");
     }
 
     const root = new EmployeeTreeNode(
-      employeeHierarchy[0].staffId, employeeHierarchy[0].dept, null
+      employeeHierarchy[0].staffId,
+      employeeHierarchy[0].dept,
+      null,
     );
 
     let queue: Array<EmployeeTreeNode> = [root];
@@ -54,8 +56,8 @@ class EmployeeDb {
         continue;
       }
 
-      const directSubordinates = subordinates.filter((sub: any) =>
-        sub.reportingManager === current.getEmployee()
+      const directSubordinates = subordinates.filter(
+        (sub: any) => sub.reportingManager === current.getEmployee(),
       );
 
       for (const subordinate of directSubordinates) {
@@ -67,7 +69,9 @@ class EmployeeDb {
 
         seen.push(subordinateStaffId);
         const subordinateTreeNode = new EmployeeTreeNode(
-          subordinateStaffId, subordinateDept, null
+          subordinateStaffId,
+          subordinateDept,
+          null,
         );
 
         current.addSubordinate(subordinateTreeNode);

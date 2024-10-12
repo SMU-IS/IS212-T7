@@ -1,46 +1,44 @@
-import React, { useState, useEffect } from "react";
+import { EmployeeJWT } from "@/interfaces/employee";
 import {
-  Form,
-  Button,
-  Input,
-  DatePicker,
-  Space,
-  Select,
-  Card,
-  Typography,
-} from "antd";
-import {
+  Badge,
   Box,
-  useToast,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  VStack,
-  Text,
   List,
   ListItem,
-  Badge,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Text,
   useDisclosure,
-  Center,
+  useToast,
+  VStack,
 } from "@chakra-ui/react";
 import { useGetIdentity } from "@refinedev/core";
-import axios from "axios";
-import { EmployeeJWT } from "@/interfaces/employee";
-import { WFHDate, TimeOfDay, FormData } from "./types";
 import {
-  isWeekday,
-  isAtLeast24HoursAhead,
+  Button,
+  Card,
+  DatePicker,
+  Form,
+  Input,
+  Select,
+  Space,
+  Typography,
+} from "antd";
+import axios from "axios";
+import moment from "moment-timezone";
+import React, { useEffect, useState } from "react";
+import {
   formatDate,
   getDatesInSameWeek,
   getSGTDate,
+  isAtLeast24HoursAhead,
   isValidWFHDeadline,
+  isWeekday,
 } from "../../utils/wfh-dateUtils";
 import { validateForm } from "../../utils/wfh-validation";
-import moment from "moment-timezone";
+import { FormData, TimeOfDay, WFHDate } from "./types";
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -65,7 +63,7 @@ export const WFHForm: React.FC = () => {
 
   const [modalContent, setModalContent] = useState<{
     success: { message: string; dates: [string, string][] };
-   error: Array<{ message: string; dates: [string, string][] }>; 
+    error: Array<{ message: string; dates: [string, string][] }>;
     note: { message: string; dates: [string, string][] };
   }>({
     success: { message: "", dates: [] },
@@ -219,14 +217,8 @@ export const WFHForm: React.FC = () => {
       wfhDate.timeOfDay,
     ]);
 
-    console.log(requestedDates);
-
     const payload = {
       staffId: Number(employeeData.staffID),
-      staffName: employeeData.name,
-      reportingManager: Number(employeeData.managerID),
-      managerName: String(employeeData.managerName),
-      dept: employeeData.dept,
       requestedDates,
       reason: values.reason,
     };
@@ -236,8 +228,6 @@ export const WFHForm: React.FC = () => {
         `${backendUrl}/api/v1/postRequest`,
         payload,
       );
-      // console.log('Incoming request data:', payload);
-      // console.log(response.data);
 
       const { success, error, note } = response.data;
       setModalContent({ success, error, note });
