@@ -27,8 +27,11 @@ describe("EmployeeController", () => {
     } as Context;
     mockEmployee = generateMockEmployee();
     employeeServiceMock.getEmployeeByEmail = jest.fn();
-    jest.resetAllMocks();
   });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  })
 
   it("should return an error when missing parameters", async () => {
     // Act

@@ -47,12 +47,11 @@ class RequestController {
         : HttpStatusResponse.NOT_MODIFIED;
   }
 
-  public async getPendingRequests(ctx: Context) {
+  public async getAllSubordinatesRequests(ctx: Context) {
     const { id } = ctx.request.header;
-    const pendingRequests = await this.requestService.getPendingRequests(
-      Number(id)
-    );
-    ctx.body = pendingRequests;
+    const subordinatesRequests =
+      await this.requestService.getAllSubordinatesRequests(Number(id));
+    ctx.body = subordinatesRequests;
   }
 
   public async getOwnPendingRequests(ctx: Context) {
@@ -127,7 +126,7 @@ class RequestController {
     const result = await this.requestService.postRequest(requestDetails);
     let responseMessage: ResponseMessage = {
       success: { message: "", dates: [] },
-      error: [], 
+      error: [],
       note: { message: "", dates: [] },
     };
 
@@ -209,7 +208,7 @@ class RequestController {
         ? HttpStatusResponse.OK
         : HttpStatusResponse.NOT_MODIFIED;
   }
-  
+
   public async rejectRequest(ctx: Context) {
     const rejectionDetails = ctx.request.body;
     const validation = rejectionSchema.safeParse(rejectionDetails);

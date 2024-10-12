@@ -22,12 +22,13 @@ class RequestDb {
     return schedule;
   }
 
-  public async getPendingRequests(staffId: number): Promise<IRequest[]> {
-    const pendingRequests = await Request.find({
+  public async getAllSubordinatesRequests(
+    staffId: number
+  ): Promise<IRequest[]> {
+    const subordinatesRequests = await Request.find({
       reportingManager: staffId,
-      status: Status.PENDING,
     });
-    return pendingRequests;
+    return subordinatesRequests;
   }
 
   public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {

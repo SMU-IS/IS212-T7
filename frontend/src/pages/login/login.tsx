@@ -1,6 +1,6 @@
-import React from "react";
+import { Box } from "@chakra-ui/react";
 import { AuthPage } from "@refinedev/antd";
-import { Box, Heading } from "@chakra-ui/react";
+import React from "react";
 
 const Login = () => {
   return (
@@ -14,15 +14,8 @@ const Login = () => {
           color: "white",
         },
       }}
-      title="SPM T7"
-      renderContent={(content: React.ReactNode, title: React.ReactNode) => {
-        return (
-          <Box>
-            {title}
-            <Heading style={{ textAlign: "center" }}> WFH Portal</Heading>
-            {content}
-          </Box>
-        );
+      renderContent={(content: React.ReactNode) => {
+        return <Box>{content}</Box>;
       }}
     />
   );

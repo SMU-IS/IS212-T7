@@ -13,6 +13,9 @@ describe("EmployeeService", () => {
     employeeService = new EmployeeService(employeeDbMock);
     mockEmployee = await generateMockEmployee();
     employeeDbMock.getEmployeeByEmail = jest.fn();
+  });
+
+  afterEach(() => {
     jest.resetAllMocks();
   });
 

@@ -20,8 +20,8 @@ const employeeDb = new EmployeeDb();
 /**
  * Services
  */
-const requestService = new RequestService(requestDb);
 const employeeService = new EmployeeService(employeeDb);
+const requestService = new RequestService(employeeService, requestDb);
 
 /**
  * Controllers
@@ -118,10 +118,10 @@ router.post("/cancelPendingRequests", (ctx) =>
 
 /**
  * @openapi
- * /api/v1/getPendingRequests:
+ * /api/v1/getAllSubordinatesRequests:
  *   get:
  *     description: Get pending request from direct subordinates
- *     tags: [Pending Requests]
+ *     tags: [All Subordinates Requests]
  *     parameters:
  *       - in: header
  *         name: id
@@ -131,12 +131,12 @@ router.post("/cancelPendingRequests", (ctx) =>
  *         description: User's staffId
  *     responses:
  *       200:
- *         description: Returns all pending requests from direct subordinates
+ *         description: Returns all subordinates requests from direct subordinates
  */
 router.get(
-  "/getPendingRequests",
+  "/getAllSubordinatesRequests",
   checkUserRolePermission(AccessControl.VIEW_PENDING_REQUEST),
-  (ctx) => requestController.getPendingRequests(ctx)
+  (ctx) => requestController.getAllSubordinatesRequests(ctx)
 );
 
 /**
@@ -251,6 +251,29 @@ router.get("/getTeamSchedule", checkSameTeam(), (ctx) =>
  *         description: Returns a request object
  */
 router.get("/getDeptSchedule", (ctx) => requestController.getDeptSchedule(ctx));
+
+/**
+ * @openapi
+ * /api/v1/getDeptScheduleByStaffId?staffId={INSERT STAFF ID HERE}:
+ *   get:
+ *     description: Get schedule for departments under current manager/director.
+ *     tags: [Schedule]
+ *     parameters:
+ *       - in: query
+ *         name: staffId
+ *         schema:
+ *           type: number
+ *         required: true
+ *         description: Retrieve list of departments under given staffId.
+ *     responses:
+ *       200:
+ *         description: Returns a request object
+ */
+router.get(
+  "/getDeptByManager",
+  checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
+  (ctx) => employeeController.getDeptByManager(ctx)
+);
 
 /**
  * @openapi
