@@ -1,4 +1,4 @@
-import { HttpStatusResponse, RequestType, Status } from "@/helpers";
+import { Dept, HttpStatusResponse, RequestType, Status } from "@/helpers";
 import Request, { IRequest } from "@/models/Request";
 import dayjs from "dayjs";
 
@@ -92,10 +92,11 @@ class RequestDb {
     return teamSchedule;
   }
 
-  public async getDeptSchedule(reportingManager: number) {
+  public async getDeptSchedule(dept: Dept) {
     const deptSchedule = await Request.find(
       {
-        reportingManager,
+        // reportingManager,
+        dept,
         status: Status.APPROVED,
       },
       "-_id -createdAt -updatedAt",

@@ -23,6 +23,7 @@ describe("postRequest", () => {
   let requestDbMock: jest.Mocked<RequestDb>;
   let employeeDbMock: EmployeeDb;
   let employeeServiceMock: jest.Mocked<EmployeeService>;
+  let mockEmployee: any;
 
   const mondayWeekBefore = dayjs()
     .tz("Asia/Singapore")
@@ -41,7 +42,8 @@ describe("postRequest", () => {
     insertErrorDates: [string, string][];
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    mockEmployee = await generateMockEmployeeTest();
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
     employeeServiceMock = new EmployeeService(
@@ -50,6 +52,7 @@ describe("postRequest", () => {
     requestService = new RequestService(employeeServiceMock, requestDbMock);
     requestDbMock.postRequest = jest.fn();
     requestDbMock.getPendingOrApprovedRequests = jest.fn();
+    employeeServiceMock.getEmployee = jest.fn();
     jest.mock("@/helpers/date");
   });
 
@@ -115,134 +118,139 @@ describe("postRequest", () => {
     expect(result).toEqual(expectedResponse);
   });
 
-  //   it("should return successDates for successful date inputted", async () => {
-  //     const requestDetails = {
-  //       staffId: 3,
-  //       staffName: "Amy Cheong",
-  //       reportingManager: 1,
-  //       managerName: "John Doe",
-  //       dept: "Development",
-  //       requestedDates: [[dayWeekAfter(3), "FULL"]],
-  //       reason: "Take care of mother",
-  //     };
+  it("should return successDates for successful date inputted", async () => {
+    const requestDetails = {
+      staffId: 3,
+      staffName: "Amy Cheong",
+      reportingManager: 1,
+      managerName: "John Doe",
+      dept: "Development",
+      requestedDates: [[dayWeekAfter(3), "FULL"]],
+      reason: "Take care of mother",
+    };
 
-  //     const expectedResponse: ResponseDates = {
-  //       successDates: [[dayWeekAfter(3), "FULL"]],
-  //       noteDates: [],
-  //       errorDates: [],
-  //       weekendDates: [],
-  //       pastDates: [],
-  //       pastDeadlineDates: [],
-  //       duplicateDates: [],
-  //       insertErrorDates: [],
-  //     };
-  //     mockRequestData.testing.requestedDate = new Date(dayWeekAfter(2));
-  //     requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
-  //       mockRequestData.testing,
-  //     ] as any);
-  //     requestDbMock.postRequest.mockResolvedValue(true);
-  //     const result = await requestService.postRequest(requestDetails);
-  //     expect(result).toEqual(expectedResponse);
-  //   });
+    const expectedResponse: ResponseDates = {
+      successDates: [[dayWeekAfter(3), "FULL"]],
+      noteDates: [],
+      errorDates: [],
+      weekendDates: [],
+      pastDates: [],
+      pastDeadlineDates: [],
+      duplicateDates: [],
+      insertErrorDates: [],
+    };
+    mockRequestData.testing.requestedDate = new Date(dayWeekAfter(2));
+    requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
+      mockRequestData.testing,
+    ] as any);
 
-  //   it("should return duplicateDates array and successDates for duplicate date inputted (successful date)", async () => {
-  //     const requestDetails = {
-  //       staffId: 3,
-  //       staffName: "Amy Cheong",
-  //       reportingManager: 1,
-  //       managerName: "John Doe",
-  //       dept: "Development",
-  //       requestedDates: [
-  //         [dayWeekAfter(3), "FULL"],
-  //         [dayWeekAfter(3), "AM"],
-  //       ],
-  //       reason: "Take care of mother",
-  //     };
+    requestDbMock.postRequest.mockResolvedValue(true);
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
+    const result = await requestService.postRequest(requestDetails);
+    expect(result).toEqual(expectedResponse);
+  });
 
-  //     const expectedResponse: ResponseDates = {
-  //       successDates: [[dayWeekAfter(3), "FULL"]],
-  //       noteDates: [],
-  //       errorDates: [],
-  //       weekendDates: [],
-  //       pastDates: [],
-  //       pastDeadlineDates: [],
-  //       duplicateDates: [[dayWeekAfter(3), "AM"]],
-  //       insertErrorDates: [],
-  //     };
-  //     mockRequestData.testing.requestedDate = new Date(dayWeekAfter(2));
-  //     requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
-  //       mockRequestData.testing,
-  //     ] as any);
-  //     requestDbMock.postRequest.mockResolvedValue(true);
-  //     const result = await requestService.postRequest(requestDetails);
-  //     expect(result).toEqual(expectedResponse);
-  //   });
+  it("should return duplicateDates array and successDates for duplicate date inputted (successful date)", async () => {
+    const requestDetails = {
+      staffId: 3,
+      staffName: "Amy Cheong",
+      reportingManager: 1,
+      managerName: "John Doe",
+      dept: "Development",
+      requestedDates: [
+        [dayWeekAfter(3), "FULL"],
+        [dayWeekAfter(3), "AM"],
+      ],
+      reason: "Take care of mother",
+    };
 
-  //   it("should return noteDates array and successDates for successful dates inputted with >2 existing requests for that week", async () => {
-  //     const requestDetails = {
-  //       staffId: 3,
-  //       staffName: "Amy Cheong",
-  //       reportingManager: 1,
-  //       managerName: "John Doe",
-  //       dept: "Development",
-  //       requestedDates: [
-  //         [dayWeekAfter(4), "FULL"],
-  //         [dayWeekAfter(3), "FULL"],
-  //       ],
-  //       reason: "Take care of mother",
-  //     };
+    const expectedResponse: ResponseDates = {
+      successDates: [[dayWeekAfter(3), "FULL"]],
+      noteDates: [],
+      errorDates: [],
+      weekendDates: [],
+      pastDates: [],
+      pastDeadlineDates: [],
+      duplicateDates: [[dayWeekAfter(3), "AM"]],
+      insertErrorDates: [],
+    };
+    mockRequestData.testing.requestedDate = new Date(dayWeekAfter(2));
+    requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
+      mockRequestData.testing,
+    ] as any);
+    requestDbMock.postRequest.mockResolvedValue(true);
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
+    const result = await requestService.postRequest(requestDetails);
+    expect(result).toEqual(expectedResponse);
+  });
 
-  //     const expectedResponse: ResponseDates = {
-  //       successDates: [
-  //         [dayWeekAfter(4), "FULL"],
-  //         [dayWeekAfter(3), "FULL"],
-  //       ],
-  //       noteDates: [[dayWeekAfter(3), "FULL"]],
-  //       errorDates: [],
-  //       weekendDates: [],
-  //       pastDates: [],
-  //       pastDeadlineDates: [],
-  //       duplicateDates: [],
-  //       insertErrorDates: [],
-  //     };
-  //     mockRequestData.testing.requestedDate = new Date(dayWeekAfter(2));
-  //     requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
-  //       mockRequestData.testing,
-  //     ] as any);
-  //     requestDbMock.postRequest.mockResolvedValue(true);
-  //     const result = await requestService.postRequest(requestDetails);
-  //     expect(result).toEqual(expectedResponse);
-  //   });
+  it("should return noteDates array and successDates for successful dates inputted with >2 existing requests for that week", async () => {
+    const requestDetails = {
+      staffId: 3,
+      staffName: "Amy Cheong",
+      reportingManager: 1,
+      managerName: "John Doe",
+      dept: "Development",
+      requestedDates: [
+        [dayWeekAfter(4), "FULL"],
+        [dayWeekAfter(3), "FULL"],
+      ],
+      reason: "Take care of mother",
+    };
 
-  //   it("should return insertError array when successful dates inputted but with DB Error", async () => {
-  //     const requestDetails = {
-  //       staffId: 3,
-  //       staffName: "Amy Cheong",
-  //       reportingManager: 1,
-  //       managerName: "John Doe",
-  //       dept: "Development",
-  //       requestedDates: [[dayWeekAfter(3), "FULL"]],
-  //       reason: "Take care of mother",
-  //     };
+    const expectedResponse: ResponseDates = {
+      successDates: [
+        [dayWeekAfter(4), "FULL"],
+        [dayWeekAfter(3), "FULL"],
+      ],
+      noteDates: [[dayWeekAfter(3), "FULL"]],
+      errorDates: [],
+      weekendDates: [],
+      pastDates: [],
+      pastDeadlineDates: [],
+      duplicateDates: [],
+      insertErrorDates: [],
+    };
+    mockRequestData.testing.requestedDate = new Date(dayWeekAfter(2));
+    requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
+      mockRequestData.testing,
+    ] as any);
+    requestDbMock.postRequest.mockResolvedValue(true);
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
+    const result = await requestService.postRequest(requestDetails);
+    expect(result).toEqual(expectedResponse);
+  });
 
-  //     const expectedResponse: ResponseDates = {
-  //       successDates: [],
-  //       noteDates: [],
-  //       errorDates: [],
-  //       weekendDates: [],
-  //       pastDates: [],
-  //       pastDeadlineDates: [],
-  //       duplicateDates: [],
-  //       insertErrorDates: [[dayWeekAfter(3), "FULL"]],
-  //     };
-  //     mockRequestData.testing.requestedDate = new Date(dayWeekAfter(2));
-  //     requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
-  //       mockRequestData.testing,
-  //     ] as any);
-  //     requestDbMock.postRequest.mockResolvedValue(false);
-  //     const result = await requestService.postRequest(requestDetails);
-  //     expect(result).toEqual(expectedResponse);
-  //   });
+  it("should return insertError array when successful dates inputted but with DB Error", async () => {
+    const requestDetails = {
+      staffId: 3,
+      staffName: "Amy Cheong",
+      reportingManager: 1,
+      managerName: "John Doe",
+      dept: "Development",
+      requestedDates: [[dayWeekAfter(3), "FULL"]],
+      reason: "Take care of mother",
+    };
+
+    const expectedResponse: ResponseDates = {
+      successDates: [],
+      noteDates: [],
+      errorDates: [],
+      weekendDates: [],
+      pastDates: [],
+      pastDeadlineDates: [],
+      duplicateDates: [],
+      insertErrorDates: [[dayWeekAfter(3), "FULL"]],
+    };
+    mockRequestData.testing.requestedDate = new Date(dayWeekAfter(2));
+    requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
+      mockRequestData.testing,
+    ] as any);
+    requestDbMock.postRequest.mockResolvedValue(false);
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
+    const result = await requestService.postRequest(requestDetails);
+    expect(result).toEqual(expectedResponse);
+  });
 
   it("should return pastDeadlineDates array when dates inputted has past deadline", async () => {
     const requestDetails = {
@@ -354,7 +362,7 @@ describe("cancel pending requests", () => {
      * Mock Database Calls
      */
     requestDbMock.cancelPendingRequests = jest.fn();
-    EmployeeService.prototype.getEmployee = jest.fn() as any;
+    employeeDbMock.getEmployee = jest.fn() as any;
     UtilsController.throwAPIError = jest.fn();
 
     jest.resetAllMocks();

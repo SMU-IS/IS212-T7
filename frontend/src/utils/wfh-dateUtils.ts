@@ -45,34 +45,37 @@ export const getDatesInSameWeek = (newDate: Date, existingDates: Date[]): Date[]
   });
 };
 
-// check if wfh application is valid (based takes into account weekends)
 // specific deadlines for friday & weekends
-export const isValidWFHDeadline = (selectedDate: Date): boolean => {
-  const now = getSGTDate(new Date());
-  const selectedSGTDate = getSGTDate(selectedDate);
-
-  const diffTime = selectedSGTDate.getTime() - now.getTime();
-  const diffHours = diffTime / (1000 * 60 * 60);
-
-  // if the selected date is not at least 24 hours ahead, it's invalid
-  if (diffHours < 24) {
-    return false;
-  }
-
-  const todayDay = now.getDay();
-  const daysUntilSelected = diffTime / (1000 * 60 * 60 * 24);
-
-  // apply the 3-day rule only if today is Friday (i.e. only can apply nxt tues onws)
-  if (todayDay === 5 && daysUntilSelected < 3) {
-    return false; 
-  }
-
-  // sat sun apps (i.e. only can apply nxt wed onws)
-  if (todayDay === 6 || todayDay === 0) { 
-    const nextWednesday = new Date(now);
-    nextWednesday.setDate(now.getDate() + (3 - todayDay + 7) % 7); // calculate next Wednesday
-    return selectedSGTDate >= nextWednesday; // must be at least next Wednesday
-  }
-
-  // allow applications for Monday to Thursday as long as they are at least 24 hours ahead
-  return true; };
+  export const isValidWFHDeadline = (selectedDate: Date): boolean => {
+    const now = getSGTDate(new Date());
+    const selectedSGTDate = getSGTDate(selectedDate);
+  
+    // set time to midnight for both dates to compare full days
+    now.setHours(0, 0, 0, 0);
+    selectedSGTDate.setHours(0, 0, 0, 0);
+  
+    const diffTime = selectedSGTDate.getTime() - now.getTime();
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  
+    // if the selected date is not at least the next day, it's invalid
+    if (diffDays < 1) {
+      return false;
+    }
+  
+    const todayDay = now.getDay();
+  
+    // apply the 3-day rule only if today is Friday (i.e. only can apply nxt tues onws)
+    if (todayDay === 5 && diffDays < 3) {
+      return false; 
+    }
+  
+    // sat sun apps (i.e. only can apply nxt wed onws)
+    if (todayDay === 6 || todayDay === 0) { 
+      const nextWednesday = new Date(now);
+      nextWednesday.setDate(now.getDate() + (3 - todayDay + 7) % 7); // calculate next Wednesday
+      return selectedSGTDate >= nextWednesday; // must be at least next Wednesday
+    }
+  
+    // allow applications for Monday to Thursday as long as they are at least the next day
+    return true;
+  };
