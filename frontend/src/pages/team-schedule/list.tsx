@@ -17,7 +17,6 @@ import { ClockCircleOutlined, CalendarOutlined, UserOutlined } from "@ant-design
 import { Card, Col, Row, Statistic } from "antd";
 // Checkbox
 import { Checkbox, Divider } from 'antd';
-import type { CheckboxProps } from 'antd';
 // Date Picker
 import type { DatePickerProps } from 'antd';
 import { DatePicker, Space } from 'antd';
@@ -273,7 +272,7 @@ export const TeamScheduleList = () => {
     );
     setCalendarEvents(filterByTeam)
 
-    const selectedTeam = list.reduce((acc, team) => {
+    const selectedTeam = list.reduce((acc: Record<string, number>, team) => {
         if (manpower[team] !== undefined) { // Check if the team exists in manpowerData
             acc[team] = manpower[team];
         }
