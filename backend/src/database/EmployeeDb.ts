@@ -37,11 +37,11 @@ class EmployeeDb {
     ]);
 
     let sanitisedResult: any = {
-      dept: dept,
+      teamMembers: {},
     };
 
     result.forEach((item) => {
-      sanitisedResult[item._id.position] = item.count;
+      sanitisedResult.teamMembers[item._id.position] = item.count;
     });
 
     return sanitisedResult;

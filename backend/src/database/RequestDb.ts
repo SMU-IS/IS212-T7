@@ -1,4 +1,4 @@
-import { Dept, HttpStatusResponse, RequestType, Status } from "@/helpers";
+import { HttpStatusResponse, RequestType, Status } from "@/helpers";
 import Request, { IRequest } from "@/models/Request";
 import dayjs from "dayjs";
 
@@ -92,15 +92,68 @@ class RequestDb {
     return teamSchedule;
   }
 
-  public async getDeptSchedule(dept: Dept) {
-    const deptSchedule = await Request.find(
+  public async getAllDeptSchedule() {
+    const deptSchedule = await Request.aggregate([
       {
-        dept,
-        status: Status.APPROVED,
+        $match: {
+          status: Status.APPROVED,
+        },
       },
-      "-_id -createdAt -updatedAt",
-    );
-    return deptSchedule;
+      {
+        $project: {
+          _id: 0,
+          staffId: 1,
+          staffName: 1,
+          reportingManager: 1,
+          managerName: 1,
+          dept: 1,
+          requestedDate: 1,
+          requestType: 1,
+          position: 1,
+          reason: 1,
+          status: 1,
+          requestId: 1,
+          performedBy: 1,
+        },
+      },
+      {
+        $group: {
+          _id: {
+            dept: "$dept",
+            position: "$position",
+          },
+          requests: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.dept",
+          teams: {
+            $push: {
+              position: "$_id.position",
+              requests: "$requests",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          dept: "$_id",
+          teams: 1,
+        },
+      },
+    ]);
+
+    const formattedSchedule: any = {};
+    deptSchedule.forEach((dept) => {
+      formattedSchedule[dept.dept] = {};
+      dept.teams.forEach((team: any) => {
+        formattedSchedule[dept.dept][team.position] = team.requests;
+      });
+    });
+
+    return formattedSchedule;
   }
 
   public async getCompanySchedule() {

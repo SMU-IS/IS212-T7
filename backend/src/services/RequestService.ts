@@ -81,22 +81,34 @@ class RequestService {
     }
 
     const { role, position, reportingManager, dept } = employee;
-    const department = await this.employeeService.getTeamCountByDept(
+    const teamCount = await this.employeeService.getTeamCountByDept(
       dept as Dept,
     );
 
     const isManagerOrHR = role === Role.HR || role === Role.Manager;
-
-    const wfh_arrangements = isManagerOrHR
-      ? await this.requestDb.getDeptSchedule(dept as Dept)
+    const wfhStaff = isManagerOrHR
+      ? await this.requestDb.getAllDeptSchedule()
       : await this.requestDb.getTeamSchedule(reportingManager, position);
 
-    const schedule = {
-      department: isManagerOrHR
-        ? department
-        : { dept, [position]: department[position] },
-      wfh_arrangements,
-    };
+    let schedule: any = {};
+
+    if (isManagerOrHR) {
+      schedule = {
+        deptName: dept,
+        ...teamCount,
+        data: {
+          ...wfhStaff,
+        },
+      };
+    } else {
+      schedule = {
+        deptName: dept,
+        totalTeamMembers: teamCount.teamMembers[position],
+        team: {
+          [position]: wfhStaff,
+        },
+      };
+    }
 
     return schedule;
   }
