@@ -1,46 +1,44 @@
-import React, { useState, useEffect } from "react";
+import { EmployeeJWT } from "@/interfaces/employee";
 import {
-  Form,
-  Button,
-  Input,
-  DatePicker,
-  Space,
-  Select,
-  Card,
-  Typography,
-} from "antd";
-import {
+  Badge,
   Box,
-  useToast,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  VStack,
-  Text,
   List,
   ListItem,
-  Badge,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Text,
   useDisclosure,
-  Center,
+  useToast,
+  VStack,
 } from "@chakra-ui/react";
 import { useGetIdentity } from "@refinedev/core";
-import axios from "axios";
-import { EmployeeJWT } from "@/interfaces/employee";
-import { WFHDate, TimeOfDay, FormData } from "./types";
 import {
-  isWeekday,
-  isAtLeast24HoursAhead,
+  Button,
+  Card,
+  DatePicker,
+  Form,
+  Input,
+  Select,
+  Space,
+  Typography,
+} from "antd";
+import axios from "axios";
+import moment from "moment-timezone";
+import React, { useEffect, useState } from "react";
+import {
   formatDate,
   getDatesInSameWeek,
   getSGTDate,
+  isAtLeast24HoursAhead,
   isValidWFHDeadline,
+  isWeekday,
 } from "../../utils/wfh-dateUtils";
 import { validateForm } from "../../utils/wfh-validation";
-import moment from "moment-timezone";
+import { FormData, TimeOfDay, WFHDate } from "./types";
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -65,11 +63,11 @@ export const WFHForm: React.FC = () => {
 
   const [modalContent, setModalContent] = useState<{
     success: { message: string; dates: [string, string][] };
-    error: { message: string; dates: [string, string][] };
+    error: Array<{ message: string; dates: [string, string][] }>;
     note: { message: string; dates: [string, string][] };
   }>({
     success: { message: "", dates: [] },
-    error: { message: "", dates: [] },
+    error: [],
     note: { message: "", dates: [] },
   });
 
@@ -219,14 +217,8 @@ export const WFHForm: React.FC = () => {
       wfhDate.timeOfDay,
     ]);
 
-    console.log(requestedDates);
-
     const payload = {
       staffId: Number(employeeData.staffID),
-      staffName: employeeData.name,
-      reportingManager: Number(employeeData.managerID),
-      managerName: String(employeeData.managerName),
-      dept: employeeData.dept,
       requestedDates,
       reason: values.reason,
     };
@@ -236,14 +228,12 @@ export const WFHForm: React.FC = () => {
         `${backendUrl}/api/v1/postRequest`,
         payload,
       );
-      // console.log('Incoming request data:', payload);
-      // console.log(response.data);
 
       const { success, error, note } = response.data;
       setModalContent({ success, error, note });
 
       // toast notification
-      if (!error || !error.message) {
+      if (!error || error.length === 0) {
         showToast(
           "Success",
           "WFH application submitted successfully",
@@ -395,24 +385,26 @@ export const WFHForm: React.FC = () => {
                   )}
                 </Box>
               )}
-              {modalContent.error.message && (
+              {modalContent.error.length > 0 && (
                 <Box>
                   <Text fontWeight="bold" color="red.500">
                     Error:
                   </Text>
-                  <Text>{modalContent.error.message}</Text>
-                  {modalContent.error.dates.length > 0 && (
-                    <List mt={2}>
-                      {modalContent.error.dates.map(
-                        ([date, timeOfDay], index) => (
-                          <ListItem key={index}>
-                            {date} -{" "}
-                            <Badge colorScheme="red">{timeOfDay}</Badge>
-                          </ListItem>
-                        ),
+                  {modalContent.error.map((err, index) => (
+                    <Box key={index}>
+                      <Text>{err.message}</Text>
+                      {err.dates.length > 0 && (
+                        <List mt={2}>
+                          {err.dates.map(([date, timeOfDay], dateIndex) => (
+                            <ListItem key={dateIndex}>
+                              {date} -{" "}
+                              <Badge colorScheme="red">{timeOfDay}</Badge>
+                            </ListItem>
+                          ))}
+                        </List>
                       )}
-                    </List>
-                  )}
+                    </Box>
+                  ))}
                   <Text>
                     {" "}
                     <br />

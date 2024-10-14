@@ -1,4 +1,4 @@
-# IS212 T7 Back-end
+# IS212 T7 SPM Project
 
 ## Tech Stack
 

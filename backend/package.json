@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon ./src/server.ts",
     "build": "tsc",
-    "test": "jest --coverage",
+    "test": "jest --coverage --detectOpenHandles",
     "test:watch": "jest --watchAll",
     "lint": "eslint src/**/*.ts",
     "format": "eslint src/**/*.ts --fix",
@@ -36,6 +36,7 @@
     "node-cron": "^3.0.3",
     "nodemon": "^3.0.2",
     "pg": "^8.11.3",
+    "prettier": "^3.3.3",
     "reflect-metadata": "^0.2.1",
     "supertest": "^6.3.4",
     "swagger-jsdoc": "^6.2.8",

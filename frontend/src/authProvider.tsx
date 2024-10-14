@@ -1,6 +1,5 @@
 import { AuthProvider } from "@refinedev/core";
 import axios, { AxiosInstance } from "axios";
-import { Role } from "@/helper/loginVar";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -22,7 +21,6 @@ export const authProvider: AuthProvider = {
 
     if (response.data.error == undefined) {
       localStorage.setItem("auth", JSON.stringify(response.data));
-      console.log(response.data);
       return {
         success: true,
         redirectTo: response.data.role == 2 ? "/schedule" : "/teamSchedule",

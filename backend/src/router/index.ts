@@ -3,7 +3,6 @@ import RequestController from "@/controllers/RequestController";
 import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
 import { AccessControl } from "@/helpers";
-import { checkSameTeam } from "@/middleware/checkSameTeam";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import EmployeeService from "@/services/EmployeeService";
 import RequestService from "@/services/RequestService";
@@ -20,8 +19,8 @@ const employeeDb = new EmployeeDb();
 /**
  * Services
  */
-const requestService = new RequestService(requestDb);
 const employeeService = new EmployeeService(employeeDb);
+const requestService = new RequestService(employeeService, requestDb);
 
 /**
  * Controllers
@@ -41,7 +40,7 @@ router.get(
     swaggerOptions: {
       url: `${process.env.DOMAIN}/api/v1/swagger.json`,
     },
-  })
+  }),
 );
 
 router.get("/", async (ctx: any) => {
@@ -113,7 +112,7 @@ router.post("/login", (ctx) => employeeController.getEmployeeByEmail(ctx));
  *               - requestId
  */
 router.post("/cancelPendingRequests", (ctx) =>
-  requestController.cancelPendingRequests(ctx)
+  requestController.cancelPendingRequests(ctx),
 );
 
 /**
@@ -136,7 +135,7 @@ router.post("/cancelPendingRequests", (ctx) =>
 router.get(
   "/getAllSubordinatesRequests",
   checkUserRolePermission(AccessControl.VIEW_PENDING_REQUEST),
-  (ctx) => requestController.getAllSubordinatesRequests(ctx)
+  (ctx) => requestController.getAllSubordinatesRequests(ctx),
 );
 
 /**
@@ -157,7 +156,7 @@ router.get(
  *         description: Returns own pending requests
  */
 router.get("/getOwnPendingRequests", (ctx) =>
-  requestController.getOwnPendingRequests(ctx)
+  requestController.getOwnPendingRequests(ctx),
 );
 
 /**
@@ -200,24 +199,11 @@ router.get("/getMySchedule", (ctx) => requestController.getMySchedule(ctx));
 
 /**
  * @openapi
- * /api/v1/getTeamSchedule?reportingManager={INSERT ID HERE}&dept={INSERT DEPARTMENT HERE}:
+ * /api/v1/getSchedule:
  *   get:
- *     description: Get your own team's schedule
+ *     description: Get schedule depending on your role
  *     tags: [Schedule]
  *     parameters:
- *       - in: query
- *         name: reportingManager
- *         schema:
- *           type: number
- *         required: true
- *         description: Reporting manager Id
- *       - in: query
- *         name: dept
- *         schema:
- *           type: string
- *           enum: [CEO, Consultancy, Engineering, Finance, HR, IT, Sales, Solutioning]
- *         required: true
- *         description: User's department
  *       - in: header
  *         name: id
  *         schema:
@@ -228,52 +214,30 @@ router.get("/getMySchedule", (ctx) => requestController.getMySchedule(ctx));
  *       200:
  *         description: Returns a request object
  */
-router.get("/getTeamSchedule", checkSameTeam(), (ctx) =>
-  requestController.getTeamSchedule(ctx)
-);
+router.get("/getSchedule", (ctx) => requestController.getSchedule(ctx));
 
-/**
- * @openapi
- * /api/v1/getDeptSchedule?dept={INSERT DEPT HERE}:
- *   get:
- *     description: Get your own dept's schedule
- *     tags: [Schedule]
- *     parameters:
- *       - in: query
- *         name: dept
- *         schema:
- *           type: string
- *           enum: [CEO, Consultancy, Engineering, Finance, HR, IT, Sales, Solutioning]
- *         required: true
- *         description: Retrieve lists of request by that dept
- *     responses:
- *       200:
- *         description: Returns a request object
- */
-router.get("/getDeptSchedule", (ctx) => requestController.getDeptSchedule(ctx));
-
-/**
- * @openapi
- * /api/v1/getCompanySchedule:
- *   get:
- *     description: Get the entire company's schedule where status is approved
- *     tags: [Schedule]
- *     parameters:
- *       - in: query
- *         name: myId
- *         schema:
- *           type: number
- *         required: true
- *         description: Retrieve lists of schedule that are approved
- *     responses:
- *       200:
- *         description: Returns a request object
- */
-router.get(
-  "/getCompanySchedule",
-  checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
-  (ctx) => requestController.getCompanySchedule(ctx)
-);
+// /**
+//  * @openapi
+//  * /api/v1/getDeptScheduleByStaffId?staffId={INSERT STAFF ID HERE}:
+//  *   get:
+//  *     description: Get schedule for departments under current manager/director.
+//  *     tags: [Schedule]
+//  *     parameters:
+//  *       - in: query
+//  *         name: staffId
+//  *         schema:
+//  *           type: number
+//  *         required: true
+//  *         description: Retrieve list of departments under given staffId.
+//  *     responses:
+//  *       200:
+//  *         description: Returns a request object
+//  */
+// router.get(
+//   "/getDeptByManager",
+//   checkUserRolePermission(AccessControl.VIEW_OVERALL_SCHEDULE),
+//   (ctx) => employeeController.getDeptByManager(ctx),
+// );
 
 /**
  * @openapi

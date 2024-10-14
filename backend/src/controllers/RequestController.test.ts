@@ -1,13 +1,17 @@
 import RequestController from "@/controllers/RequestController";
-import { successMsg, noteMsg, errMsg } from "@/helpers";
-import RequestService from "@/services/RequestService";
+import EmployeeDb from "@/database/EmployeeDb";
 import RequestDb from "@/database/RequestDb";
+import { errMsg, noteMsg, successMsg } from "@/helpers";
+import EmployeeService from "@/services/EmployeeService";
+import RequestService from "@/services/RequestService";
 import { Context } from "koa";
 
 describe("RequestController", () => {
   let requestController: RequestController;
   let requestServiceMock: jest.Mocked<RequestService>;
   let requestDbMock: RequestDb;
+  let employeeDbMock: EmployeeDb;
+  let employeeServiceMock: jest.Mocked<EmployeeService>;
   let ctx: Context;
   type ResponseDates = {
     successDates: [string, string][];
@@ -22,8 +26,13 @@ describe("RequestController", () => {
 
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
+    employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    employeeServiceMock = new EmployeeService(
+      employeeDbMock,
+    ) as jest.Mocked<EmployeeService>;
     requestServiceMock = new RequestService(
-      requestDbMock
+      employeeServiceMock,
+      requestDbMock,
     ) as jest.Mocked<RequestService>;
     requestController = new RequestController(requestServiceMock);
     ctx = {
@@ -43,18 +52,6 @@ describe("RequestController", () => {
       errMsg: {
         _errors: [],
         staffId: {
-          _errors: ["Required"],
-        },
-        staffName: {
-          _errors: ["Required"],
-        },
-        reportingManager: {
-          _errors: ["Required"],
-        },
-        managerName: {
-          _errors: ["Required"],
-        },
-        dept: {
           _errors: ["Required"],
         },
         requestedDates: {
@@ -114,7 +111,7 @@ describe("RequestController", () => {
     await requestController.postRequest(ctx);
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
-      ctx.request.body
+      ctx.request.body,
     );
   });
 
@@ -165,7 +162,7 @@ describe("RequestController", () => {
     await requestController.postRequest(ctx);
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
-      ctx.request.body
+      ctx.request.body,
     );
   });
 
@@ -215,7 +212,7 @@ describe("RequestController", () => {
     await requestController.postRequest(ctx);
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
-      ctx.request.body
+      ctx.request.body,
     );
   });
 
@@ -262,7 +259,7 @@ describe("RequestController", () => {
     await requestController.postRequest(ctx);
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
-      ctx.request.body
+      ctx.request.body,
     );
   });
 
@@ -309,7 +306,7 @@ describe("RequestController", () => {
     await requestController.postRequest(ctx);
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
-      ctx.request.body
+      ctx.request.body,
     );
   });
 
@@ -355,7 +352,7 @@ describe("RequestController", () => {
     await requestController.postRequest(ctx);
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
-      ctx.request.body
+      ctx.request.body,
     );
   });
 
@@ -402,7 +399,7 @@ describe("RequestController", () => {
     await requestController.postRequest(ctx);
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
-      ctx.request.body
+      ctx.request.body,
     );
   });
 
@@ -456,7 +453,7 @@ describe("RequestController", () => {
     await requestController.postRequest(ctx);
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
-      ctx.request.body
+      ctx.request.body,
     );
   });
 
@@ -502,7 +499,7 @@ describe("RequestController", () => {
     await requestController.postRequest(ctx);
     expect(ctx.body).toEqual(expectedResponse);
     expect(requestServiceMock.postRequest).toHaveBeenCalledWith(
-      ctx.request.body
+      ctx.request.body,
     );
   });
 });

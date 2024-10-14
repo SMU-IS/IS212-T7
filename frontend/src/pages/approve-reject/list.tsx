@@ -1,61 +1,99 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { EmployeeJWT } from "@/interfaces/employee";
+import { DataSourceItem } from "@/interfaces/getRequests";
+import { List, TagField } from "@refinedev/antd";
+import { useGetIdentity } from "@refinedev/core";
 import {
   Button,
-  Table,
-  Typography,
-  Modal,
+  Card,
+  Col,
   Form,
   Input,
-  Select,
+  Modal,
   Row,
-  Col,
+  Select,
   Statistic,
-  Empty,
-  Card,
+  Table,
+  Typography,
 } from "antd";
-import { List, TagField } from "@refinedev/antd";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import CountUp from "react-countup";
+import { usePendingCount } from "./requestsCount";
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-// Mocked Data with Four Status Types and Department/Team
-const mockPosts = Array.from({ length: 10 }, (_, index) => ({
-  id: index + 1,
-  name: `Post Title ${index + 1}`,
-  email: `Email${index + 1}@example.com`,
-  role: `Role ${index + 1}`,
-  date: `3rd Oct 24`,
-  department: index % 2 === 0 ? "Marketing" : "Engineering",
-  status:
-    index % 4 === 0
-      ? "Pending"
-      : index % 4 === 1
-        ? "Approved"
-        : index % 4 === 2
-          ? "Expired"
-          : "Rejected", // Four statuses including Rejected
-  action: index % 2 === 0 ? "Yes" : "Not-editable",
-}));
-
-const formatter = (value: number) => <CountUp end={value} separator="," />;
-
+const formatter = (value: any) => {
+  if (typeof value === "number") {
+    return <CountUp end={value} separator="," />;
+  }
+  return value;
+};
 export const IncomingList: React.FC = () => {
-  const [dataSource, setDataSource] = useState(mockPosts);
-  const [filteredData, setFilteredData] = useState(mockPosts);
+  const { data: user } = useGetIdentity<EmployeeJWT>();
+  const [dataSource, setDataSource] = useState<DataSourceItem[]>([]);
+  const [filteredData, setFilteredData] = useState<DataSourceItem[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [currentPost, setCurrentPost] = useState(null);
+  const [currentPost, setCurrentPost] = useState<DataSourceItem | null>(null);
+  const [, setPendingCount] = usePendingCount();
   const [filterStatus, setFilterStatus] = useState<string | undefined>(
     undefined,
   );
   const [description, setDescription] = useState<string>(""); // New state for description
   const [showDescription, setShowDescription] = useState<boolean>(false); // New state for description visibility
 
-  const navigate = useNavigate();
+  const fetchRequests = async (staffId: any) => {
+    try {
+      const response = await axios.get(
+        `${backendUrl}/api/v1/getAllSubordinatesRequests`,
+        {
+          headers: { id: staffId },
+        },
+      );
+
+      if (response.data.length === 0) {
+        return;
+      }
+
+      const StatusMap: any = {
+        PENDING: "Pending",
+        APPROVED: "Approved",
+        REJECTED: "Rejected",
+        EXPIRED: "Expired",
+      };
+
+      const pendingRequests = response.data.map((request: any) => ({
+        id: request.staffId,
+        name: request.staffName,
+        email: `${request.staffName}@example.com`, // Assuming email can be derived or added
+        role: request.requestType,
+        date: new Date(request.requestedDate).toLocaleDateString(),
+        department: request.dept,
+        status: StatusMap[request.status],
+        reportingManager: request.reportingManager,
+        requestId: request.requestId,
+        staffId: request.staffId,
+      }));
+
+      // Update the global count of pending requests
+      const pendingCount = pendingRequests.filter(
+        (request) => request.status === "Pending",
+      ).length;
+
+      setPendingCount(pendingCount);
+      setDataSource(pendingRequests);
+      setFilteredData(pendingRequests);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    }
+  };
 
   useEffect(() => {
-    setDataSource(mockPosts);
-    setFilteredData(mockPosts);
-  }, []);
+    const staffId = user?.staffId;
+    if (staffId) {
+      fetchRequests(staffId);
+    }
+  }, [user?.staffId]); // Dependency array includes staffId to re-fetch when it changes
 
+  // Filter data based on selected status
   useEffect(() => {
     if (filterStatus) {
       setFilteredData(
@@ -68,11 +106,29 @@ export const IncomingList: React.FC = () => {
 
   // Function to calculate the count of requests based on status
   const getStatusCounts = () => {
+    if (!Array.isArray(dataSource)) {
+      console.error("dataSource is not an array:", dataSource);
+      return {
+        pending: 0,
+        approved: 0,
+        expired: 0,
+        rejected: 0,
+      };
+    }
+
     return {
-      pending: dataSource.filter((post) => post.status === "Pending").length,
-      approved: dataSource.filter((post) => post.status === "Approved").length,
-      expired: dataSource.filter((post) => post.status === "Expired").length,
-      rejected: dataSource.filter((post) => post.status === "Rejected").length,
+      pending: dataSource.filter(
+        (post) => post.status.toLowerCase() === "pending",
+      ).length,
+      approved: dataSource.filter(
+        (post) => post.status.toLowerCase() === "approved",
+      ).length,
+      expired: dataSource.filter(
+        (post) => post.status.toLowerCase() === "expired",
+      ).length,
+      rejected: dataSource.filter(
+        (post) => post.status.toLowerCase() === "rejected",
+      ).length,
     };
   };
 
@@ -91,22 +147,59 @@ export const IncomingList: React.FC = () => {
     setDescription("");
   };
 
-  const handleSave = (values: any) => {
-    console.log("Updated values:", values);
+  const handleSave = async (values: any) => {
     const updatedPost = {
       ...currentPost,
       ...values,
       description: description || undefined,
     };
-    const updatedDataSource = dataSource.map((post) =>
-      post.id === currentPost?.id ? updatedPost : post,
-    );
-    setDataSource(updatedDataSource);
-    setFilteredData(
-      updatedDataSource.filter(
-        (post) => !filterStatus || post.status === filterStatus,
-      ),
-    );
+
+    try {
+      // Check if the status is "Approved" or "Rejected"
+      if (values.status === "Approved") {
+        const response = await axios.post(
+          `${backendUrl}/api/v1/approveRequest`,
+          {
+            requestId: currentPost?.requestId,
+            performedBy: currentPost?.reportingManager,
+          },
+        );
+      } else if (values.status === "Rejected") {
+        const response = await axios.post(
+          `${backendUrl}/api/v1/rejectRequest`,
+          {
+            requestId: currentPost?.requestId,
+            performedBy: currentPost?.reportingManager,
+            reason: description,
+          },
+        );
+      }
+
+      // Re-fetch requests to get the latest status after approval or rejection
+      await fetchRequests(user?.staffId); // Await this to ensure the data is fetched before updating state
+
+      // Update the current post status
+      const updatedDataSource = dataSource.map((post) =>
+        post.requestId === currentPost?.requestId // Use requestId for matching
+          ? {
+              ...updatedPost,
+              status: values.status === "Approved" ? "Approved" : "Rejected",
+            }
+          : post,
+      );
+
+      // Update state to show the new data in the table
+      setDataSource(updatedDataSource);
+      setFilteredData(
+        updatedDataSource.filter(
+          (post) => !filterStatus || post.status === filterStatus,
+        ),
+      );
+    } catch (error) {
+      console.error("Error processing request:", error);
+    }
+
+    // Close the modal and reset state
     setModalVisible(false);
     setCurrentPost(null);
     setDescription("");
@@ -173,13 +266,13 @@ export const IncomingList: React.FC = () => {
       </Select>
 
       {/* Table */}
-      <Table dataSource={filteredData} rowKey="id" pagination={false}>
-        <Table.Column dataIndex="id" title="ID" />
+      <Table dataSource={filteredData} rowKey="requestId" pagination={false}>
+        <Table.Column dataIndex="requestId" title="Request ID." />
         <Table.Column dataIndex="name" title="Name" />
         <Table.Column dataIndex="email" title="Email" />
-        <Table.Column dataIndex="role" title="Role" />
-        <Table.Column dataIndex="date" title="WFH Date" />
         <Table.Column dataIndex="department" title="Department/Team" />
+        <Table.Column dataIndex="date" title="Applied Date" />
+        <Table.Column dataIndex="role" title="WFH Duration" />
         <Table.Column
           dataIndex="status"
           title="Status"
