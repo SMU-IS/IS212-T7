@@ -20,7 +20,9 @@ class ReassignmentController {
       return;
     }
 
-    await this.reassignmentService.insertReassignmentRequest();
+    await this.reassignmentService.insertReassignmentRequest(
+      reassignmentRequest,
+    );
     ctx.body = HttpStatusResponse.OK;
   }
 }

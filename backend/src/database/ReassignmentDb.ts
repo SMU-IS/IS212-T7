@@ -30,18 +30,10 @@ class ReassignmentDb {
     );
   }
 
-  public async insertReassignmentRequest(): Promise<void> {
-    const reassigmentReq = {
-      staffId: 1,
-      staffName: "John John Doe",
-      startDate: "2024-11-01",
-      endDate: "2024-11-05",
-      tempReportingManagerId: 2,
-      tempManagerName: "Jane Doe",
-      status: "PENDING",
-      active: null,
-    };
-    await Reassignment.create(reassigmentReq);
+  public async insertReassignmentRequest(
+    reassignmentRequest: any,
+  ): Promise<void> {
+    await Reassignment.create(reassignmentRequest);
   }
 }
 

@@ -26,7 +26,10 @@ const reassignmentDb = new ReassignmentDb();
  */
 const employeeService = new EmployeeService(employeeDb);
 const requestService = new RequestService(employeeService, requestDb);
-const reassignmentService = new ReassignmentService(reassignmentDb);
+const reassignmentService = new ReassignmentService(
+  reassignmentDb,
+  employeeService,
+);
 
 /**
  * Controllers
