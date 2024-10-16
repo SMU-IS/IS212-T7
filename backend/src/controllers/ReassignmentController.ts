@@ -1,7 +1,8 @@
-import { HttpStatusResponse } from "@/helpers";
-import { reassignmentRequestSchema } from "@/schema";
+import { errMsg, HttpStatusResponse } from "@/helpers";
+import { numberSchema, reassignmentRequestSchema } from "@/schema";
 import ReassignmentService from "@/services/ReassignmentService";
 import { Context } from "koa";
+import UtilsController from "./UtilsController";
 
 class ReassignmentController {
   private reassignmentService: ReassignmentService;
@@ -24,6 +25,18 @@ class ReassignmentController {
       reassignmentRequest,
     );
     ctx.body = HttpStatusResponse.OK;
+  }
+
+  public async getReassignmentStatus(ctx: Context) {
+    const { id } = ctx.request.header;
+    if (!id) {
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_HEADER);
+    }
+    const sanitisedStaffId = numberSchema.parse(id);
+    const reassignmentReq =
+      await this.reassignmentService.getReassignmentStatus(sanitisedStaffId);
+
+    ctx.body = reassignmentReq;
   }
 }
 

@@ -33,6 +33,10 @@ class ReassignmentService {
 
     await this.reassignmentDb.insertReassignmentRequest(request);
   }
+
+  public async getReassignmentStatus(staffId: number) {
+    return await this.reassignmentDb.getReassignmentRequest(staffId);
+  }
 }
 
 export default ReassignmentService;

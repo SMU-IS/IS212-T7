@@ -368,4 +368,25 @@ router.post("/requestReassignment", (ctx) =>
   reassignmentController.insertReassignmentRequest(ctx),
 );
 
+/**
+ * @openapi
+ * /api/v1/getReassignmentStatus:
+ *   get:
+ *     description: Get all reassignment status
+ *     tags: [Reassignment]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200:
+ *         description: Returns all reassignment status
+ */
+router.get("/getReassignmentStatus", (ctx) =>
+  reassignmentController.getReassignmentStatus(ctx),
+);
+
 export default router;

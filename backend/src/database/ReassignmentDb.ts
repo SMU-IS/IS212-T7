@@ -35,6 +35,16 @@ class ReassignmentDb {
   ): Promise<void> {
     await Reassignment.create(reassignmentRequest);
   }
+
+  public async getReassignmentRequest(staffId: number) {
+    const reassignmentRequest = await Reassignment.findOne(
+      {
+        staffId,
+      },
+      "-_id -createdAt -updatedAt",
+    );
+    return reassignmentRequest;
+  }
 }
 
 export default ReassignmentDb;
