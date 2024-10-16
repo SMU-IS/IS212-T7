@@ -309,4 +309,18 @@ router.post("/approveRequest", (ctx) => requestController.approveRequest(ctx));
  */
 router.post("/rejectRequest", (ctx) => requestController.rejectRequest(ctx));
 
+/**
+ * @openapi
+ * /api/v1/getRoleOneEmployees:
+ *   get:
+ *     description: Get role 1 employees
+ *     tags: [Employee]
+ *     responses:
+ *       200:
+ *         description: Returns an array of role 1 employees object
+ */
+router.get("/getRoleOneEmployees", (ctx) =>
+  employeeController.getRoleOneEmployees(ctx),
+);
+
 export default router;

@@ -37,6 +37,10 @@ class EmployeeService {
   public async getTeamCountByDept(dept: Dept) {
     return await this.employeeDb.getTeamCountByDept(dept);
   }
+
+  public async getRoleOneEmployees() {
+    return await this.employeeDb.getRoleOneEmployees();
+  }
 }
 
 export default EmployeeService;

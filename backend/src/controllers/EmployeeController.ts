@@ -1,9 +1,9 @@
 import UtilsController from "@/controllers/UtilsController";
 import { errMsg } from "@/helpers";
 import { LoginBody } from "@/models/Employee";
+import { numberSchema } from "@/schema";
 import EmployeeService from "@/services/EmployeeService";
 import { Context } from "koa";
-import { numberSchema } from "@/schema";
 
 class EmployeeController {
   private employeeService: EmployeeService;
@@ -31,7 +31,7 @@ class EmployeeController {
 
     const result = await this.employeeService.getEmployeeByEmail(
       String(staffEmail),
-      String(staffPassword)
+      String(staffPassword),
     );
 
     if (result == errMsg.USER_DOES_NOT_EXIST) {
@@ -89,17 +89,22 @@ class EmployeeController {
     } catch (e) {
       if (e instanceof Error) {
         ctx.body = {
-          error: e.message
+          error: e.message,
         };
       } else {
         ctx.body = {
-          error: 'An unknown error occurred'
+          error: "An unknown error occurred",
         };
       }
       return;
     }
 
     ctx.body = result;
+  }
+
+  public async getRoleOneEmployees(ctx: Context) {
+    const employees = await this.employeeService.getRoleOneEmployees();
+    ctx.body = employees;
   }
 }
 

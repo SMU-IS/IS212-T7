@@ -1,10 +1,12 @@
+import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
 import CronJob from "@/services/CronJob";
 import mongoose from "mongoose";
 
 const startCronJob = async () => {
   const requestDb = new RequestDb();
-  const job = new CronJob(requestDb);
+  const reassignmentDb = new ReassignmentDb();
+  const job = new CronJob(requestDb, reassignmentDb);
   await job.execute();
 };
 

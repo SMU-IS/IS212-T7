@@ -109,6 +109,25 @@ class EmployeeDb {
 
     return root;
   }
+
+  public async getRoleOneEmployees(): Promise<IEmployee[]> {
+    const employees = await Employee.aggregate([
+      { $match: { role: 1 } },
+      {
+        $project: {
+          _id: 0,
+          staffId: 1,
+          staffName: { $concat: ["$staffFName", " ", "$staffLName"] },
+          dept: 1,
+          position: 1,
+          email: 1,
+          role: 1,
+        },
+      },
+    ]);
+
+    return employees;
+  }
 }
 
 export default EmployeeDb;
