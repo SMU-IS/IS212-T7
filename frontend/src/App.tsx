@@ -47,11 +47,7 @@ const App = () => {
   const CustomTitle = () => (
     <div style={{ display: "flex", alignContent: "center" }}>
       <div style={{ alignContent: "center" }}>
-        <img
-          src={logo}
-          alt="Sayless Logo"
-          style={{ height: "30px", marginRight: "5px" }}
-        />
+        <img src={logo} alt="Sayless Logo" style={{ height: "30px" }} />
       </div>
       <Title
         level={3}
@@ -67,6 +63,7 @@ const App = () => {
       </Title>
     </div>
   );
+
   return (
     <BrowserRouter>
       <ColorModeContextProvider>
