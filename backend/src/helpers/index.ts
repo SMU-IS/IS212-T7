@@ -79,11 +79,37 @@ enum Dept {
   SOLUTIONING = "Solutioning",
 }
 
+enum Request {
+  APPLICATION = "APPLICATION",
+  WITHDRAWAL = "WITHDRAWAL",
+  REASSIGNMENT = "REASSIGNMENT",
+}
+
+enum Action {
+  APPLY = "APPLY",
+  RETRIEVE = "RETRIEVE",
+  APPROVE = "APPROVE",
+  REJECT = "REJECT",
+  CANCEL = "CANCEL",
+  REVOKE = "REVOKE",
+  REASSIGN = "REASSIGN",
+  EXPIRE = "EXPIRE",
+  SET_ACTIVE = "SET_ACTIVE",
+  SET_INACTIVE = "SET_INACTIVE",
+}
+
+enum PerformedBy {
+  SYSTEM,
+}
+
 export {
   AccessControl,
+  Action,
   Dept,
   HttpStatusResponse,
   PERMISSIONS,
+  PerformedBy,
+  Request,
   RequestType,
   Role,
   Status,

@@ -1,8 +1,10 @@
 import RequestController from "@/controllers/RequestController";
 import EmployeeDb from "@/database/EmployeeDb";
+import LogDb from "@/database/LogDb";
 import RequestDb from "@/database/RequestDb";
 import { errMsg, noteMsg, successMsg } from "@/helpers";
 import EmployeeService from "@/services/EmployeeService";
+import LogService from "@/services/LogService";
 import RequestService from "@/services/RequestService";
 import { Context } from "koa";
 
@@ -24,13 +26,20 @@ describe("RequestController", () => {
     insertErrorDates: [string, string][];
   };
 
+  let logDbMock: jest.Mocked<LogDb>;
+  let logServiceMock: jest.Mocked<LogService>;
+
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
+    logDbMock = new LogDb() as jest.Mocked<LogDb>;
+    logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+
     requestServiceMock = new RequestService(
+      logServiceMock,
       employeeServiceMock,
       requestDbMock,
     ) as jest.Mocked<RequestService>;

@@ -1,5 +1,11 @@
 import RequestDb from "@/database/RequestDb";
-import { errMsg, HttpStatusResponse } from "@/helpers";
+import {
+  Action,
+  errMsg,
+  HttpStatusResponse,
+  PerformedBy,
+  Request,
+} from "@/helpers";
 import { Role } from "@/helpers/";
 import {
   checkDate,
@@ -10,6 +16,7 @@ import {
 } from "@/helpers/date";
 import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
+import LogService from "./LogService";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -23,10 +30,16 @@ interface ResponseDates {
 }
 
 class RequestService {
+  private logService: LogService;
   private employeeService: EmployeeService;
   private requestDb: RequestDb;
 
-  constructor(employeeService: EmployeeService, requestDb: RequestDb) {
+  constructor(
+    logService: LogService,
+    employeeService: EmployeeService,
+    requestDb: RequestDb,
+  ) {
+    this.logService = logService;
     this.employeeService = employeeService;
     this.requestDb = requestDb;
   }
@@ -80,7 +93,15 @@ class RequestService {
       return errMsg.USER_DOES_NOT_EXIST;
     }
 
-    const { role, position, reportingManager, dept } = employee;
+    const {
+      role,
+      position,
+      reportingManager,
+      dept,
+      staffFName,
+      staffLName,
+      reportingManagerName,
+    } = employee;
     const allDeptTeamCount = await this.employeeService.getAllDeptTeamCount();
 
     const isManagerOrHR = role === Role.HR || role === Role.Manager;
@@ -97,6 +118,16 @@ class RequestService {
       for (const dept of Object.keys(allDeptTeamCount)) {
         allDeptTeamCount[dept].wfhStaff = wfhStaff[dept] || [];
       }
+
+      /**
+       * Logging
+       */
+      await this.logService.logRequestHelper({
+        performedBy: staffId,
+        requestType: Request.APPLICATION,
+        action: Action.RETRIEVE,
+        staffName: `${staffFName} ${staffLName}`,
+      });
     } else {
       schedule = {
         [dept]: {
@@ -104,6 +135,18 @@ class RequestService {
         },
       };
       schedule[dept].wfhStaff = wfhStaff;
+
+      /**
+       * Logging
+       */
+      await this.logService.logRequestHelper({
+        performedBy: staffId,
+        requestType: Request.APPLICATION,
+        action: Action.RETRIEVE,
+        staffName: `${staffFName} ${staffLName}`,
+        reportingManagerId: reportingManager,
+        managerName: reportingManagerName,
+      });
     }
 
     return schedule;
@@ -266,6 +309,20 @@ class RequestService {
       return null;
     }
     return HttpStatusResponse.OK;
+  }
+
+  public async updateRequestStatusToExpired() {
+    const isStatusUpdated = await this.requestDb.updateRequestStatusToExpired();
+    if (isStatusUpdated) {
+      /**
+       * Logging
+       */
+      await this.logService.logRequestHelper({
+        performedBy: PerformedBy.SYSTEM,
+        requestType: Request.REASSIGNMENT,
+        action: Action.EXPIRE,
+      });
+    }
   }
 }
 export default RequestService;

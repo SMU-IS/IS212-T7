@@ -2,12 +2,14 @@ import EmployeeController from "@/controllers/EmployeeController";
 import ReassignmentController from "@/controllers/ReassignmentController";
 import RequestController from "@/controllers/RequestController";
 import EmployeeDb from "@/database/EmployeeDb";
+import LogDb from "@/database/LogDb";
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
 import { AccessControl } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 
 import EmployeeService from "@/services/EmployeeService";
+import LogService from "@/services/LogService";
 import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
 import swaggerSpec from "@/swagger";
@@ -20,15 +22,22 @@ import { koaSwagger } from "koa2-swagger-ui";
 const requestDb = new RequestDb();
 const employeeDb = new EmployeeDb();
 const reassignmentDb = new ReassignmentDb();
+const logDb = new LogDb();
 
 /**
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
-const requestService = new RequestService(employeeService, requestDb);
+const logService = new LogService(logDb);
+const requestService = new RequestService(
+  logService,
+  employeeService,
+  requestDb,
+);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
   employeeService,
+  logService,
 );
 
 /**
