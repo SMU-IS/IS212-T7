@@ -74,7 +74,6 @@ class RequestDb {
           Status.REJECTED,
           Status.EXPIRED,
           Status.REVOKED,
-
         ],
       },
     });
@@ -149,10 +148,12 @@ class RequestDb {
     return request;
   }
 
-  public async postRequest(document: InsertDocument): Promise<boolean> {
+  public async postRequest(
+    document: InsertDocument,
+  ): Promise<boolean | number> {
     try {
-      const requestInsert = await Request.create(document);
-      return !!requestInsert;
+      const { requestId } = await Request.create(document);
+      return requestId;
     } catch (error) {
       return false;
     }
@@ -255,7 +256,7 @@ class RequestDb {
       {
         $set: {
           status: Status.REVOKED,
-          reason: reason
+          reason: reason,
         },
       },
     );

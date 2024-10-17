@@ -249,6 +249,19 @@ class RequestService {
 
       if (requestInsert) {
         responseDates.successDates.push(dateType);
+        const reqId = requestInsert as number;
+        /**
+         * Logging
+         */
+        await this.logService.logRequestHelper({
+          performedBy: requestDetails.staffId,
+          requestType: Request.APPLICATION,
+          action: Action.APPLY,
+          requestId: reqId,
+          staffName: `${staffFName} ${staffLName}`,
+          reportingManagerId: reportingManager,
+          managerName: reportingManagerName,
+        });
       } else {
         responseDates.insertErrorDates.push(dateType);
       }
