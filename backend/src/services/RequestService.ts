@@ -1,5 +1,5 @@
 import RequestDb from "@/database/RequestDb";
-import { Dept, errMsg, HttpStatusResponse } from "@/helpers";
+import { errMsg, HttpStatusResponse } from "@/helpers";
 import { Role } from "@/helpers/";
 import {
   checkDate,
@@ -81,9 +81,7 @@ class RequestService {
     }
 
     const { role, position, reportingManager, dept } = employee;
-    const teamCount = await this.employeeService.getTeamCountByDept(
-      dept as Dept,
-    );
+    const allDeptTeamCount = await this.employeeService.getAllDeptTeamCount();
 
     const isManagerOrHR = role === Role.HR || role === Role.Manager;
     const wfhStaff = isManagerOrHR
@@ -94,20 +92,18 @@ class RequestService {
 
     if (isManagerOrHR) {
       schedule = {
-        deptName: dept,
-        ...teamCount,
-        data: {
-          ...wfhStaff,
-        },
+        ...allDeptTeamCount,
       };
+      for (const dept of Object.keys(allDeptTeamCount)) {
+        allDeptTeamCount[dept].wfhStaff = wfhStaff[dept] || [];
+      }
     } else {
       schedule = {
-        deptName: dept,
-        totalTeamMembers: teamCount.teamMembers[position],
-        team: {
-          [position]: wfhStaff,
+        [dept]: {
+          [position]: allDeptTeamCount[dept].teams[position],
         },
       };
+      schedule[dept].wfhStaff = wfhStaff;
     }
 
     return schedule;

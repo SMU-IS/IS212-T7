@@ -1,14 +1,15 @@
 import EmployeeController from "@/controllers/EmployeeController";
+import ReassignmentController from "@/controllers/ReassignmentController";
 import RequestController from "@/controllers/RequestController";
-import WithdrawalController from "@/controllers/WithdrawalController";
 import EmployeeDb from "@/database/EmployeeDb";
+import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
-import WithdrawalDb from "@/database/WithdrawalDb";
 import { AccessControl } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
+
 import EmployeeService from "@/services/EmployeeService";
+import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
-import WithdrawalService from "@/services/WithdrawalService";
 import swaggerSpec from "@/swagger";
 import Router from "koa-router";
 import { koaSwagger } from "koa2-swagger-ui";
@@ -18,21 +19,24 @@ import { koaSwagger } from "koa2-swagger-ui";
  */
 const requestDb = new RequestDb();
 const employeeDb = new EmployeeDb();
-const withdrawalDb = new WithdrawalDb();
+const reassignmentDb = new ReassignmentDb();
 
 /**
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
 const requestService = new RequestService(employeeService, requestDb);
-const withdrawalService = new WithdrawalService(withdrawalDb, requestService);
+const reassignmentService = new ReassignmentService(
+  reassignmentDb,
+  employeeService,
+);
 
 /**
  * Controllers
  */
 const requestController = new RequestController(requestService);
 const employeeController = new EmployeeController(employeeService);
-const withdrawalController = new WithdrawalController(withdrawalService)
+const reassignmentController = new ReassignmentController(reassignmentService);
 
 const router = new Router();
 router.prefix("/api/v1");
@@ -335,5 +339,75 @@ router.post("/rejectRequest", (ctx) => requestController.rejectRequest(ctx));
  *               - requestId
  */
 router.post("/withdrawRequest", (ctx) => withdrawalController.withdrawRequest(ctx));
+
+/**
+ * @openapi
+ * /api/v1/getRoleOneEmployees:
+ *   get:
+ *     description: Get role 1 employees
+ *     tags: [Employee]
+ *     responses:
+ *       200:
+ *         description: Returns an array of role 1 employees object
+ */
+router.get("/getRoleOneEmployees", (ctx) =>
+  employeeController.getRoleOneEmployees(ctx),
+);
+
+/**
+ * @openapi
+ * /api/v1/requestReassignment:
+ *   post:
+ *     description: Initiate reassignment to another manager
+ *     tags: [Reassignment]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               staffId:
+ *                 type: number
+ *                 description: Your staffId
+ *               startDate:
+ *                 type: string
+ *                 description: Your leave start date
+ *               endDate:
+ *                 type: string
+ *                 description: Your leave end date
+ *               tempReportingManagerId:
+ *                 type: number
+ *                 description: New manager staffId
+ *             required:
+ *               - staffId
+ *               - startDate
+ *               - endDate
+ *               - tempReportingManagerId
+ */
+router.post("/requestReassignment", (ctx) =>
+  reassignmentController.insertReassignmentRequest(ctx),
+);
+
+/**
+ * @openapi
+ * /api/v1/getReassignmentStatus:
+ *   get:
+ *     description: Get all reassignment status
+ *     tags: [Reassignment]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200:
+ *         description: Returns all reassignment status
+ */
+router.get("/getReassignmentStatus", (ctx) =>
+  reassignmentController.getReassignmentStatus(ctx),
+);
 
 export default router;

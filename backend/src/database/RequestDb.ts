@@ -118,40 +118,23 @@ class RequestDb {
       },
       {
         $group: {
-          _id: {
-            dept: "$dept",
-            position: "$position",
-          },
+          _id: "$dept",
           requests: { $push: "$$ROOT" },
-        },
-      },
-      {
-        $group: {
-          _id: "$_id.dept",
-          teams: {
-            $push: {
-              position: "$_id.position",
-              requests: "$requests",
-            },
-          },
         },
       },
       {
         $project: {
           _id: 0,
           dept: "$_id",
-          teams: 1,
+          requests: 1,
         },
       },
     ]);
 
-    const formattedSchedule: any = {};
-    deptSchedule.forEach((dept) => {
-      formattedSchedule[dept.dept] = {};
-      dept.teams.forEach((team: any) => {
-        formattedSchedule[dept.dept][team.position] = team.requests;
-      });
-    });
+    const formattedSchedule = deptSchedule.reduce((acc: any, dept: any) => {
+      acc[dept.dept] = dept.requests;
+      return acc;
+    }, {});
 
     return formattedSchedule;
   }
