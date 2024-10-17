@@ -10,6 +10,7 @@ import {
 } from "@/helpers/date";
 import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
+import initMailer from "@/config/mailer";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -204,6 +205,18 @@ class RequestService {
         responseDates.insertErrorDates.push(dateType);
       }
     }
+
+    const employee = await this.employeeService.getEmployee(
+      Number(requestDetails.staffId),
+    );
+    const { email, reportingManager } = employee!;
+    await this.pushRequestSentNotification(
+      email,
+      reportingManager,
+      responseDates.successDates,
+      requestDetails.reason
+    );
+
     return responseDates;
   }
 
@@ -266,6 +279,83 @@ class RequestService {
       return null;
     }
     return HttpStatusResponse.OK;
+  }
+
+  public async pushRequestSentNotification(
+    staffEmail: string,
+    managerId: number,
+    requestDates: [string, string][],
+    requestReason: string
+  ) {
+    try {
+      let numItems = requestDates.length;
+      if (numItems <= 0) {
+        return "Nothing to send";
+      }
+      let reasonSet = false;
+      let transporter = initMailer();
+      let staffName = staffEmail.split("@")[0];
+
+      let textBody = "Your WFH request for the following dates have been sent to your manager: \n";
+
+      let htmlBody = `
+        <html>
+          <head>
+          <body>
+            <p>Your WFH request for the following dates have been sent to your manager.</p>
+            <table style="border: 1px solid black; border-collapse: collapse;">
+              <tr>
+                <th style="border: 1px solid black; border-collapse: collapse;">Requested Dates</th>
+                <th style="border: 1px solid black; border-collapse: collapse;">Duration</th>
+                <th style="border: 1px solid black; border-collapse: collapse;">Reason</th>
+              </tr>
+      `;
+
+      for (const dateType of requestDates) {
+        const [date, type] = dateType;
+        textBody += date + ", " + type + "\n";
+        if (!reasonSet) {
+          htmlBody += `
+            <tr>
+              <td style="border: 1px solid black; border-collapse: collapse;">${date.toString()}</td>
+              <td style="border: 1px solid black; border-collapse: collapse;">${type.toString()}</td>
+              <td style="border: 1px solid black; border-collapse: collapse;" rowspan="${numItems.toString()}">${requestReason.toString()}</td>
+            </tr>
+          `;
+          reasonSet = true;
+        } else {
+          htmlBody += `
+            <tr>
+              <td style="border: 1px solid black; border-collapse: collapse;">${date.toString()}</td>
+              <td style="border: 1px solid black; border-collapse: collapse;">${type.toString()}</td>
+            </tr>
+          `;
+        }
+      }
+      textBody += `\nReason: ${requestReason}`
+      htmlBody += `
+            </table>
+          </body>
+        </html>
+      `
+
+      // Email details
+      const mailOptions = {
+        from: 'noreply@lurence.org',
+        to: `${staffName}@yopmail.com`,
+        subject: 'WFH Request Sent',
+        text: textBody,
+        html: htmlBody
+      };
+
+      // Send email
+      await transporter.sendMail(mailOptions);
+
+      return "Email sent successfully!";
+    } catch (error) {
+      console.error('Error sending email:', error);
+      return "Failed to send email"
+    }
   }
 }
 export default RequestService;

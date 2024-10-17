@@ -13,6 +13,7 @@ import { jest } from "@jest/globals";
 import dayjs from "dayjs";
 import { Context, Next } from "koa";
 import EmployeeService from "./EmployeeService";
+import { IEmployee } from "@/models/Employee";
 
 beforeAll(() => {
   initializeCounter("requestId");
@@ -85,6 +86,8 @@ describe("postRequest", () => {
     requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
       mockRequestData.PENDING,
     ] as any);
+
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as IEmployee);
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
   });
@@ -114,6 +117,8 @@ describe("postRequest", () => {
     requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
       mockRequestData.PENDING,
     ] as any);
+
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as IEmployee);
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
   });
@@ -277,6 +282,8 @@ describe("postRequest", () => {
     requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
       mockRequestData.testing,
     ] as any);
+
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as IEmployee);
     jest.spyOn(dateUtils, "checkLatestDate").mockReturnValue(true);
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
@@ -307,6 +314,8 @@ describe("postRequest", () => {
     requestDbMock.getPendingOrApprovedRequests.mockResolvedValue([
       mockRequestData.testing,
     ] as any);
+
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as IEmployee);
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
   });
