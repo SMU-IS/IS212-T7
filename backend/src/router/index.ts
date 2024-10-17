@@ -354,6 +354,27 @@ router.post("/revokeRequest", (ctx) => requestController.revokeRequest(ctx));
 
 /**
  * @openapi
+ * /api/v1/withdrawRequest:
+ *   post:
+ *     description: withdraw my own approved request
+ *     tags: [Withdrawal Request]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               requestId:
+ *                 type: number
+ *                 description: requestId of the request I want to withdraw
+ *             required:
+ *               - requestId
+ */
+router.post("/withdrawRequest", (ctx) => withdrawalController.withdrawRequest(ctx));
+
+/**
+ * @openapi
  * /api/v1/getRoleOneEmployees:
  *   get:
  *     description: Get role 1 employees

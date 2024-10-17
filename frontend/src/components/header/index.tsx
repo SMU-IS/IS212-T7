@@ -42,7 +42,7 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   const [pendingCount] = usePendingCount(); // Read the global state
 
   const headerStyles: React.CSSProperties = {
-    backgroundColor: token.colorBgElevated,
+    backgroundColor: "transparent",
     display: "flex",
     justifyContent: "flex-end",
     alignItems: "center",
@@ -76,7 +76,7 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
         <Switch
           checkedChildren="🌛"
           unCheckedChildren="🔆"
-          onChange={() => setMode(mode === "light" ? "dark" : "light")}
+          onChange={() => setMode(mode === "dark" ? "light" : "dark")}
           defaultChecked={mode === "dark"}
         />
       </Space>

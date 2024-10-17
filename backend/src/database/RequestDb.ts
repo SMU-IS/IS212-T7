@@ -206,6 +206,17 @@ class RequestDb {
     return requestDetail;
   }
 
+  public async getApprovedRequestByRequestId(requestId: number) {
+    const requestDetail = await Request.findOne(
+      {
+        requestId,
+        status: Status.APPROVED,
+      },
+      "-_id -createdAt -updatedAt",
+    );
+    return requestDetail;
+  }
+
   public async rejectRequest(
     performedBy: number,
     requestId: number,
