@@ -43,7 +43,7 @@ const RequestSchema = new Schema<IRequest>(
     status: {
       type: String,
       required: true,
-      enum: ["PENDING", "APPROVED", "REJECTED", "CANCELLED", "WITHDRAWN", "REVOKED"],
+      enum: [Status.PENDING, Status.APPROVED, Status.REJECTED, Status.CANCELLED, Status.WITHDRAWN, Status.REVOKED],
       default: Status.PENDING,
     },
     performedBy: {
