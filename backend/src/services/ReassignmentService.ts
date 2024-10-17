@@ -26,24 +26,35 @@ class ReassignmentService {
     const tempReportingManager = await this.employeeService.getEmployee(
       tempReportingManagerId,
     );
+    const managerName = `${currentManager!.staffFName} ${currentManager!.staffLName}`;
 
     const request = {
       ...reassignmentRequest,
-      staffName: `${currentManager!.staffFName} ${currentManager!.staffLName}`,
+      staffName: managerName,
       tempManagerName: `${tempReportingManager!.staffFName} ${tempReportingManager!.staffLName}`,
       status: Status.PENDING,
       active: null,
     };
 
     await this.reassignmentDb.insertReassignmentRequest(request);
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: staffId,
+      requestType: Request.REASSIGNMENT,
+      action: Action.APPLY,
+      staffName: managerName,
+    });
   }
 
   public async getReassignmentStatus(staffId: number) {
     const { staffFName, staffLName }: any =
       await this.employeeService.getEmployee(staffId);
-    await this.reassignmentDb.getReassignmentRequest(staffId);
 
     const staffName = `${staffFName} ${staffLName}`;
+
     /**
      * Logging
      */
@@ -53,11 +64,14 @@ class ReassignmentService {
       action: Action.RETRIEVE,
       staffName: staffName,
     });
+
+    return await this.reassignmentDb.getReassignmentRequest(staffId);
   }
 
   public async setActiveReassignmentPeriod(): Promise<void> {
     const isActiveUpdated =
       await this.reassignmentDb.setActiveReassignmentPeriod();
+
     if (isActiveUpdated) {
       /**
        * Logging
@@ -73,6 +87,7 @@ class ReassignmentService {
   public async setInactiveReassignmentPeriod(): Promise<void> {
     const isActiveUpdated =
       await this.reassignmentDb.setInactiveReassignmentPeriod();
+
     if (isActiveUpdated) {
       /**
        * Logging

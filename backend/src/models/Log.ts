@@ -37,6 +37,7 @@ const LogSchema = new Schema<ILog>(
       type: String,
       required: true,
       enum: [
+        Action.APPLY,
         Action.APPROVE,
         Action.RETRIEVE,
         Action.REJECT,
