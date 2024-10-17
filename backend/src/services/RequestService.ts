@@ -283,12 +283,6 @@ class RequestService {
     return HttpStatusResponse.OK;
   }
 
-  public async getApprovedRequestByRequestId(requestId: number) {
-    const requestDetail =
-      await this.requestDb.getApprovedRequestByRequestId(requestId);
-    return requestDetail;
-  }
-
   public async revokeRequest(
     performedBy: number,
     requestId: number,
