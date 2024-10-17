@@ -5,6 +5,7 @@ interface iLogRequest {
   performedBy: PerformedBy | string;
   requestType: Request;
   action: Action;
+  requestId?: number;
   reason?: string;
   staffName?: string;
   reportingManagerId?: number;
@@ -26,6 +27,7 @@ class LogService {
       performedBy,
       requestType,
       action,
+      requestId = null,
       reason = null,
       staffName = null,
       reportingManagerId = null,
@@ -36,6 +38,7 @@ class LogService {
       performedBy,
       requestType,
       action,
+      requestId,
       reason,
       staffName,
       reportingManagerId,
