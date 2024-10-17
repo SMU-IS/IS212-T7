@@ -6,11 +6,21 @@ class LogDb {
   }
 
   public async getLogs(staffId: number) {
-    const logs = await Log.findOne(
+    const logs = await Log.find(
       {
-        staffId,
+        performedBy: staffId,
       },
-      "-_id -createdAt -updatedAt",
+      "-_id -updatedAt",
+    );
+    return logs;
+  }
+
+  public async getLogsByRequestId(requestId: number) {
+    const logs = await Log.find(
+      {
+        requestId,
+      },
+      "-_id -updatedAt",
     );
     return logs;
   }

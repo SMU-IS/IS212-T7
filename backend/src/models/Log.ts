@@ -6,6 +6,8 @@ export interface ILog {
   logId: number;
   performedBy: number;
   staffName: string;
+  dept: string;
+  position: string;
   reportingManagerId: number;
   managerName: string;
   requestId: number | undefined;
@@ -25,6 +27,8 @@ const LogSchema = new Schema<ILog>(
       required: true,
     },
     staffName: { type: String, required: false },
+    dept: { type: String, required: false },
+    position: { type: String, required: false },
     reportingManagerId: { type: Number, required: false },
     managerName: { type: String, required: false },
     requestId: { type: Number, required: false },

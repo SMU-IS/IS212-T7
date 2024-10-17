@@ -1,6 +1,7 @@
 import RequestDb from "@/database/RequestDb";
 import {
   Action,
+  Dept,
   errMsg,
   HttpStatusResponse,
   PerformedBy,
@@ -82,6 +83,8 @@ class RequestService {
       staffLName,
       reportingManager,
       reportingManagerName,
+      dept,
+      position,
     }: any = await this.employeeService.getEmployee(staffId);
 
     /**
@@ -91,6 +94,8 @@ class RequestService {
       performedBy: staffId,
       requestType: Request.APPLICATION,
       action: Action.CANCEL,
+      dept: dept,
+      position: position,
       requestId: requestId,
       staffName: `${staffFName} ${staffLName}`,
       reportingManagerId: reportingManager,
@@ -277,6 +282,8 @@ class RequestService {
           performedBy: requestDetails.staffId,
           requestType: Request.APPLICATION,
           action: Action.APPLY,
+          dept: dept as Dept,
+          position: position,
           requestId: reqId,
           staffName: `${staffFName} ${staffLName}`,
           reportingManagerId: reportingManager,

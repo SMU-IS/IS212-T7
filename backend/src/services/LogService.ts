@@ -1,10 +1,12 @@
 import LogDb from "@/database/LogDb";
-import { Action, PerformedBy, Request } from "@/helpers";
+import { Action, Dept, PerformedBy, Request } from "@/helpers";
 
 interface iLogRequest {
   performedBy: PerformedBy | string;
   requestType: Request;
   action: Action;
+  dept?: Dept;
+  position?: string;
   requestId?: number;
   reason?: string;
   staffName?: string;
@@ -27,6 +29,8 @@ class LogService {
       performedBy,
       requestType,
       action,
+      dept = null,
+      position = null,
       requestId = null,
       reason = null,
       staffName = null,
@@ -38,6 +42,8 @@ class LogService {
       performedBy,
       requestType,
       action,
+      dept,
+      position,
       requestId,
       reason,
       staffName,
@@ -58,6 +64,10 @@ class LogService {
 
   public async getLogsByStaffId(staffId: number) {
     return await this.logDb.getLogs(staffId);
+  }
+
+  public async getLogsByRequestId(requestId: number) {
+    return await this.logDb.getLogsByRequestId(requestId);
   }
 }
 

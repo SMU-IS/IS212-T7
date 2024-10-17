@@ -1,4 +1,5 @@
 import EmployeeController from "@/controllers/EmployeeController";
+import LogController from "@/controllers/LogController";
 import ReassignmentController from "@/controllers/ReassignmentController";
 import RequestController from "@/controllers/RequestController";
 import WithdrawalController from "@/controllers/WithdrawalController";
@@ -52,6 +53,7 @@ const requestController = new RequestController(requestService);
 const employeeController = new EmployeeController(employeeService);
 const reassignmentController = new ReassignmentController(reassignmentService);
 const withdrawalController = new WithdrawalController(withdrawalService);
+const logController = new LogController(logService);
 
 const router = new Router();
 router.prefix("/api/v1");
@@ -455,5 +457,24 @@ router.post("/requestReassignment", (ctx) =>
 router.get("/getReassignmentStatus", (ctx) =>
   reassignmentController.getReassignmentStatus(ctx),
 );
+
+/**
+ * @openapi
+ * /api/v1/getAllLogs:
+ *   get:
+ *     description: Get all logs by staffId
+ *     tags: [Logs]
+ *     parameters:
+ *       - in: query
+ *         name: staffId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: any staffId that you wanna see
+ *     responses:
+ *       200:
+ *         description: Returns all logs by staffId
+ */
+router.get("/getAllLogs", (ctx) => logController.getAllLogs(ctx));
 
 export default router;
