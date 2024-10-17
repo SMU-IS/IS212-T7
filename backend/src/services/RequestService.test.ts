@@ -17,6 +17,7 @@ import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 import ReassignmentDb from "@/database/ReassignmentDb";
 import ReassignmentService from "@/services/ReassignmentService";
+import { IEmployee } from "@/models/Employee";
 
 beforeAll(() => {
   initializeCounter("requestId");
@@ -425,6 +426,7 @@ describe("cancel pending requests", () => {
      */
     requestDbMock.cancelPendingRequests = jest.fn();
     employeeDbMock.getEmployee = jest.fn() as any;
+    employeeServiceMock.getEmployee = jest.fn() as any;
     UtilsController.throwAPIError = jest.fn();
 
     jest.resetAllMocks();
@@ -445,6 +447,13 @@ describe("cancel pending requests", () => {
     requestDbMock.cancelPendingRequests.mockResolvedValue(
       mockRequestData.APPROVED as any,
     );
+    employeeServiceMock.getEmployee.mockResolvedValue({
+      staffFName: "Janice",
+      staffLName: "Chan",
+      reportingManager: 140894,
+      reportingManagerName: "Rahim Khalid",
+    } as IEmployee);
+
     const result = await requestService.cancelPendingRequests(
       staffId,
       requestId,

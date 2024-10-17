@@ -77,6 +77,26 @@ class RequestService {
       return null;
     }
 
+    const {
+      staffFName,
+      staffLName,
+      reportingManager,
+      reportingManagerName,
+    }: any = await this.employeeService.getEmployee(staffId);
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: staffId,
+      requestType: Request.APPLICATION,
+      action: Action.CANCEL,
+      requestId: requestId,
+      staffName: `${staffFName} ${staffLName}`,
+      reportingManagerId: reportingManager,
+      managerName: reportingManagerName,
+    });
+
     return HttpStatusResponse.OK;
   }
 
