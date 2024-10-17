@@ -13,10 +13,13 @@ import {
   checkPastDate,
   checkWeekend,
   weekMap,
+  checkPastWithdrawalDate,
+  checkValidWithdrawalDate,
 } from "@/helpers/date";
 import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
+import ReassignmentService from "./ReassignmentService";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -32,16 +35,19 @@ interface ResponseDates {
 class RequestService {
   private logService: LogService;
   private employeeService: EmployeeService;
+  private reassignmentService: ReassignmentService;
   private requestDb: RequestDb;
 
   constructor(
     logService: LogService,
     employeeService: EmployeeService,
     requestDb: RequestDb,
+    reassignmentService: ReassignmentService,
   ) {
     this.logService = logService;
     this.employeeService = employeeService;
     this.requestDb = requestDb;
+    this.reassignmentService = reassignmentService;
   }
 
   public async getMySchedule(myId: number) {
@@ -329,6 +335,39 @@ class RequestService {
         action: Action.EXPIRE,
       });
     }
+  }
+
+  public async revokeRequest(
+    performedBy: number,
+    requestId: number,
+    reason: string,
+  ): Promise<string | null> {
+    const request = await this.getApprovedRequestByRequestId(requestId);
+    if (!request) {
+      return null;
+    }
+    if (performedBy !== request.reportingManager) {
+      const activeFlag = await this.reassignmentService.getReassignmentActive(
+        request.reportingManager as any,
+        performedBy,
+      );
+      if (!activeFlag) {
+        return null;
+      }
+    }
+
+    if (
+      checkPastWithdrawalDate(request.requestedDate) &&
+      !checkValidWithdrawalDate(request.requestedDate)
+    ) {
+      return null;
+    }
+
+    const result = await this.requestDb.revokeRequest(requestId, reason);
+    if (!result) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
   }
 }
 export default RequestService;

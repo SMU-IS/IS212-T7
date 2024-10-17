@@ -73,6 +73,8 @@ class RequestDb {
           Status.WITHDRAWN,
           Status.REJECTED,
           Status.EXPIRED,
+          Status.REVOKED,
+
         ],
       },
     });
@@ -206,17 +208,6 @@ class RequestDb {
     return requestDetail;
   }
 
-  public async getApprovedRequestByRequestId(requestId: number) {
-    const requestDetail = await Request.findOne(
-      {
-        requestId,
-        status: Status.APPROVED,
-      },
-      "-_id -createdAt -updatedAt",
-    );
-    return requestDetail;
-  }
-
   public async rejectRequest(
     performedBy: number,
     requestId: number,
@@ -232,6 +223,39 @@ class RequestDb {
           status: Status.REJECTED,
           reason: reason,
           performedBy: performedBy,
+        },
+      },
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+
+  public async getApprovedRequestByRequestId(requestId: number) {
+    const requestDetail = await Request.findOne(
+      {
+        requestId,
+        status: Status.APPROVED,
+      },
+      "-_id -createdAt -updatedAt",
+    );
+    return requestDetail;
+  }
+
+  public async revokeRequest(
+    requestId: number,
+    reason: string,
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.APPROVED,
+      },
+      {
+        $set: {
+          status: Status.REVOKED,
+          reason: reason
         },
       },
     );

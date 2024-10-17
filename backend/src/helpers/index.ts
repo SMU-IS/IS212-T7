@@ -66,6 +66,7 @@ enum Status {
   CANCELLED = "CANCELLED",
   WITHDRAWN = "WITHDRAWN",
   EXPIRED = "EXPIRED",
+  REVOKED = "REVOKED"
 }
 
 enum Dept {

@@ -15,6 +15,8 @@ import dayjs from "dayjs";
 import { Context, Next } from "koa";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
+import ReassignmentDb from "@/database/ReassignmentDb";
+import ReassignmentService from "@/services/ReassignmentService";
 
 beforeAll(() => {
   initializeCounter("requestId");
@@ -28,6 +30,8 @@ describe("postRequest", () => {
   let employeeServiceMock: jest.Mocked<EmployeeService>;
   let logServiceMock: jest.Mocked<LogService>;
   let mockEmployee: any;
+  let reassignmentDbMock: ReassignmentDb;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
 
   const mondayWeekBefore = dayjs()
     .tz("Asia/Singapore")
@@ -50,15 +54,25 @@ describe("postRequest", () => {
     mockEmployee = await generateMockEmployeeTest();
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
+
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
     logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+
+    reassignmentServiceMock = new ReassignmentService(
+      reassignmentDbMock,
+      employeeServiceMock,
+      logServiceMock,
+    ) as jest.Mocked<ReassignmentService>;
+
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
       requestDbMock,
+      reassignmentServiceMock,
     );
     requestDbMock.postRequest = jest.fn();
     requestDbMock.getPendingOrApprovedRequests = jest.fn();
@@ -329,20 +343,30 @@ describe("getPendingOrApprovedRequests", () => {
   let employeeServiceMock: jest.Mocked<EmployeeService>;
   let logDbMock: jest.Mocked<LogDb>;
   let logServiceMock: jest.Mocked<LogService>;
+  let reassignmentDbMock: ReassignmentDb;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
 
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
     logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+
+    reassignmentServiceMock = new ReassignmentService(
+      reassignmentDbMock,
+      employeeServiceMock,
+      logServiceMock,
+    ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
       requestDbMock,
+      reassignmentServiceMock,
     );
     requestDbMock.getPendingOrApprovedRequests = jest.fn();
     jest.resetAllMocks();
@@ -371,20 +395,30 @@ describe("cancel pending requests", () => {
   let employeeServiceMock: jest.Mocked<EmployeeService>;
   let logDbMock: jest.Mocked<LogDb>;
   let logServiceMock: jest.Mocked<LogService>;
+  let reassignmentDbMock: ReassignmentDb;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
 
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
     logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+
+    reassignmentServiceMock = new ReassignmentService(
+      reassignmentDbMock,
+      employeeServiceMock,
+      logServiceMock,
+    ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
       requestDbMock,
+      reassignmentServiceMock,
     );
     /**
      * Mock Database Calls
@@ -424,6 +458,8 @@ describe("get pending requests", () => {
   let employeeServiceMock: jest.Mocked<EmployeeService>;
   let requestService: RequestService;
   let requestDbMock: jest.Mocked<RequestDb>;
+  let reassignmentDbMock: ReassignmentDb;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
   let ctx: Context;
   let next: Next;
   const checkUserRolePermMiddleware = checkUserRolePermission(
@@ -436,16 +472,24 @@ describe("get pending requests", () => {
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
     logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+
+    reassignmentServiceMock = new ReassignmentService(
+      reassignmentDbMock,
+      employeeServiceMock,
+      logServiceMock,
+    ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
       requestDbMock,
+      reassignmentServiceMock,
     );
 
     /**
@@ -567,10 +611,13 @@ describe("get own pending requests", () => {
   let employeeServiceMock: jest.Mocked<EmployeeService>;
   let logDbMock: jest.Mocked<LogDb>;
   let logServiceMock: jest.Mocked<LogService>;
+  let reassignmentDbMock: ReassignmentDb;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
 
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
@@ -581,7 +628,23 @@ describe("get own pending requests", () => {
       logServiceMock,
       employeeServiceMock,
       requestDbMock,
-    ); /**
+      reassignmentServiceMock,
+    );
+
+    reassignmentServiceMock = new ReassignmentService(
+      reassignmentDbMock,
+      employeeServiceMock,
+      logServiceMock,
+    ) as jest.Mocked<ReassignmentService>;
+
+    requestService = new RequestService(
+      logServiceMock,
+      employeeServiceMock,
+      requestDbMock,
+      reassignmentServiceMock,
+    );
+
+    /**
      * Mock Database Calls
      */
     requestDbMock.getOwnPendingRequests = jest.fn();
@@ -613,21 +676,31 @@ describe("reject pending requests", () => {
   let mockEmployee: any;
   let logDbMock: jest.Mocked<LogDb>;
   let logServiceMock: jest.Mocked<LogService>;
+  let reassignmentDbMock: ReassignmentDb;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
 
   beforeEach(async () => {
     mockEmployee = await generateMockEmployeeTest();
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
     logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+
+    reassignmentServiceMock = new ReassignmentService(
+      reassignmentDbMock,
+      employeeServiceMock,
+      logServiceMock,
+    ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
       requestDbMock,
+      reassignmentServiceMock,
     );
     requestDbMock.getPendingRequestByRequestId = jest.fn();
     requestDbMock.rejectRequest = jest.fn();
@@ -717,21 +790,31 @@ describe("approve pending requests", () => {
   let mockEmployee: any;
   let logDbMock: jest.Mocked<LogDb>;
   let logServiceMock: jest.Mocked<LogService>;
+  let reassignmentDbMock: ReassignmentDb;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
 
   beforeEach(async () => {
     mockEmployee = await generateMockEmployeeTest();
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
     logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+
+    reassignmentServiceMock = new ReassignmentService(
+      reassignmentDbMock,
+      employeeServiceMock,
+      logServiceMock,
+    ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
       requestDbMock,
+      reassignmentServiceMock,
     );
     requestDbMock.getPendingRequestByRequestId = jest.fn();
     requestDbMock.approveRequest = jest.fn();
@@ -816,20 +899,30 @@ describe("getPendingRequestByRequestId", () => {
   let employeeServiceMock: jest.Mocked<EmployeeService>;
   let logDbMock: jest.Mocked<LogDb>;
   let logServiceMock: jest.Mocked<LogService>;
+  let reassignmentDbMock: ReassignmentDb;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
 
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
     logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+
+    reassignmentServiceMock = new ReassignmentService(
+      reassignmentDbMock,
+      employeeServiceMock,
+      logServiceMock,
+    ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
       requestDbMock,
+      reassignmentServiceMock,
     );
     requestDbMock.getPendingRequestByRequestId = jest.fn();
     jest.resetAllMocks();
