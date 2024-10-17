@@ -303,6 +303,18 @@ class RequestService {
     if (!result) {
       return null;
     }
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: performedBy,
+      requestType: Request.APPLICATION,
+      action: Action.APPROVE,
+      requestId: requestId,
+      staffName: employee.reportingManagerName,
+    });
+
     return HttpStatusResponse.OK;
   }
 
