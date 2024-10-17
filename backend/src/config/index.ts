@@ -18,12 +18,6 @@ const startCronJob = async () => {
   const logDb = new LogDb();
   const logService = new LogService(logDb);
 
-  const requestService = new RequestService(
-    logService,
-    employeeService,
-    requestDb,
-  );
-
   const reassignmentDb = new ReassignmentDb();
   const reassignmentService = new ReassignmentService(
     reassignmentDb,
@@ -31,8 +25,15 @@ const startCronJob = async () => {
     logService,
   );
 
+  const requestService = new RequestService(
+    logService,
+    employeeService,
+    requestDb,
+    reassignmentService,
+  );
+
   const job = new CronJob(requestService, reassignmentService);
-  await job.execute();
+  job.execute();
 };
 
 const initDB = () => {
