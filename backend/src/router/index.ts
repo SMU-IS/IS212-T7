@@ -25,10 +25,14 @@ const reassignmentDb = new ReassignmentDb();
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
-const requestService = new RequestService(employeeService, requestDb);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
   employeeService,
+);
+const requestService = new RequestService(
+  employeeService,
+  requestDb,
+  reassignmentService,
 );
 
 /**
@@ -318,6 +322,35 @@ router.post("/approveRequest", (ctx) => requestController.approveRequest(ctx));
  *               - reason
  */
 router.post("/rejectRequest", (ctx) => requestController.rejectRequest(ctx));
+
+/**
+ * @openapi
+ * /api/v1/revokeRequest:
+ *   post:
+ *     description: revoke subordinates' approved requests
+ *     tags: [Approved Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               requestId:
+ *                 type: string
+ *                 description: RequestId to be revoked
+ *               reason:
+ *                 type: string
+ *                 description: Reason for revocation
+ *             required:
+ *               - performedBy
+ *               - requestId
+ *               - reason
+ */
+router.post("/revokeRequest", (ctx) => requestController.revokeRequest(ctx));
 
 /**
  * @openapi
