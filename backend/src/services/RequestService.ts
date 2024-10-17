@@ -115,6 +115,18 @@ class RequestService {
 
   public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
     const pendingRequests = await this.requestDb.getOwnPendingRequests(myId);
+    if (pendingRequests) {
+      await this.logService.logRequestHelper({
+        performedBy: myId,
+        requestType: Request.APPLICATION,
+        action: Action.RETRIEVE,
+        staffName: pendingRequests[0].staffName,
+        dept: pendingRequests[0].dept as Dept,
+        position: pendingRequests[0].position,
+        reportingManagerId: pendingRequests[0].reportingManager as any,
+        managerName: pendingRequests[0].managerName,
+      });
+    }
     return pendingRequests;
   }
 
@@ -312,6 +324,7 @@ class RequestService {
     performedBy: number,
     requestId: number,
   ): Promise<string | null> {
+    let reassignment;
     const request = await this.getPendingRequestByRequestId(requestId);
     if (!request) {
       return null;
@@ -320,11 +333,14 @@ class RequestService {
     if (!employee) {
       return null;
     }
-    if (
-      employee.reportingManager !== performedBy &&
-      employee.tempReportingManager !== performedBy
-    ) {
-      return null;
+    if (performedBy !== employee.reportingManager) {
+      reassignment = await this.reassignmentService.getReassignmentActive(
+        request.reportingManager as any,
+        performedBy,
+      );
+      if (!reassignment) {
+        return null;
+      }
     }
     const result = await this.requestDb.approveRequest(performedBy, requestId);
     if (!result) {
@@ -339,7 +355,7 @@ class RequestService {
       requestType: Request.APPLICATION,
       action: Action.APPROVE,
       requestId: requestId,
-      staffName: employee.reportingManagerName,
+      staffName: reassignment?.tempManagerName ?? employee.reportingManagerName,
     });
 
     return HttpStatusResponse.OK;
@@ -350,6 +366,7 @@ class RequestService {
     requestId: number,
     reason: string,
   ): Promise<string | null> {
+    let reassignment;
     const request = await this.getPendingRequestByRequestId(requestId);
     if (!request) {
       return null;
@@ -358,11 +375,14 @@ class RequestService {
     if (!employee) {
       return null;
     }
-    if (
-      employee.reportingManager !== performedBy &&
-      employee.tempReportingManager !== performedBy
-    ) {
-      return null;
+    if (performedBy !== employee.reportingManager) {
+      reassignment = await this.reassignmentService.getReassignmentActive(
+        request.reportingManager as any,
+        performedBy,
+      );
+      if (!reassignment) {
+        return null;
+      }
     }
     const result = await this.requestDb.rejectRequest(
       performedBy,
@@ -372,6 +392,14 @@ class RequestService {
     if (!result) {
       return null;
     }
+    await this.logService.logRequestHelper({
+      performedBy: performedBy,
+      requestType: Request.APPLICATION,
+      action: Action.REJECT,
+      requestId: requestId,
+      staffName: reassignment?.tempManagerName ?? employee.reportingManagerName,
+      reason: reason,
+    });
     return HttpStatusResponse.OK;
   }
 
@@ -394,16 +422,17 @@ class RequestService {
     requestId: number,
     reason: string,
   ): Promise<string | null> {
+    let reassignment;
     const request = await this.getApprovedRequestByRequestId(requestId);
     if (!request) {
       return null;
     }
     if (performedBy !== request.reportingManager) {
-      const activeFlag = await this.reassignmentService.getReassignmentActive(
+      reassignment = await this.reassignmentService.getReassignmentActive(
         request.reportingManager as any,
         performedBy,
       );
-      if (!activeFlag) {
+      if (!reassignment) {
         return null;
       }
     }
@@ -419,6 +448,14 @@ class RequestService {
     if (!result) {
       return null;
     }
+    await this.logService.logRequestHelper({
+      performedBy: performedBy,
+      requestType: Request.APPLICATION,
+      action: Action.REVOKE,
+      requestId: requestId,
+      staffName: reassignment?.tempManagerName ?? request.managerName,
+      reason: reason,
+    });
     return HttpStatusResponse.OK;
   }
 }

@@ -44,7 +44,11 @@ const requestService = new RequestService(
   requestDb,
   reassignmentService,
 );
-const withdrawalService = new WithdrawalService(withdrawalDb, requestService);
+const withdrawalService = new WithdrawalService(
+  logService,
+  withdrawalDb,
+  requestService,
+);
 
 /**
  * Controllers
