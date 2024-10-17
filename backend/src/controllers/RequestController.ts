@@ -4,6 +4,7 @@ import {
   approvalSchema,
   rejectionSchema,
   requestSchema,
+  revocationSchema,
   staffIdSchema,
 } from "@/schema";
 import RequestService from "@/services/RequestService";
@@ -190,6 +191,28 @@ class RequestController {
     const { performedBy, requestId, reason } = rejectionDetails as any;
 
     const result = await this.requestService.rejectRequest(
+      Number(performedBy),
+      Number(requestId),
+      reason,
+    );
+    ctx.body =
+      result == HttpStatusResponse.OK
+        ? HttpStatusResponse.OK
+        : HttpStatusResponse.NOT_MODIFIED;
+  }
+
+    public async revokeRequest(ctx: Context) {
+    const revocationDetails = ctx.request.body;
+    const validation = revocationSchema.safeParse(revocationDetails);
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+    const { performedBy, requestId, reason } = revocationDetails as any;
+
+    const result = await this.requestService.revokeRequest(
       Number(performedBy),
       Number(requestId),
       reason,

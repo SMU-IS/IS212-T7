@@ -37,6 +37,17 @@ class ReassignmentService {
   public async getReassignmentStatus(staffId: number) {
     return await this.reassignmentDb.getReassignmentRequest(staffId);
   }
+
+  public async getReassignmentActive(
+    staffId: number,
+    tempReportingManagerId: number,
+  ) {
+    const activeFlag = await this.reassignmentDb.getReassignmentActive(
+      staffId,
+      tempReportingManagerId,
+    );
+    return activeFlag;
+  }
 }
 
 export default ReassignmentService;

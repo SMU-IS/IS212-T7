@@ -1,5 +1,7 @@
 import RequestController from "@/controllers/RequestController";
 import EmployeeDb from "@/database/EmployeeDb";
+import ReassignmentDb from "@/database/ReassignmentDb";
+import ReassignmentService from "@/services/ReassignmentService";
 import RequestDb from "@/database/RequestDb";
 import { errMsg, noteMsg, successMsg } from "@/helpers";
 import EmployeeService from "@/services/EmployeeService";
@@ -11,6 +13,8 @@ describe("RequestController", () => {
   let requestServiceMock: jest.Mocked<RequestService>;
   let requestDbMock: RequestDb;
   let employeeDbMock: EmployeeDb;
+  let reassignmentDbMock: ReassignmentDb;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
   let employeeServiceMock: jest.Mocked<EmployeeService>;
   let ctx: Context;
   type ResponseDates = {
@@ -27,12 +31,18 @@ describe("RequestController", () => {
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
+    reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
+    reassignmentServiceMock = new ReassignmentService(
+      reassignmentDbMock,
+      employeeServiceMock,
+    ) as jest.Mocked<ReassignmentService>;
     requestServiceMock = new RequestService(
       employeeServiceMock,
       requestDbMock,
+      reassignmentServiceMock,
     ) as jest.Mocked<RequestService>;
     requestController = new RequestController(requestServiceMock);
     ctx = {

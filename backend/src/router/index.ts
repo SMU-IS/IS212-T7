@@ -1,15 +1,18 @@
 import EmployeeController from "@/controllers/EmployeeController";
 import ReassignmentController from "@/controllers/ReassignmentController";
 import RequestController from "@/controllers/RequestController";
+import WithdrawalController from "@/controllers/WithdrawalController";
 import EmployeeDb from "@/database/EmployeeDb";
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
+import WithdrawalDb from "@/database/WithdrawalDb";
 import { AccessControl } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 
 import EmployeeService from "@/services/EmployeeService";
 import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
+import WithdrawalService from "@/services/WithdrawalService";
 import swaggerSpec from "@/swagger";
 import Router from "koa-router";
 import { koaSwagger } from "koa2-swagger-ui";
@@ -20,16 +23,22 @@ import { koaSwagger } from "koa2-swagger-ui";
 const requestDb = new RequestDb();
 const employeeDb = new EmployeeDb();
 const reassignmentDb = new ReassignmentDb();
+const withdrawalDb = new WithdrawalDb();
 
 /**
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
-const requestService = new RequestService(employeeService, requestDb);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
   employeeService,
 );
+const requestService = new RequestService(
+  employeeService,
+  requestDb,
+  reassignmentService,
+);
+const withdrawalService = new WithdrawalService(withdrawalDb, requestService);
 
 /**
  * Controllers
@@ -37,6 +46,7 @@ const reassignmentService = new ReassignmentService(
 const requestController = new RequestController(requestService);
 const employeeController = new EmployeeController(employeeService);
 const reassignmentController = new ReassignmentController(reassignmentService);
+const withdrawalController = new WithdrawalController(withdrawalService);
 
 const router = new Router();
 router.prefix("/api/v1");
@@ -318,6 +328,58 @@ router.post("/approveRequest", (ctx) => requestController.approveRequest(ctx));
  *               - reason
  */
 router.post("/rejectRequest", (ctx) => requestController.rejectRequest(ctx));
+
+/**
+ * @openapi
+ * /api/v1/revokeRequest:
+ *   post:
+ *     description: revoke subordinates' approved requests
+ *     tags: [Approved Requests]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               requestId:
+ *                 type: string
+ *                 description: RequestId to be revoked
+ *               reason:
+ *                 type: string
+ *                 description: Reason for revocation
+ *             required:
+ *               - performedBy
+ *               - requestId
+ *               - reason
+ */
+router.post("/revokeRequest", (ctx) => requestController.revokeRequest(ctx));
+
+/**
+ * @openapi
+ * /api/v1/withdrawRequest:
+ *   post:
+ *     description: withdraw my own approved request
+ *     tags: [Withdrawal Request]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               requestId:
+ *                 type: number
+ *                 description: requestId of the request I want to withdraw
+ *             required:
+ *               - requestId
+ */
+router.post("/withdrawRequest", (ctx) =>
+  withdrawalController.withdrawRequest(ctx),
+);
 
 /**
  * @openapi

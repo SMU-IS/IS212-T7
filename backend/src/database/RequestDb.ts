@@ -73,6 +73,8 @@ class RequestDb {
           Status.WITHDRAWN,
           Status.REJECTED,
           Status.EXPIRED,
+          Status.REVOKED,
+
         ],
       },
     });
@@ -118,40 +120,23 @@ class RequestDb {
       },
       {
         $group: {
-          _id: {
-            dept: "$dept",
-            position: "$position",
-          },
+          _id: "$dept",
           requests: { $push: "$$ROOT" },
-        },
-      },
-      {
-        $group: {
-          _id: "$_id.dept",
-          teams: {
-            $push: {
-              position: "$_id.position",
-              requests: "$requests",
-            },
-          },
         },
       },
       {
         $project: {
           _id: 0,
           dept: "$_id",
-          teams: 1,
+          requests: 1,
         },
       },
     ]);
 
-    const formattedSchedule: any = {};
-    deptSchedule.forEach((dept) => {
-      formattedSchedule[dept.dept] = {};
-      dept.teams.forEach((team: any) => {
-        formattedSchedule[dept.dept][team.position] = team.requests;
-      });
-    });
+    const formattedSchedule = deptSchedule.reduce((acc: any, dept: any) => {
+      acc[dept.dept] = dept.requests;
+      return acc;
+    }, {});
 
     return formattedSchedule;
   }
@@ -236,6 +221,39 @@ class RequestDb {
           status: Status.REJECTED,
           reason: reason,
           performedBy: performedBy,
+        },
+      },
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+
+  public async getApprovedRequestByRequestId(requestId: number) {
+    const requestDetail = await Request.findOne(
+      {
+        requestId,
+        status: Status.APPROVED,
+      },
+      "-_id -createdAt -updatedAt",
+    );
+    return requestDetail;
+  }
+
+  public async revokeRequest(
+    requestId: number,
+    reason: string,
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.APPROVED,
+      },
+      {
+        $set: {
+          status: Status.REVOKED,
+          reason: reason
         },
       },
     );
