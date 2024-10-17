@@ -256,6 +256,12 @@ class RequestService {
     return requestDetail;
   }
 
+  public async getApprovedRequestByRequestId(requestId: number) {
+    const requestDetail =
+      await this.requestDb.getApprovedRequestByRequestId(requestId);
+    return requestDetail;
+  }
+
   public async approveRequest(
     performedBy: number,
     requestId: number,
