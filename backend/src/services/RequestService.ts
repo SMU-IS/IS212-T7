@@ -12,10 +12,10 @@ import {
   checkDate,
   checkLatestDate,
   checkPastDate,
-  checkWeekend,
-  weekMap,
   checkPastWithdrawalDate,
   checkValidWithdrawalDate,
+  checkWeekend,
+  weekMap,
 } from "@/helpers/date";
 import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
@@ -152,6 +152,12 @@ class RequestService {
       ? await this.requestDb.getAllDeptSchedule()
       : await this.requestDb.getTeamSchedule(reportingManager, position);
 
+    // Check for any temp dept/teams
+    const activeReassignment =
+      await this.reassignmentService.getActiveReassignmentAsTempManager(
+        staffId,
+      );
+
     let schedule: any = {};
 
     if (isManagerOrHR) {
@@ -159,7 +165,16 @@ class RequestService {
         ...allDeptTeamCount,
       };
       for (const dept of Object.keys(allDeptTeamCount)) {
-        allDeptTeamCount[dept].wfhStaff = wfhStaff[dept] || [];
+        if (
+          activeReassignment &&
+          activeReassignment.active &&
+          activeReassignment.originalManagerDept === dept
+        ) {
+          allDeptTeamCount[dept].wfhStaff = wfhStaff[dept] || [];
+          allDeptTeamCount[dept].isTempTeam = true;
+        } else {
+          allDeptTeamCount[dept].wfhStaff = wfhStaff[dept] || [];
+        }
       }
 
       /**

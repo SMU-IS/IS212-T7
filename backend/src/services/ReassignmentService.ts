@@ -28,6 +28,7 @@ class ReassignmentService {
     );
     const managerName = `${currentManager!.staffFName} ${currentManager!.staffLName}`;
 
+    // Check if there is any active reassignment between Manager A and Manager B
     const activeReassignmentReq =
       await this.reassignmentDb.getReassignmentActive(
         staffId,
@@ -38,9 +39,20 @@ class ReassignmentService {
       return errMsg.ACTIVE_REASSIGNMENT;
     }
 
+    // Check if Manager B is occupied
+    const tempManagerReassignmentReq =
+      await this.reassignmentDb.getActiveReassignmentAsTempManager(
+        tempReportingManagerId,
+      );
+
+    if (!!tempManagerReassignmentReq) {
+      return errMsg.TEMP_MANAGER_OCCUPED;
+    }
+
     const request = {
       ...reassignmentRequest,
-      staffName: managerName,
+      staffName: `${currentManager!.staffFName} ${currentManager!.staffLName}`,
+      originalManagerDept: currentManager!.dept,
       tempManagerName: `${tempReportingManager!.staffFName} ${tempReportingManager!.staffLName}`,
       status: Status.PENDING,
       active: null,
@@ -119,6 +131,12 @@ class ReassignmentService {
       tempReportingManagerId,
     );
     return activeFlag;
+  }
+
+  public async getActiveReassignmentAsTempManager(staffId: number) {
+    const activeReassignments =
+      await this.reassignmentDb.getActiveReassignmentAsTempManager(staffId);
+    return activeReassignments;
   }
 }
 

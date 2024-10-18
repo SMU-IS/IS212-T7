@@ -30,6 +30,10 @@ class ReassignmentController {
       ctx.body = {
         errMsg: errMsg.ACTIVE_REASSIGNMENT,
       };
+    } else if (result === errMsg.TEMP_MANAGER_OCCUPED) {
+      ctx.body = {
+        errMsg: errMsg.TEMP_MANAGER_OCCUPED,
+      };
     } else {
       ctx.body = HttpStatusResponse.OK;
     }
