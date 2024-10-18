@@ -241,33 +241,40 @@ export const MyReassignments = () => {
         onCancel={() => setAssignmentsModalVisible(false)}
         footer={null}
       >
-        {assignmentsData && (
-          <List>
-            <List.Item>
-              <List.Item.Meta
-                title={`Assigned Temp Manager: ${assignmentsData.tempManagerName}`}
-                description={
-                  <>
-                    <span
-                      style={{
-                        color:
-                          assignmentsData.status === "PENDING"
-                            ? "orange"
-                            : "black",
-                        fontWeight:
-                          assignmentsData.status === "PENDING"
-                            ? "bold"
-                            : "normal",
-                      }}
-                    >
-                      {`Status: ${assignmentsData.status}`}
-                    </span>
-                    {` | Start Date: ${moment(assignmentsData.startDate).format("YYYY-MM-DD")} | End Date: ${moment(assignmentsData.endDate).format("YYYY-MM-DD")}`}
-                  </>
-                }
-              />
-            </List.Item>
-          </List>
+        {Array.isArray(assignmentsData) && assignmentsData.length > 0 ? (
+          <List
+            dataSource={assignmentsData}
+            renderItem={(assignment) => (
+              <List.Item key={assignment.reassignmentId}>
+                <List.Item.Meta
+                  title={`Assigned Temp Manager: ${assignment.tempManagerName}`}
+                  description={
+                    <>
+                      <span
+                        style={{
+                          color:
+                            assignment.status === "PENDING"
+                              ? "orange"
+                              : assignment.status === "APPROVED"
+                                ? "green"
+                                : assignment.status === "REJECTED"
+                                  ? "red"
+                                  : "black", // Default color for unhandled statuses
+                          fontWeight:
+                            assignment.status === "PENDING" ? "bold" : "normal",
+                        }}
+                      >
+                        {`Status: ${assignment.status}`}
+                      </span>
+                      {` | Start Date: ${moment(assignment.startDate).format("YYYY-MM-DD")} | End Date: ${moment(assignment.endDate).format("YYYY-MM-DD")}`}
+                    </>
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        ) : (
+          <p>No current re-assignments available.</p> // Display a message if no re-assignments
         )}
       </Modal>
 
