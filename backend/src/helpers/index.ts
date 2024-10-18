@@ -25,6 +25,7 @@ enum errMsg {
   INSERT_ERROR = "Database insertion error.",
   DIFFERENT_DEPARTMENT = "User is from a different department and has no additional privilege to view data.",
   DIFFERENT_TEAM = "User is from a different team and has no additional privilege to view data.",
+  ACTIVE_REASSIGNMENT = "User currently has an active reassignment. This request is no longer valid.",
 }
 
 const noteMsg =
@@ -66,6 +67,7 @@ enum Status {
   CANCELLED = "CANCELLED",
   WITHDRAWN = "WITHDRAWN",
   EXPIRED = "EXPIRED",
+  REVOKED = "REVOKED",
 }
 
 enum Dept {

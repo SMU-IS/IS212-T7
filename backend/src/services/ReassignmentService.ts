@@ -1,5 +1,5 @@
 import ReassignmentDb from "@/database/ReassignmentDb";
-import { Status } from "@/helpers";
+import { errMsg, Status } from "@/helpers";
 import EmployeeService from "./EmployeeService";
 
 class ReassignmentService {
@@ -16,12 +16,22 @@ class ReassignmentService {
 
   public async insertReassignmentRequest(
     reassignmentRequest: any,
-  ): Promise<void> {
+  ): Promise<any> {
     const { staffId, tempReportingManagerId } = reassignmentRequest;
     const currentManager = await this.employeeService.getEmployee(staffId);
     const tempReportingManager = await this.employeeService.getEmployee(
       tempReportingManagerId,
     );
+
+    const activeReassignmentReq =
+      await this.reassignmentDb.getReassignmentActive(
+        staffId,
+        tempReportingManagerId,
+      );
+
+    if (!!activeReassignmentReq) {
+      return errMsg.ACTIVE_REASSIGNMENT;
+    }
 
     const request = {
       ...reassignmentRequest,
@@ -36,6 +46,17 @@ class ReassignmentService {
 
   public async getReassignmentStatus(staffId: number) {
     return await this.reassignmentDb.getReassignmentRequest(staffId);
+  }
+
+  public async getReassignmentActive(
+    staffId: number,
+    tempReportingManagerId: number,
+  ) {
+    const activeFlag = await this.reassignmentDb.getReassignmentActive(
+      staffId,
+      tempReportingManagerId,
+    );
+    return activeFlag;
   }
 }
 

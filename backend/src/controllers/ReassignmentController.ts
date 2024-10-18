@@ -21,10 +21,18 @@ class ReassignmentController {
       return;
     }
 
-    await this.reassignmentService.insertReassignmentRequest(
-      reassignmentRequest,
-    );
-    ctx.body = HttpStatusResponse.OK;
+    const result =
+      await this.reassignmentService.insertReassignmentRequest(
+        reassignmentRequest,
+      );
+
+    if (result === errMsg.ACTIVE_REASSIGNMENT) {
+      ctx.body = {
+        errMsg: errMsg.ACTIVE_REASSIGNMENT,
+      };
+    } else {
+      ctx.body = HttpStatusResponse.OK;
+    }
   }
 
   public async getReassignmentStatus(ctx: Context) {

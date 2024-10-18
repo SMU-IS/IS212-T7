@@ -37,9 +37,24 @@ class ReassignmentDb {
   }
 
   public async getReassignmentRequest(staffId: number) {
+    const reassignmentRequest = await Reassignment.find(
+      {
+        staffId,
+      },
+      "-_id -createdAt -updatedAt",
+    );
+    return reassignmentRequest;
+  }
+
+  public async getReassignmentActive(
+    staffId: number,
+    tempReportingManagerId: number,
+  ) {
     const reassignmentRequest = await Reassignment.findOne(
       {
         staffId,
+        tempReportingManagerId,
+        active: true,
       },
       "-_id -createdAt -updatedAt",
     );

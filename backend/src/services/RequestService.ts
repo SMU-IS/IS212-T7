@@ -7,9 +7,12 @@ import {
   checkPastDate,
   checkWeekend,
   weekMap,
+  checkPastWithdrawalDate,
+  checkValidWithdrawalDate,
 } from "@/helpers/date";
 import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
+import ReassignmentService from "./ReassignmentService";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -24,11 +27,17 @@ interface ResponseDates {
 
 class RequestService {
   private employeeService: EmployeeService;
+  private reassignmentService: ReassignmentService;
   private requestDb: RequestDb;
 
-  constructor(employeeService: EmployeeService, requestDb: RequestDb) {
+  constructor(
+    employeeService: EmployeeService,
+    requestDb: RequestDb,
+    reassignmentService: ReassignmentService,
+  ) {
     this.employeeService = employeeService;
     this.requestDb = requestDb;
+    this.reassignmentService = reassignmentService;
   }
 
   public async getMySchedule(myId: number) {
@@ -100,7 +109,9 @@ class RequestService {
     } else {
       schedule = {
         [dept]: {
-          [position]: allDeptTeamCount[dept].teams[position],
+          teams: {
+            [position]: allDeptTeamCount[dept].teams[position],
+          },
         },
       };
       schedule[dept].wfhStaff = wfhStaff;
@@ -213,6 +224,12 @@ class RequestService {
     return requestDetail;
   }
 
+  public async getApprovedRequestByRequestId(requestId: number) {
+    const requestDetail =
+      await this.requestDb.getApprovedRequestByRequestId(requestId);
+    return requestDetail;
+  }
+
   public async approveRequest(
     performedBy: number,
     requestId: number,
@@ -262,6 +279,39 @@ class RequestService {
       requestId,
       reason,
     );
+    if (!result) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+
+  public async revokeRequest(
+    performedBy: number,
+    requestId: number,
+    reason: string,
+  ): Promise<string | null> {
+    const request = await this.getApprovedRequestByRequestId(requestId);
+    if (!request) {
+      return null;
+    }
+    if (performedBy !== request.reportingManager) {
+      const activeFlag = await this.reassignmentService.getReassignmentActive(
+        request.reportingManager as any,
+        performedBy,
+      );
+      if (!activeFlag) {
+        return null;
+      }
+    }
+
+    if (
+      checkPastWithdrawalDate(request.requestedDate) &&
+      !checkValidWithdrawalDate(request.requestedDate)
+    ) {
+      return null;
+    }
+
+    const result = await this.requestDb.revokeRequest(requestId, reason);
     if (!result) {
       return null;
     }
