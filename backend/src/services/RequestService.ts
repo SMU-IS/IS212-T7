@@ -116,6 +116,9 @@ class RequestService {
   public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
     const pendingRequests = await this.requestDb.getOwnPendingRequests(myId);
     if (pendingRequests && pendingRequests.length > 0) {
+      /**
+       * Logging
+       */
       await this.logService.logRequestHelper({
         performedBy: myId,
         requestType: Request.APPLICATION,
@@ -397,6 +400,9 @@ class RequestService {
     if (!request) {
       return null;
     }
+    const managerDetails = await this.employeeService.getEmployee(
+      request.reportingManager!,
+    );
     const employee = await this.employeeService.getEmployee(request.staffId);
     if (!employee) {
       return null;
@@ -418,6 +424,10 @@ class RequestService {
     if (!result) {
       return null;
     }
+
+    /**
+     * Logging
+     */
     await this.logService.logRequestHelper({
       performedBy: performedBy,
       requestType: Request.APPLICATION,
@@ -425,6 +435,8 @@ class RequestService {
       requestId: requestId,
       staffName: reassignment?.tempManagerName ?? employee.reportingManagerName,
       reason: reason,
+      dept: managerDetails!.dept as Dept,
+      position: managerDetails!.position,
     });
     return HttpStatusResponse.OK;
   }
@@ -453,6 +465,10 @@ class RequestService {
     if (!request) {
       return null;
     }
+
+    const managerDetails = await this.employeeService.getEmployee(
+      request.reportingManager!,
+    );
     if (performedBy !== request.reportingManager) {
       reassignment = await this.reassignmentService.getReassignmentActive(
         request.reportingManager as any,
@@ -474,6 +490,10 @@ class RequestService {
     if (!result) {
       return null;
     }
+
+    /**
+     * Logging
+     */
     await this.logService.logRequestHelper({
       performedBy: performedBy,
       requestType: Request.APPLICATION,
@@ -481,7 +501,10 @@ class RequestService {
       requestId: requestId,
       staffName: reassignment?.tempManagerName ?? request.managerName,
       reason: reason,
+      dept: managerDetails!.dept as Dept,
+      position: managerDetails!.position,
     });
+
     return HttpStatusResponse.OK;
   }
 }
