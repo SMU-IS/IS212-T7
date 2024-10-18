@@ -174,7 +174,9 @@ class RequestService {
     } else {
       schedule = {
         [dept]: {
-          [position]: allDeptTeamCount[dept].teams[position],
+          teams: {
+            [position]: allDeptTeamCount[dept].teams[position],
+          },
         },
       };
       schedule[dept].wfhStaff = wfhStaff;

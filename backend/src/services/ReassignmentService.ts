@@ -1,5 +1,5 @@
 import ReassignmentDb from "@/database/ReassignmentDb";
-import { Action, PerformedBy, Request, Status } from "@/helpers";
+import { Action, errMsg, PerformedBy, Request, Status } from "@/helpers";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 
@@ -20,13 +20,23 @@ class ReassignmentService {
 
   public async insertReassignmentRequest(
     reassignmentRequest: any,
-  ): Promise<void> {
+  ): Promise<any> {
     const { staffId, tempReportingManagerId } = reassignmentRequest;
     const currentManager = await this.employeeService.getEmployee(staffId);
     const tempReportingManager = await this.employeeService.getEmployee(
       tempReportingManagerId,
     );
     const managerName = `${currentManager!.staffFName} ${currentManager!.staffLName}`;
+
+    const activeReassignmentReq =
+      await this.reassignmentDb.getReassignmentActive(
+        staffId,
+        tempReportingManagerId,
+      );
+
+    if (!!activeReassignmentReq) {
+      return errMsg.ACTIVE_REASSIGNMENT;
+    }
 
     const request = {
       ...reassignmentRequest,
