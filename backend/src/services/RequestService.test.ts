@@ -714,9 +714,10 @@ describe("reject pending requests", () => {
     );
 
     requestDbMock.getPendingRequestByRequestId = jest.fn();
-    reassignmentDbMock.getReassignmentActive = jest.fn() as any;
     requestDbMock.rejectRequest = jest.fn();
+
     EmployeeService.prototype.getEmployee = jest.fn() as any;
+    ReassignmentService.prototype.getReassignmentActive = jest.fn() as any;
     UtilsController.throwAPIError = jest.fn();
   });
 

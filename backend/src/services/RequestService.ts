@@ -115,7 +115,7 @@ class RequestService {
 
   public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
     const pendingRequests = await this.requestDb.getOwnPendingRequests(myId);
-    if (pendingRequests) {
+    if (pendingRequests && pendingRequests.length > 0) {
       await this.logService.logRequestHelper({
         performedBy: myId,
         requestType: Request.APPLICATION,
