@@ -34,22 +34,50 @@ interface DataType {
   staffName: string;
 }
 
+interface AssignmentStatus {
+  reassignmentId: number;
+  status: string; // pending, approved, or rejected
+  staffName: string;
+  startDate: string; // ISO date string
+  endDate: string; // ISO date string
+  tempManagerName: string;
+}
+
+// Fetch all employee requests
 const fetchRequests = async () => {
   try {
     const response = await axios.get(
       `${backendUrl}/api/v1/getRoleOneEmployees`,
     );
-    return response.data;
+    return Array.isArray(response.data) ? response.data : []; // Ensure response is an array
   } catch (error) {
     console.error("Error fetching requests:", error);
     return [];
   }
 };
 
+// Fetch reassignment status (handling object response)
+const fetchReassignmentStatus = async (staffId: number) => {
+  try {
+    const response = await axios.get(
+      `${backendUrl}/api/v1/getReassignmentStatus`,
+      {
+        headers: { id: staffId },
+      },
+    );
+    console.log(response.data);
+
+    return response.data; // Directly return the object from the response
+  } catch (error) {
+    console.error("Error fetching reassignment status:", error);
+    return null; // Return null in case of an error
+  }
+};
+
 export const MyReassignments = () => {
   const { data: user } = useGetIdentity<EmployeeJWT>();
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<DataType[]>([]);
+  const [data, setData] = useState<DataType[]>([]); // Data is initialized as an empty array
   const [filteredData, setFilteredData] = useState<DataType[]>([]);
   const [selectedDept, setSelectedDept] = useState<string | undefined>(
     undefined,
@@ -62,6 +90,9 @@ export const MyReassignments = () => {
     [moment.Moment, moment.Moment] | null
   >(null);
   const { mode } = useContext(ColorModeContext);
+  const [assignmentsModalVisible, setAssignmentsModalVisible] = useState(false);
+  const [assignmentsData, setAssignmentsData] =
+    useState<AssignmentStatus | null>(null);
 
   const loadMoreData = () => {
     if (loading) {
@@ -129,15 +160,18 @@ export const MyReassignments = () => {
       };
 
       try {
-        console.log(requestBody);
         const response = await axios.post(
           `${backendUrl}/api/v1/requestReassignment`,
           requestBody,
         );
+        console.log(requestBody);
+        fetchReassignmentStatus(Number(user?.staffId));
+
         console.log("Role assigned successfully:", response.data);
         handleModalClose();
       } catch (error) {
         console.error("Error assigning role:", error);
+        message.error("Failed to assign the role.");
       }
     } else {
       message.error("Please select a date range before assigning a role.");
@@ -148,9 +182,41 @@ export const MyReassignments = () => {
     return current && current < moment().startOf("day");
   };
 
+  const handleExistingAssignmentsClick = async () => {
+    if (user?.staffId) {
+      const assignments = await fetchReassignmentStatus(Number(user.staffId));
+      setAssignmentsData(assignments); // Set the assignments object directly
+      setAssignmentsModalVisible(true);
+    } else {
+      message.error("User ID not available");
+    }
+  };
+
   return (
     <div style={{ width: "80vw", margin: "auto" }}>
-      <Title level={4}>Reassign Role</Title>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "10px",
+        }}
+      >
+        <Title level={4} style={{ margin: 0 }}>
+          Reassign Role
+        </Title>
+        <Button
+          type="default"
+          style={{
+            color: "black",
+            backgroundColor: "skyblue",
+            borderColor: "skyblue",
+          }} // Change to your desired color
+          onClick={handleExistingAssignmentsClick}
+        >
+          My Current Re-Assignments
+        </Button>
+      </div>
 
       <Card bordered={true} style={{ padding: 0, marginBottom: 20 }}>
         <Statistic title="Total Employees" value={filteredData.length} />
@@ -168,6 +234,42 @@ export const MyReassignments = () => {
           </Option>
         ))}
       </Select>
+
+      <Modal
+        title="My Current Re-Assignments"
+        visible={assignmentsModalVisible}
+        onCancel={() => setAssignmentsModalVisible(false)}
+        footer={null}
+      >
+        {assignmentsData && (
+          <List>
+            <List.Item>
+              <List.Item.Meta
+                title={`Assigned Temp Manager: ${assignmentsData.tempManagerName}`}
+                description={
+                  <>
+                    <span
+                      style={{
+                        color:
+                          assignmentsData.status === "PENDING"
+                            ? "orange"
+                            : "black",
+                        fontWeight:
+                          assignmentsData.status === "PENDING"
+                            ? "bold"
+                            : "normal",
+                      }}
+                    >
+                      {`Status: ${assignmentsData.status}`}
+                    </span>
+                    {` | Start Date: ${moment(assignmentsData.startDate).format("YYYY-MM-DD")} | End Date: ${moment(assignmentsData.endDate).format("YYYY-MM-DD")}`}
+                  </>
+                }
+              />
+            </List.Item>
+          </List>
+        )}
+      </Modal>
 
       <div
         id="scrollableDiv"
@@ -232,30 +334,15 @@ export const MyReassignments = () => {
               disabled
               style={{ marginBottom: 16 }}
             />
-            <Input
-              name="Position"
-              value={selectedEmployee.position}
-              disabled
-              style={{ marginBottom: 16 }}
-            />
-            <Input
-              name="Department"
-              value={selectedEmployee.dept}
-              disabled
-              style={{ marginBottom: 16 }}
-            />
             <RangePicker
-              style={{ width: "100%", marginBottom: 16 }}
               disabledDate={disablePastDates}
-              value={dateRange} // Add this line to bind the date range to the picker
-              onChange={(dates) => {
-                setDateRange(dates);
-              }}
+              onChange={(dates) => setDateRange(dates)}
+              style={{ width: "100%" }}
             />
             <Button
               type="primary"
               onClick={handleAssignRole}
-              disabled={!dateRange}
+              style={{ marginTop: 16, width: "100%" }}
             >
               Assign Role
             </Button>
