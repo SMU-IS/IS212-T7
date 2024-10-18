@@ -554,6 +554,8 @@ router.get('/getSubordinateRequestsForTempManager', (ctx) =>
   reassignmentController.getSubordinateRequestsForTempManager(ctx)
 );
 
+/**
+ * @openapi
  * /api/v1/getLogsByDept:
  *   get:
  *     description: Get all logs
