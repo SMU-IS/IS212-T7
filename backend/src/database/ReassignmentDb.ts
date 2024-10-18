@@ -37,7 +37,7 @@ class ReassignmentDb {
   }
 
   public async getReassignmentRequest(staffId: number) {
-    const reassignmentRequest = await Reassignment.findOne(
+    const reassignmentRequest = await Reassignment.find(
       {
         staffId,
       },
