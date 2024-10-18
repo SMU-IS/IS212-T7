@@ -464,20 +464,13 @@ router.get("/getReassignmentStatus", (ctx) =>
 
 /**
  * @openapi
- * /api/v1/getAllLogs:
+ * /api/v1/getLogsByDept:
  *   get:
- *     description: Get all logs by staffId
+ *     description: Get all logs
  *     tags: [Logs]
- *     parameters:
- *       - in: query
- *         name: staffId
- *         schema:
- *           type: string
- *         required: true
- *         description: any staffId that you wanna see
  *     responses:
  *       200:
- *         description: Returns all logs by staffId
+ *         description: Returns all logs
  */
 router.get("/getAllLogs", (ctx) => logController.getAllLogs(ctx));
 

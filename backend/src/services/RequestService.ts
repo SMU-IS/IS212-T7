@@ -185,6 +185,8 @@ class RequestService {
         requestType: Request.APPLICATION,
         action: Action.RETRIEVE,
         staffName: `${staffFName} ${staffLName}`,
+        dept: dept as Dept,
+        position: position,
       });
     } else {
       schedule = {
@@ -206,6 +208,8 @@ class RequestService {
         staffName: `${staffFName} ${staffLName}`,
         reportingManagerId: reportingManager,
         managerName: reportingManagerName,
+        dept: dept as Dept,
+        position: position,
       });
     }
 
@@ -346,6 +350,9 @@ class RequestService {
     if (!request) {
       return null;
     }
+    const actionTakenBy: any =
+      await this.employeeService.getEmployee(performedBy);
+
     const employee = await this.employeeService.getEmployee(request.staffId);
     if (!employee) {
       return null;
@@ -373,6 +380,8 @@ class RequestService {
       action: Action.APPROVE,
       requestId: requestId,
       staffName: reassignment?.tempManagerName ?? employee.reportingManagerName,
+      dept: actionTakenBy.dept,
+      position: actionTakenBy.position,
     });
 
     return HttpStatusResponse.OK;

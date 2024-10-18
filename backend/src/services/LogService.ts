@@ -62,12 +62,8 @@ class LogService {
     await this.logDb.logAction(log);
   }
 
-  public async getLogsByStaffId(staffId: number) {
-    return await this.logDb.getLogs(staffId);
-  }
-
-  public async getLogsByRequestId(requestId: number) {
-    return await this.logDb.getLogsByRequestId(requestId);
+  public async getAllLogs() {
+    return await this.logDb.getLogs();
   }
 }
 
