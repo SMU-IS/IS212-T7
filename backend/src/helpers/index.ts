@@ -26,7 +26,7 @@ enum errMsg {
   DIFFERENT_DEPARTMENT = "User is from a different department and has no additional privilege to view data.",
   DIFFERENT_TEAM = "User is from a different team and has no additional privilege to view data.",
   ACTIVE_REASSIGNMENT = "User currently has an active reassignment. This request is no longer valid.",
-  TEMP_MANAGER_OCCUPED = "The manager you have selected has an active reassignment with another manager. Please select from other department.",
+  TEMP_MANAGER_OCCUPIED = "The manager you have selected has an active reassignment with another manager. Please select from other department.",
   INVALID_ACTION = "Invalid action. Must be 'approve' or 'reject'."
 }
 
