@@ -451,4 +451,95 @@ router.get("/getReassignmentStatus", (ctx) =>
   reassignmentController.getReassignmentStatus(ctx),
 );
 
+/**
+ * @openapi
+ * /api/v1/getIncomingReassignmentRequests:
+ *   get:
+ *     description: Get incoming reassignment requests
+ *     tags: [Reassignment]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200:
+ *         description: Returns incoming reassignment requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ */
+router.get('/getIncomingReassignmentRequests', (ctx) =>
+  reassignmentController.getIncomingReassignmentRequests(ctx)
+);
+
+/**
+ * @openapi
+ * /api/v1/handleReassignmentRequest:
+ *   post:
+ *     description: Approve or Reject Reassignment Request
+ *     tags: [Reassignment]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reassignmentId:
+ *                 type: number
+ *                 description: ID of the reassignment request
+ *               action:
+ *                 type: string
+ *                 enum: [approve, reject]
+ *                 description: Action to take on the request
+ *     responses:
+ *       200:
+ *         description: Request handled successfully, updates status to approved/rejected
+ */
+router.post('/handleReassignmentRequest', (ctx) =>
+  reassignmentController.handleReassignmentRequest(ctx)
+);
+
+/**
+ * @openapi
+ * /api/v1/getSubordinateRequestsForTempManager:
+ *   get:
+ *     description: Get subordinate requests of original manager for temporary manager
+ *     tags: [Reassignment]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200:
+ *         description: Returns subordinate requests for temporary manager
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       404:
+ *         description: No active reassignment found
+ */
+router.get('/getSubordinateRequestsForTempManager', (ctx) =>
+  reassignmentController.getSubordinateRequestsForTempManager(ctx)
+);
+
 export default router;

@@ -76,6 +76,42 @@ class ReassignmentService {
       await this.reassignmentDb.getActiveReassignmentAsTempManager(staffId);
     return activeReassignments;
   }
+
+  public async getIncomingReassignmentRequests(staffId: number) {
+    return await this.reassignmentDb.getIncomingReassignmentRequests(staffId);
+  }
+
+  public async getSubordinateRequestsForTempManager(staffId: number) {
+    const result = await this.reassignmentDb.getSubordinateRequestsForTempManager(staffId);
+    return result
+  }
+
+  public async handleReassignmentRequest(
+    staffId: number,
+    reassignmentId: number,
+    action: 'approve' | 'reject'
+  ): Promise<void> {
+    const reassignment = await this.reassignmentDb.getIncomingReassignmentRequests(staffId);
+
+    if (!reassignment) {
+      throw new Error('Reassignment request not found');
+    }
+
+    if (reassignment[0].tempReportingManagerId !== staffId) {
+      throw new Error('Unauthorized to perform this action');
+    }
+
+    if (reassignment[0].status !== Status.PENDING) {
+      throw new Error('This request has already been processed');
+    }
+
+    const newStatus = action === 'approve' ? Status.APPROVED : Status.REJECTED;
+   
+    await this.reassignmentDb.updateReassignmentStatus(reassignmentId, newStatus);
+  }
+
 }
+  
+
 
 export default ReassignmentService;
