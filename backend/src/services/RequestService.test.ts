@@ -705,16 +705,22 @@ describe("reject pending requests", () => {
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;
+
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
       requestDbMock,
       reassignmentServiceMock,
     );
+
     requestDbMock.getPendingRequestByRequestId = jest.fn();
+    reassignmentDbMock.getReassignmentActive = jest.fn() as any;
     requestDbMock.rejectRequest = jest.fn();
     EmployeeService.prototype.getEmployee = jest.fn() as any;
     UtilsController.throwAPIError = jest.fn();
+  });
+
+  afterEach(() => {
     jest.resetAllMocks();
   });
 
