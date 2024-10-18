@@ -43,7 +43,7 @@ const ReassignmentSchema = new Schema<IReassignment>(
       enum: [Status.PENDING, Status.APPROVED, Status.REJECTED, Status.EXPIRED],
       default: Status.PENDING,
     },
-    active: { type: Boolean, required: false },
+    active: { type: Boolean, required: false, default: null },
   },
   {
     timestamps: true,

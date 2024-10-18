@@ -129,12 +129,10 @@ export const MyReassignments = () => {
       };
 
       try {
-        console.log(requestBody);
-        const response = await axios.post(
+        await axios.post(
           `${backendUrl}/api/v1/requestReassignment`,
           requestBody,
         );
-        console.log("Role assigned successfully:", response.data);
         handleModalClose();
       } catch (error) {
         console.error("Error assigning role:", error);

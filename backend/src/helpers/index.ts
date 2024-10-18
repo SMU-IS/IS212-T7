@@ -28,7 +28,6 @@ enum errMsg {
   ACTIVE_REASSIGNMENT = "User currently has an active reassignment. This request is no longer valid.",
   TEMP_MANAGER_OCCUPED = "The manager you have selected has an active reassignment with another manager. Please select from other department.",
   INVALID_ACTION = "Invalid action. Must be 'approve' or 'reject'."
-
 }
 
 const noteMsg =
@@ -84,11 +83,37 @@ enum Dept {
   SOLUTIONING = "Solutioning",
 }
 
+enum Request {
+  APPLICATION = "APPLICATION",
+  WITHDRAWAL = "WITHDRAWAL",
+  REASSIGNMENT = "REASSIGNMENT",
+}
+
+enum Action {
+  APPLY = "APPLY",
+  RETRIEVE = "RETRIEVE",
+  APPROVE = "APPROVE",
+  REJECT = "REJECT",
+  CANCEL = "CANCEL",
+  REVOKE = "REVOKE",
+  REASSIGN = "REASSIGN",
+  EXPIRE = "EXPIRE",
+  SET_ACTIVE = "SET_ACTIVE",
+  SET_INACTIVE = "SET_INACTIVE",
+}
+
+enum PerformedBy {
+  SYSTEM,
+}
+
 export {
   AccessControl,
+  Action,
   Dept,
   HttpStatusResponse,
   PERMISSIONS,
+  PerformedBy,
+  Request,
   RequestType,
   Role,
   Status,

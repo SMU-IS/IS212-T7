@@ -1,16 +1,23 @@
 import RequestService from "./RequestService";
 import WithdrawalDb from "@/database/WithdrawalDb";
-import { HttpStatusResponse } from "@/helpers";
+import { HttpStatusResponse, Request, Action, Dept } from "@/helpers";
 import {
   checkPastWithdrawalDate,
   checkValidWithdrawalDate,
 } from "@/helpers/date";
+import LogService from "./LogService";
 
 class WithdrawalService {
+  private logService: LogService;
   private withdrawalDb: WithdrawalDb;
   private requestService: RequestService;
 
-  constructor(withdrawalDb: WithdrawalDb, requestService: RequestService) {
+  constructor(
+    logService: LogService,
+    withdrawalDb: WithdrawalDb,
+    requestService: RequestService,
+  ) {
+    this.logService = logService;
     this.withdrawalDb = withdrawalDb;
     this.requestService = requestService;
   }
@@ -73,7 +80,17 @@ class WithdrawalService {
     if (!result) {
       return null;
     }
-
+    await this.logService.logRequestHelper({
+      performedBy: staffId,
+      requestType: Request.WITHDRAWAL,
+      action: Action.APPLY,
+      dept: dept as Dept,
+      position: position,
+      requestId: requestId,
+      staffName: staffName,
+      reportingManagerId: reportingManager as any,
+      managerName: managerName,
+    });
     return HttpStatusResponse.OK;
   }
 }

@@ -1,17 +1,21 @@
 import ReassignmentDb from "@/database/ReassignmentDb";
-import { errMsg, Status } from "@/helpers";
+import { Action, errMsg, PerformedBy, Request, Status } from "@/helpers";
 import EmployeeService from "./EmployeeService";
+import LogService from "./LogService";
 
 class ReassignmentService {
   private reassignmentDb: ReassignmentDb;
   private employeeService: EmployeeService;
+  private logService: LogService;
 
   constructor(
     reassignmentDb: ReassignmentDb,
     employeeService: EmployeeService,
+    logService: LogService,
   ) {
     this.reassignmentDb = reassignmentDb;
     this.employeeService = employeeService;
+    this.logService = logService;
   }
 
   public async insertReassignmentRequest(
@@ -22,6 +26,7 @@ class ReassignmentService {
     const tempReportingManager = await this.employeeService.getEmployee(
       tempReportingManagerId,
     );
+    const managerName = `${currentManager!.staffFName} ${currentManager!.staffLName}`;
 
     // Check if there is any active reassignment between Manager A and Manager B
     const activeReassignmentReq =
@@ -41,7 +46,7 @@ class ReassignmentService {
       );
 
     if (!!tempManagerReassignmentReq) {
-      return errMsg.TEMP_MANAGER_OCCUPED;
+      return errMsg.TEMP_MANAGER_OCCUPIED;
     }
 
     const request = {
@@ -54,10 +59,67 @@ class ReassignmentService {
     };
 
     await this.reassignmentDb.insertReassignmentRequest(request);
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: staffId,
+      requestType: Request.REASSIGNMENT,
+      action: Action.APPLY,
+      staffName: managerName,
+    });
   }
 
   public async getReassignmentStatus(staffId: number) {
+    const { staffFName, staffLName }: any =
+      await this.employeeService.getEmployee(staffId);
+
+    const staffName = `${staffFName} ${staffLName}`;
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: staffId,
+      requestType: Request.REASSIGNMENT,
+      action: Action.RETRIEVE,
+      staffName: staffName,
+    });
+
     return await this.reassignmentDb.getReassignmentRequest(staffId);
+  }
+
+  public async setActiveReassignmentPeriod(): Promise<void> {
+    const isActiveUpdated =
+      await this.reassignmentDb.setActiveReassignmentPeriod();
+
+    if (isActiveUpdated) {
+      /**
+       * Logging
+       */
+      await this.logService.logRequestHelper({
+        performedBy: PerformedBy.SYSTEM,
+        requestType: Request.REASSIGNMENT,
+        action: Action.SET_ACTIVE,
+      });
+    }
+  }
+
+  public async setInactiveReassignmentPeriod(): Promise<void> {
+    const isActiveUpdated =
+      await this.reassignmentDb.setInactiveReassignmentPeriod();
+
+    if (isActiveUpdated) {
+      /**
+       * Logging
+       */
+      await this.logService.logRequestHelper({
+        performedBy: PerformedBy.SYSTEM,
+        requestType: Request.REASSIGNMENT,
+        action: Action.SET_INACTIVE,
+      });
+    }
   }
 
   public async getReassignmentActive(

@@ -1,15 +1,17 @@
 import EmployeeController from "@/controllers/EmployeeController";
+import LogController from "@/controllers/LogController";
 import ReassignmentController from "@/controllers/ReassignmentController";
 import RequestController from "@/controllers/RequestController";
 import WithdrawalController from "@/controllers/WithdrawalController";
 import EmployeeDb from "@/database/EmployeeDb";
+import LogDb from "@/database/LogDb";
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
 import WithdrawalDb from "@/database/WithdrawalDb";
 import { AccessControl } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
-
 import EmployeeService from "@/services/EmployeeService";
+import LogService from "@/services/LogService";
 import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
 import WithdrawalService from "@/services/WithdrawalService";
@@ -23,22 +25,30 @@ import { koaSwagger } from "koa2-swagger-ui";
 const requestDb = new RequestDb();
 const employeeDb = new EmployeeDb();
 const reassignmentDb = new ReassignmentDb();
+const logDb = new LogDb();
 const withdrawalDb = new WithdrawalDb();
 
 /**
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
+const logService = new LogService(logDb);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
   employeeService,
+  logService,
 );
 const requestService = new RequestService(
+  logService,
   employeeService,
   requestDb,
   reassignmentService,
 );
-const withdrawalService = new WithdrawalService(withdrawalDb, requestService);
+const withdrawalService = new WithdrawalService(
+  logService,
+  withdrawalDb,
+  requestService,
+);
 
 /**
  * Controllers
@@ -47,6 +57,7 @@ const requestController = new RequestController(requestService);
 const employeeController = new EmployeeController(employeeService);
 const reassignmentController = new ReassignmentController(reassignmentService);
 const withdrawalController = new WithdrawalController(withdrawalService);
+const logController = new LogController(logService);
 
 const router = new Router();
 router.prefix("/api/v1");
@@ -453,6 +464,7 @@ router.get("/getReassignmentStatus", (ctx) =>
 
 /**
  * @openapi
+
  * /api/v1/getIncomingReassignmentRequests:
  *   get:
  *     description: Get incoming reassignment requests
@@ -541,5 +553,16 @@ router.post('/handleReassignmentRequest', (ctx) =>
 router.get('/getSubordinateRequestsForTempManager', (ctx) =>
   reassignmentController.getSubordinateRequestsForTempManager(ctx)
 );
+
+ * /api/v1/getLogsByDept:
+ *   get:
+ *     description: Get all logs
+ *     tags: [Logs]
+ *     responses:
+ *       200:
+ *         description: Returns all logs
+ */
+router.get("/getAllLogs", (ctx) => logController.getAllLogs(ctx));
+
 
 export default router;

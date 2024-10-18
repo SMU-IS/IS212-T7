@@ -3,9 +3,9 @@ import dayjs from "dayjs";
 import { Status } from "@/helpers";
 import RequestDb from "./RequestDb";
 class ReassignmentDb {
-  public async setActiveReassignmentPeriod(): Promise<void> {
+  public async setActiveReassignmentPeriod(): Promise<boolean> {
     const now = dayjs().utc(true).startOf("day");
-    await Reassignment.updateMany(
+    const { modifiedCount } = await Reassignment.updateMany(
       {
         startDate: { $eq: now.toDate() },
       },
@@ -15,11 +15,13 @@ class ReassignmentDb {
         },
       },
     );
+
+    return modifiedCount > 0;
   }
 
-  public async setInactiveReassignmentPeriod(): Promise<void> {
+  public async setInactiveReassignmentPeriod(): Promise<boolean> {
     const now = dayjs().utc(true).startOf("day");
-    await Reassignment.updateMany(
+    const { modifiedCount } = await Reassignment.updateMany(
       {
         endDate: { $lt: now.toDate() },
       },
@@ -29,6 +31,8 @@ class ReassignmentDb {
         },
       },
     );
+
+    return modifiedCount > 0;
   }
 
   public async insertReassignmentRequest(

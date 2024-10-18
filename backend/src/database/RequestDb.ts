@@ -74,7 +74,6 @@ class RequestDb {
           Status.REJECTED,
           Status.EXPIRED,
           Status.REVOKED,
-
         ],
       },
     });
@@ -149,18 +148,20 @@ class RequestDb {
     return request;
   }
 
-  public async postRequest(document: InsertDocument): Promise<boolean> {
+  public async postRequest(
+    document: InsertDocument,
+  ): Promise<boolean | number> {
     try {
-      const requestInsert = await Request.create(document);
-      return !!requestInsert;
+      const { requestId } = await Request.create(document);
+      return requestId;
     } catch (error) {
       return false;
     }
   }
 
-  public async updateRequestStatusToExpired(): Promise<void> {
+  public async updateRequestStatusToExpired(): Promise<boolean> {
     const now = dayjs().utc(true).startOf("day");
-    await Request.updateMany(
+    const { modifiedCount } = await Request.updateMany(
       {
         status: Status.PENDING,
         requestedDate: now.toDate(),
@@ -171,6 +172,8 @@ class RequestDb {
         },
       },
     );
+
+    return modifiedCount > 0;
   }
 
   public async approveRequest(
@@ -253,7 +256,7 @@ class RequestDb {
       {
         $set: {
           status: Status.REVOKED,
-          reason: reason
+          reason: reason,
         },
       },
     );
