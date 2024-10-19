@@ -2,6 +2,7 @@ import UtilsController from "@/controllers/UtilsController";
 import { errMsg, HttpStatusResponse } from "@/helpers";
 import WithdrawalService from "@/services/WithdrawalService";
 import { Context } from "koa";
+import { withdrawalRejectionSchema } from "@/schema";
 
 class WithdrawalController {
   private withdrawalService: WithdrawalService;
@@ -46,6 +47,27 @@ class WithdrawalController {
       Number(staffId),
     );
     ctx.body = ownRequests;
+  }
+
+  public async rejectWithdrawalRequest(ctx: Context) {
+    const rejectionDetails = ctx.request.body;
+    const validation = withdrawalRejectionSchema.safeParse(rejectionDetails);
+    if (!validation.success) {
+      ctx.body = {
+        errMsg: validation.error.format(),
+      };
+      return;
+    }
+    const { performedBy, withdrawalId, reason } = ctx.request.body as any;
+    const result = await this.withdrawalService.rejectWithdrawalRequest(
+      Number(performedBy),
+      Number(withdrawalId),
+      reason,
+    );
+    ctx.body =
+      result == HttpStatusResponse.OK
+        ? HttpStatusResponse.OK
+        : HttpStatusResponse.NOT_MODIFIED;
   }
 }
 
