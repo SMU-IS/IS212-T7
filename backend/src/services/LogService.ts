@@ -74,15 +74,14 @@ class LogService {
 
     if (isManagerOrHR) {
       return allLogs;
-    } else {
-      // Role 2
-      const personalLogs = {
-        [dept]: {
-          [position]: allLogs[dept][position],
-        },
-      };
-      return personalLogs;
     }
+
+    const personalLogs = {
+      [dept]: {
+        [position]: allLogs[dept][position],
+      },
+    };
+    return personalLogs;
   }
 }
 
