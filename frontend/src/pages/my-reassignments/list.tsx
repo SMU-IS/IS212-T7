@@ -18,7 +18,9 @@ import {
 import axios from "axios";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { useCustomNotificationProvider } from "@/components/toast";
 import moment from "moment";
+import { error } from "console";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const { Title } = Typography;
@@ -65,7 +67,6 @@ const fetchReassignmentStatus = async (staffId: number) => {
         headers: { id: staffId },
       },
     );
-    console.log(response.data);
 
     return response.data; // Directly return the object from the response
   } catch (error) {
@@ -76,6 +77,7 @@ const fetchReassignmentStatus = async (staffId: number) => {
 
 export const MyReassignments = () => {
   const { data: user } = useGetIdentity<EmployeeJWT>();
+  const toast = useCustomNotificationProvider();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DataType[]>([]); // Data is initialized as an empty array
   const [filteredData, setFilteredData] = useState<DataType[]>([]);
@@ -164,16 +166,18 @@ export const MyReassignments = () => {
           `${backendUrl}/api/v1/requestReassignment`,
           requestBody,
         );
-        console.log(requestBody);
         fetchReassignmentStatus(Number(user?.staffId));
 
         console.log("Role assigned successfully:", response.data);
+        message.success("Successfully requested reassignment");
+
         handleModalClose();
       } catch (error) {
         console.error("Error assigning role:", error);
         message.error("Failed to assign the role.");
       }
     } else {
+      message.error(Response);
       message.error("Please select a date range before assigning a role.");
     }
   };
@@ -343,6 +347,7 @@ export const MyReassignments = () => {
             />
             <RangePicker
               disabledDate={disablePastDates}
+              value={dateRange} // Ensure this value is linked to the state
               onChange={(dates) => setDateRange(dates)}
               style={{ width: "100%" }}
             />
