@@ -79,6 +79,7 @@ class WithdrawalDb {
     }
     return HttpStatusResponse.OK;
   }
+
 }
 
 export default WithdrawalDb;

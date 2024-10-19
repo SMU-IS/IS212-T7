@@ -68,6 +68,7 @@ class WithdrawalController {
         ? HttpStatusResponse.OK
         : HttpStatusResponse.NOT_MODIFIED;
   }
+
 }
 
 export default WithdrawalController;

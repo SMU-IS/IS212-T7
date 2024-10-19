@@ -21,6 +21,7 @@ const startCronJob = async () => {
   const reassignmentDb = new ReassignmentDb();
   const reassignmentService = new ReassignmentService(
     reassignmentDb,
+    requestDb,
     employeeService,
     logService,
   );

@@ -45,6 +45,7 @@ describe("RequestController", () => {
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
+      requestDbMock,
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;

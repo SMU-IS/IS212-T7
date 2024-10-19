@@ -1,4 +1,4 @@
-name: Run unit tests for WFH Application System backend before merge.
+name: Run build for WFH Application System frontend before merge.
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: backend
+        working-directory: frontend
 
     steps:
       - name: Check out the code.
@@ -34,8 +34,5 @@ jobs:
       - name: Format the code.
         run: npm run prettier
 
-      - name: Run the tests.
-        run: npm run test
-
-      - name: Build the backend.
+      - name: Build the frontend.
         run: npm run build

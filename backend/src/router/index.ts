@@ -35,6 +35,7 @@ const employeeService = new EmployeeService(employeeDb);
 const logService = new LogService(logDb);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
+  requestDb,
   employeeService,
   logService,
 );
