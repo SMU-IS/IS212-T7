@@ -24,6 +24,29 @@ class WithdrawalController {
         ? HttpStatusResponse.OK
         : HttpStatusResponse.NOT_MODIFIED;
   }
+
+  public async getSubordinatesWithdrawalRequests(ctx: Context) {
+    const { id } = ctx.request.header;
+    if (!id) {
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
+    }
+    const subordinatesRequests =
+      await this.withdrawalService.getSubordinatesWithdrawalRequests(
+        Number(id),
+      );
+    ctx.body = subordinatesRequests;
+  }
+
+  public async getOwnWithdrawalRequests(ctx: Context) {
+    const { staffId } = ctx.query;
+    if (!staffId) {
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
+    }
+    const ownRequests = await this.withdrawalService.getOwnWithdrawalRequests(
+      Number(staffId),
+    );
+    ctx.body = ownRequests;
+  }
 }
 
 export default WithdrawalController;

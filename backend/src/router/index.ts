@@ -48,6 +48,8 @@ const withdrawalService = new WithdrawalService(
   logService,
   withdrawalDb,
   requestService,
+  reassignmentService,
+  employeeService,
 );
 
 /**
@@ -486,8 +488,8 @@ router.get("/getReassignmentStatus", (ctx) =>
  *               items:
  *                 type: object
  */
-router.get('/getIncomingReassignmentRequests', (ctx) =>
-  reassignmentController.getIncomingReassignmentRequests(ctx)
+router.get("/getIncomingReassignmentRequests", (ctx) =>
+  reassignmentController.getIncomingReassignmentRequests(ctx),
 );
 
 /**
@@ -521,8 +523,8 @@ router.get('/getIncomingReassignmentRequests', (ctx) =>
  *       200:
  *         description: Request handled successfully, updates status to approved/rejected
  */
-router.post('/handleReassignmentRequest', (ctx) =>
-  reassignmentController.handleReassignmentRequest(ctx)
+router.post("/handleReassignmentRequest", (ctx) =>
+  reassignmentController.handleReassignmentRequest(ctx),
 );
 
 /**
@@ -550,8 +552,8 @@ router.post('/handleReassignmentRequest', (ctx) =>
  *       404:
  *         description: No active reassignment found
  */
-router.get('/getSubordinateRequestsForTempManager', (ctx) =>
-  reassignmentController.getSubordinateRequestsForTempManager(ctx)
+router.get("/getSubordinateRequestsForTempManager", (ctx) =>
+  reassignmentController.getSubordinateRequestsForTempManager(ctx),
 );
 
 /**
@@ -566,5 +568,48 @@ router.get('/getSubordinateRequestsForTempManager', (ctx) =>
  */
 router.get("/getAllLogs", (ctx) => logController.getAllLogs(ctx));
 
+/**
+ * @openapi
+ * /api/v1/getOwnWithdrawalRequests?staffId={INSERT ID HERE}:
+ *   get:
+ *     description: Get own withdrawal requests
+ *     tags: [Own Withdrawal Requests]
+ *     parameters:
+ *       - in: query
+ *         name: staffId
+ *         schema:
+ *           type: number
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200:
+ *         description: Returns own withdrawal requests
+ */
+router.get("/getOwnWithdrawalRequests", (ctx) =>
+  withdrawalController.getOwnWithdrawalRequests(ctx),
+);
+
+/**
+ * @openapi
+ * /api/v1/getSubordinatesWithdrawalRequests:
+ *   get:
+ *     description: Get withdrawal request from direct and temp subordinates
+ *     tags: [All Subordinates' Withdrawal Requests]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
+ *     responses:
+ *       200:
+ *         description: Returns all subordinates' withdrawal requests from direct and temp subordinates
+ */
+router.get(
+  "/getSubordinatesWithdrawalRequests",
+  checkUserRolePermission(AccessControl.VIEW_SUB_WITHDRAWAL_REQUEST),
+  (ctx) => withdrawalController.getSubordinatesWithdrawalRequests(ctx),
+);
 
 export default router;

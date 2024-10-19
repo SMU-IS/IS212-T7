@@ -29,6 +29,24 @@ class WithdrawalDb {
     });
     return withdrawalRequests;
   }
+
+  public async getSubordinatesWithdrawalRequests(
+    reportingManager: number,
+  ): Promise<IWithdrawal[]> {
+    const subordinatesRequests = await Withdrawal.find({
+      reportingManager: reportingManager,
+    });
+    return subordinatesRequests;
+  }
+
+  public async getOwnWithdrawalRequests(
+    staffId: number,
+  ): Promise<IWithdrawal[]> {
+    const ownRequests = await Withdrawal.find({
+      staffId: staffId,
+    });
+    return ownRequests;
+  }
 }
 
 export default WithdrawalDb;

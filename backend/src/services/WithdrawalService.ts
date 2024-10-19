@@ -1,25 +1,34 @@
 import RequestService from "./RequestService";
-import WithdrawalDb from "@/database/WithdrawalDb";
+import { IWithdrawal } from "@/models/Withdrawal";
+import ReassignmentService from "./ReassignmentService";
 import { HttpStatusResponse, Request, Action, Dept } from "@/helpers";
 import {
   checkPastWithdrawalDate,
   checkValidWithdrawalDate,
 } from "@/helpers/date";
 import LogService from "./LogService";
+import WithdrawalDb from "@/database/WithdrawalDb";
+import EmployeeService from "./EmployeeService";
 
 class WithdrawalService {
   private logService: LogService;
   private withdrawalDb: WithdrawalDb;
   private requestService: RequestService;
+  private reassignmentService: ReassignmentService;
+  private employeeService: EmployeeService;
 
   constructor(
     logService: LogService,
     withdrawalDb: WithdrawalDb,
     requestService: RequestService,
+    reassignmentService: ReassignmentService,
+    employeeService: EmployeeService,
   ) {
     this.logService = logService;
     this.withdrawalDb = withdrawalDb;
     this.requestService = requestService;
+    this.reassignmentService = reassignmentService;
+    this.employeeService = employeeService;
   }
 
   public async getWithdrawalRequest(requestId: number) {
@@ -92,6 +101,69 @@ class WithdrawalService {
       managerName: managerName,
     });
     return HttpStatusResponse.OK;
+  }
+
+  public async getSubordinatesWithdrawalRequests(
+    staffId: number,
+    shouldLog: boolean = true,
+  ): Promise<IWithdrawal[]> {
+    const subordinatesRequests =
+      await this.withdrawalDb.getSubordinatesWithdrawalRequests(
+        Number(staffId),
+      );
+
+    const activeReassignment =
+      await this.reassignmentService.getActiveReassignmentAsTempManager(
+        staffId,
+      );
+
+    let combinedRequests = subordinatesRequests;
+
+    if (activeReassignment && activeReassignment.active) {
+      const tempSubordinatesRequests =
+        await this.getSubordinatesWithdrawalRequests(
+          Number(activeReassignment.staffId),
+          false,
+        );
+      combinedRequests = [
+        ...subordinatesRequests,
+        ...tempSubordinatesRequests,
+      ] as any;
+    }
+    if (shouldLog && combinedRequests.length > 0) {
+      const managerDetails = await this.employeeService.getEmployee(staffId);
+      if (managerDetails) {
+        await this.logService.logRequestHelper({
+          performedBy: staffId,
+          requestType: Request.WITHDRAWAL,
+          action: Action.RETRIEVE,
+          staffName: `${managerDetails.staffFName} ${managerDetails.staffLName}`,
+          dept: managerDetails.dept as Dept,
+          position: managerDetails.position,
+        });
+      }
+    }
+    return combinedRequests;
+  }
+
+  public async getOwnWithdrawalRequests(
+    staffId: number,
+  ): Promise<IWithdrawal[]> {
+    const ownRequests =
+      await this.withdrawalDb.getOwnWithdrawalRequests(staffId);
+    if (ownRequests && ownRequests.length > 0) {
+      await this.logService.logRequestHelper({
+        performedBy: staffId,
+        requestType: Request.WITHDRAWAL,
+        action: Action.RETRIEVE,
+        staffName: ownRequests[0].staffName,
+        dept: ownRequests[0].dept as Dept,
+        position: ownRequests[0].position,
+        reportingManagerId: ownRequests[0].reportingManager as any,
+        managerName: ownRequests[0].managerName as any,
+      });
+    }
+    return ownRequests;
   }
 }
 export default WithdrawalService;
