@@ -1,4 +1,4 @@
-import { errMsg, HttpStatusResponse } from "@/helpers";
+import { Action, errMsg, HttpStatusResponse } from "@/helpers";
 import { numberSchema, reassignmentRequestSchema } from "@/schema";
 import ReassignmentService from "@/services/ReassignmentService";
 import { Context } from "koa";
@@ -79,7 +79,7 @@ class ReassignmentController {
     const sanitisedStaffId = numberSchema.parse(staffId.toString());
     const sanitisedReassignmentId = numberSchema.parse(reassignmentId.toString());
 
-    if (action !== 'approve' && action !== 'reject') {
+    if (action !== Action.APPROVE && action !== Action.REJECT) {
       return UtilsController.throwAPIError(ctx, errMsg.INVALID_ACTION);
     }
 
@@ -91,9 +91,8 @@ class ReassignmentController {
       );
       ctx.body = HttpStatusResponse.OK;
     } catch (error) {
-      console.log(error)
       ctx.status = 400;
-      ctx.body = { error: "An error has occured!" };
+      ctx.body = { error: errMsg.GENERIC_ERROR };
     }
   }
 
@@ -111,20 +110,16 @@ class ReassignmentController {
 
       if (subordinateRequests === null) {
         ctx.status = 404;
-        ctx.body = { message: 'No active reassignment found for the staff member as temp manager' };
+        ctx.body = { error: errMsg.NO_ACTIVE_REASSIGNMENT };
         return;
       }
 
       ctx.body = subordinateRequests;
     } catch (error) {
-      console.error('Error in getSubordinateRequestsForTempManager:', error);
       ctx.status = 500;
-      ctx.body = { message: 'Internal server error' };
+      ctx.body = { error: errMsg.GENERIC_ERROR };
     }
   }
-  
-
-
 }
 
 

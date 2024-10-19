@@ -2,18 +2,22 @@ import ReassignmentDb from "@/database/ReassignmentDb";
 import { Action, errMsg, PerformedBy, Request, Status } from "@/helpers";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
+import RequestDb from "@/database/RequestDb";
 
 class ReassignmentService {
   private reassignmentDb: ReassignmentDb;
+  private requestDb: RequestDb;
   private employeeService: EmployeeService;
   private logService: LogService;
 
   constructor(
     reassignmentDb: ReassignmentDb,
+    requestDb: RequestDb,
     employeeService: EmployeeService,
     logService: LogService,
   ) {
     this.reassignmentDb = reassignmentDb;
+    this.requestDb = requestDb;
     this.employeeService = employeeService;
     this.logService = logService;
   }
@@ -143,15 +147,10 @@ class ReassignmentService {
     return await this.reassignmentDb.getIncomingReassignmentRequests(staffId);
   }
 
-  public async getSubordinateRequestsForTempManager(staffId: number) {
-    const result = await this.reassignmentDb.getSubordinateRequestsForTempManager(staffId);
-    return result
-  }
-
   public async handleReassignmentRequest(
     staffId: number,
     reassignmentId: number,
-    action: 'approve' | 'reject'
+    action: Action.APPROVE | Action.REJECT
   ): Promise<void> {
     const reassignment = await this.reassignmentDb.getIncomingReassignmentRequests(staffId);
 
@@ -167,11 +166,36 @@ class ReassignmentService {
       throw new Error('This request has already been processed');
     }
 
-    const newStatus = action === 'approve' ? Status.APPROVED : Status.REJECTED;
+    const newStatus = action === Action.APPROVE ? Status.APPROVED : Status.REJECTED;
    
     await this.reassignmentDb.updateReassignmentStatus(reassignmentId, newStatus);
   }
 
+  public async getSubordinateRequestsForTempManager(staffId: number) {
+    const reassignment = await this.reassignmentDb.getActiveReassignmentAsTempManager(staffId);
+    if (!reassignment) {
+      return null;
+    }
+
+    const subordinateRequests = await this.requestDb.getAllSubordinatesRequests(reassignment.staffId);
+
+    // filter approved requests based on reassignment dates
+    return subordinateRequests.filter(request => {
+      if (request.status === Status.APPROVED) {
+        const requestDate = new Date(request.requestedDate);
+        const reassignmentStartDate = new Date(reassignment.startDate);
+        const reassignmentEndDate = new Date(reassignment.endDate);
+
+        return (
+          // only return approved requests if they are between startDate and endDate of reassignment
+          (requestDate >= reassignmentStartDate) &&
+          (requestDate <= reassignmentEndDate)
+        );
+      }
+      // keep all pending requests
+      else return request.status === Status.PENDING;
+    });
+  }
 }
   
 
