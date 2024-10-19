@@ -65,6 +65,7 @@ describe("postRequest", () => {
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
+      requestDbMock,
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;
@@ -360,6 +361,7 @@ describe("getPendingOrApprovedRequests", () => {
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
+      requestDbMock,
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;
@@ -412,6 +414,7 @@ describe("cancel pending requests", () => {
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
+      requestDbMock,
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;
@@ -491,6 +494,7 @@ describe("get pending requests", () => {
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
+      requestDbMock,
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;
@@ -642,6 +646,7 @@ describe("get own pending requests", () => {
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
+      requestDbMock,
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;
@@ -702,6 +707,7 @@ describe("reject pending requests", () => {
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
+      requestDbMock,
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;
@@ -823,6 +829,7 @@ describe("approve pending requests", () => {
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
+      requestDbMock,
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;
@@ -931,6 +938,7 @@ describe("getPendingRequestByRequestId", () => {
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
+      requestDbMock,
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;
