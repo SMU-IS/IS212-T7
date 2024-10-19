@@ -1,6 +1,6 @@
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
-import { Action, errMsg, PerformedBy, Request, Status } from "@/helpers";
+import { Action, Dept, errMsg, PerformedBy, Request, Status } from "@/helpers";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 
@@ -63,11 +63,13 @@ class ReassignmentService {
       requestType: Request.REASSIGNMENT,
       action: Action.APPLY,
       staffName: managerName,
+      dept: currentManager!.dept as Dept,
+      position: currentManager!.position,
     });
   }
 
   public async getReassignmentStatus(staffId: number) {
-    const { staffFName, staffLName }: any =
+    const { staffFName, staffLName, dept, position }: any =
       await this.employeeService.getEmployee(staffId);
 
     const staffName = `${staffFName} ${staffLName}`;
@@ -80,6 +82,8 @@ class ReassignmentService {
       requestType: Request.REASSIGNMENT,
       action: Action.RETRIEVE,
       staffName: staffName,
+      dept: dept as Dept,
+      position: position,
     });
 
     return await this.reassignmentDb.getReassignmentRequest(staffId);
@@ -97,6 +101,8 @@ class ReassignmentService {
         performedBy: PerformedBy.SYSTEM,
         requestType: Request.REASSIGNMENT,
         action: Action.SET_ACTIVE,
+        dept: PerformedBy.SYSTEM as any,
+        position: PerformedBy.SYSTEM as any,
       });
     }
   }
@@ -113,6 +119,8 @@ class ReassignmentService {
         performedBy: PerformedBy.SYSTEM,
         requestType: Request.REASSIGNMENT,
         action: Action.SET_INACTIVE,
+        dept: PerformedBy.SYSTEM as any,
+        position: PerformedBy.SYSTEM as any,
       });
     }
   }
