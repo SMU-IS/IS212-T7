@@ -79,6 +79,7 @@ class ReassignmentController {
     const sanitisedStaffId = numberSchema.parse(staffId.toString());
     const sanitisedReassignmentId = numberSchema.parse(reassignmentId.toString());
 
+
     if (action !== Action.APPROVE && action !== Action.REJECT) {
       return UtilsController.throwAPIError(ctx, errMsg.INVALID_ACTION);
     }
