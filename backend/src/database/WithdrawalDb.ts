@@ -1,5 +1,6 @@
 import Withdrawal, { IWithdrawal } from "@/models/Withdrawal";
 import { HttpStatusResponse, Status } from "@/helpers";
+import dayjs from "dayjs";
 
 interface InsertDocument {
   requestId: number;
@@ -80,6 +81,23 @@ class WithdrawalDb {
       return null;
     }
     return HttpStatusResponse.OK;
+  }
+
+  public async updateWithdrawalStatusToExpired(): Promise<boolean> {
+    const now = dayjs().utc(true).startOf("day");
+    const { modifiedCount } = await Withdrawal.updateMany(
+      {
+        status: Status.PENDING,
+        requestedDate: now.toDate(),
+      },
+      {
+        $set: {
+          status: Status.EXPIRED,
+        },
+      },
+    );
+
+    return modifiedCount > 0;
   }
 }
 

@@ -1,7 +1,14 @@
 import RequestService from "./RequestService";
 import { IWithdrawal } from "@/models/Withdrawal";
 import ReassignmentService from "./ReassignmentService";
-import { HttpStatusResponse, Request, Action, Dept, Status } from "@/helpers";
+import {
+  HttpStatusResponse,
+  Request,
+  Action,
+  Dept,
+  Status,
+  PerformedBy,
+} from "@/helpers";
 import {
   checkPastWithdrawalDate,
   checkValidWithdrawalDate,
@@ -84,6 +91,7 @@ class WithdrawalService {
       managerName,
       dept,
       position,
+      requestedDate
     };
     const result = await this.withdrawalDb.withdrawRequest(document);
     if (!result) {
@@ -217,6 +225,21 @@ class WithdrawalService {
       });
     }
     return HttpStatusResponse.OK;
+  }
+
+  public async updateWithdrawalStatusToExpired() {
+    const isStatusUpdated =
+      await this.withdrawalDb.updateWithdrawalStatusToExpired();
+    if (isStatusUpdated) {
+      /**
+       * Logging
+       */
+      await this.logService.logRequestHelper({
+        performedBy: PerformedBy.SYSTEM,
+        requestType: Request.WITHDRAWAL,
+        action: Action.EXPIRE,
+      });
+    }
   }
 }
 export default WithdrawalService;
