@@ -60,6 +60,26 @@ class WithdrawalDb {
     }
     return withdrawalRequest;
   }
+  
+  public async approveWithdrawalRequest(
+    withdrawalId: number,
+  ): Promise<string | null> {
+    const { modifiedCount } = await Withdrawal.updateMany(
+      {
+        withdrawalId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.APPROVED,
+        },
+      },
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
 
   public async rejectWithdrawalRequest(
     withdrawalId: number,

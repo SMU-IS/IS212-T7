@@ -184,6 +184,49 @@ class WithdrawalService {
     return request;
   }
 
+  public async approveWithdrawalRequest(
+    performedBy: number,
+    withdrawalId: number,
+  ): Promise<string | null> {
+    const request = await this.getWithdrawalRequestById(withdrawalId);
+    if (!request || request.status !== Status.PENDING) {
+      return null;
+    }
+
+    if (performedBy !== request.reportingManager) {
+      const activeReassignment =
+        await this.reassignmentService.getReassignmentActive(
+          request.reportingManager as any,
+          performedBy,
+        );
+      if (!activeReassignment) {
+        return null;
+      }
+    }
+    const withdrawalApproval =
+      await this.withdrawalDb.approveWithdrawalRequest(withdrawalId);
+    if (!withdrawalApproval) {
+      return null;
+    }
+    const result = this.requestService.setWithdrawnStatus(request.requestId);
+    if (!result) {
+      return null;
+    }
+    const managerDetails = await this.employeeService.getEmployee(performedBy);
+    if (managerDetails) {
+      await this.logService.logRequestHelper({
+        performedBy: performedBy,
+        requestType: Request.WITHDRAWAL,
+        action: Action.APPROVE,
+        staffName: `${managerDetails.staffFName} ${managerDetails.staffLName}`,
+        dept: managerDetails.dept as Dept,
+        position: managerDetails.position,
+        requestId: withdrawalId
+      });
+    }
+    return HttpStatusResponse.OK;
+  }
+  
   public async rejectWithdrawalRequest(
     performedBy: number,
     withdrawalId: number,
@@ -226,7 +269,7 @@ class WithdrawalService {
     }
     return HttpStatusResponse.OK;
   }
-
+  
   public async updateWithdrawalStatusToExpired() {
     const isStatusUpdated =
       await this.withdrawalDb.updateWithdrawalStatusToExpired();
