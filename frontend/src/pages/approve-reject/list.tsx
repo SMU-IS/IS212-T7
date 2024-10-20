@@ -34,13 +34,13 @@ export const IncomingList: React.FC = () => {
   const [filteredData, setFilteredData] = useState<DataSourceItem[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentPost, setCurrentPost] = useState<DataSourceItem | null>(null);
-  const [, setPendingCount] = usePendingCount();
   const [filterStatus, setFilterStatus] = useState<string | undefined>(
     undefined,
   );
   const [description, setDescription] = useState<string>("");
   const [showDescription, setShowDescription] = useState<boolean>(false);
   const [selectedStatus, setSelectedStatus] = useState(currentPost?.status);
+  const { pendingCount, fetchPendingRequests } = usePendingCount();
 
   const fetchRequests = async (staffId: any) => {
     try {
@@ -77,11 +77,6 @@ export const IncomingList: React.FC = () => {
         staffId: request.staffId,
       }));
 
-      const pendingCount = pendingRequests.filter(
-        (request) => request.status === "Pending",
-      ).length;
-
-      setPendingCount(pendingCount);
       setDataSource(pendingRequests);
       setFilteredData(pendingRequests);
     } catch (error) {
@@ -235,6 +230,7 @@ export const IncomingList: React.FC = () => {
     setCurrentPost(null);
     setDescription("");
     setShowDescription(false);
+    await fetchPendingRequests(); // Refresh the pending count
   };
 
   return (

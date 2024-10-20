@@ -1,6 +1,5 @@
 import type { RefineThemedLayoutV2HeaderProps } from "@refinedev/antd";
 import { useGetIdentity } from "@refinedev/core";
-
 import {
   Layout as AntdLayout,
   Avatar,
@@ -10,10 +9,9 @@ import {
   Typography,
   Badge,
 } from "antd";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
-import { usePendingCount } from "@/pages/approve-reject/requestsCount";
-
+import { usePendingCount } from "@/pages/approve-reject/requestsCount"; // Importing the hook
 import { Button } from "antd";
 import { AlertOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -35,7 +33,7 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   const { data: user } = useGetIdentity<IUser>();
   const { mode, setMode } = useContext(ColorModeContext);
   const navigate = useNavigate(); // Hook to handle navigation
-  const [pendingCount] = usePendingCount(); // Read the global state
+  const { pendingCount } = usePendingCount();
 
   const headerStyles: React.CSSProperties = {
     backgroundColor: "transparent",
