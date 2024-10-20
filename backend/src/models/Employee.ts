@@ -50,7 +50,7 @@ const EmployeeSchema = new Schema<IEmployee>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 EmployeeSchema.index({ staffId: 1 }, { unique: true });

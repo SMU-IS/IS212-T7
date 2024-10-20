@@ -1,4 +1,3 @@
-import { Dept } from "@/helpers";
 import Employee, { IEmployee } from "@/models/Employee";
 import EmployeeTreeNode from "@/models/EmployeeTreeNode";
 
@@ -20,28 +19,32 @@ class EmployeeDb {
     ).exec();
   }
 
-  public async getTeamCountByDept(dept: Dept) {
+  public async getAllDeptTeamCount() {
     const result = await Employee.aggregate([
       {
-        $match: { dept },
-      },
-      {
         $group: {
-          _id: { position: "$position" },
+          _id: { dept: "$dept", position: "$position" },
           count: { $sum: 1 },
         },
       },
       {
-        $sort: { "_id.position": 1 },
+        $sort: { "_id.dept": 1, "_id.position": 1 },
       },
     ]);
 
-    let sanitisedResult: any = {
-      teamMembers: {},
-    };
+    let sanitisedResult: any = {};
 
     result.forEach((item) => {
-      sanitisedResult.teamMembers[item._id.position] = item.count;
+      const department = item._id.dept;
+      const position = item._id.position;
+      const count = item.count;
+
+      if (!sanitisedResult[department]) {
+        sanitisedResult[department] = { teams: {} };
+      }
+
+      sanitisedResult[department].teams[position] = count;
+      sanitisedResult[department].wfhStaff = [];
     });
 
     return sanitisedResult;
@@ -108,6 +111,25 @@ class EmployeeDb {
     }
 
     return root;
+  }
+
+  public async getRoleOneEmployees(): Promise<IEmployee[]> {
+    const employees = await Employee.aggregate([
+      { $match: { role: 1 } },
+      {
+        $project: {
+          _id: 0,
+          staffId: 1,
+          staffName: { $concat: ["$staffFName", " ", "$staffLName"] },
+          dept: 1,
+          position: 1,
+          email: 1,
+          role: 1,
+        },
+      },
+    ]);
+
+    return employees;
   }
 }
 

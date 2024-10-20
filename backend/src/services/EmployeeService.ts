@@ -1,5 +1,5 @@
 import EmployeeDb from "@/database/EmployeeDb";
-import { Dept, errMsg } from "@/helpers";
+import { errMsg } from "@/helpers";
 import { IEmployee } from "@/models/Employee";
 import bcrpyt from "bcrypt";
 
@@ -34,8 +34,12 @@ class EmployeeService {
     return await this.employeeDb.getDeptByManager(staffId);
   }
 
-  public async getTeamCountByDept(dept: Dept) {
-    return await this.employeeDb.getTeamCountByDept(dept);
+  public async getAllDeptTeamCount() {
+    return await this.employeeDb.getAllDeptTeamCount();
+  }
+
+  public async getRoleOneEmployees() {
+    return await this.employeeDb.getRoleOneEmployees();
   }
 }
 

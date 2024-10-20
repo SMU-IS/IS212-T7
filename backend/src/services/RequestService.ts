@@ -1,15 +1,26 @@
 import RequestDb from "@/database/RequestDb";
-import { Dept, errMsg, HttpStatusResponse } from "@/helpers";
+import {
+  Action,
+  Dept,
+  errMsg,
+  HttpStatusResponse,
+  PerformedBy,
+  Request,
+} from "@/helpers";
 import { Role } from "@/helpers/";
 import {
   checkDate,
   checkLatestDate,
   checkPastDate,
+  checkPastWithdrawalDate,
+  checkValidWithdrawalDate,
   checkWeekend,
   weekMap,
 } from "@/helpers/date";
 import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
+import LogService from "./LogService";
+import ReassignmentService from "./ReassignmentService";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -23,12 +34,21 @@ interface ResponseDates {
 }
 
 class RequestService {
+  private logService: LogService;
   private employeeService: EmployeeService;
+  private reassignmentService: ReassignmentService;
   private requestDb: RequestDb;
 
-  constructor(employeeService: EmployeeService, requestDb: RequestDb) {
+  constructor(
+    logService: LogService,
+    employeeService: EmployeeService,
+    requestDb: RequestDb,
+    reassignmentService: ReassignmentService,
+  ) {
+    this.logService = logService;
     this.employeeService = employeeService;
     this.requestDb = requestDb;
+    this.reassignmentService = reassignmentService;
   }
 
   public async getMySchedule(myId: number) {
@@ -58,6 +78,30 @@ class RequestService {
       return null;
     }
 
+    const {
+      staffFName,
+      staffLName,
+      reportingManager,
+      reportingManagerName,
+      dept,
+      position,
+    }: any = await this.employeeService.getEmployee(staffId);
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: staffId,
+      requestType: Request.APPLICATION,
+      action: Action.CANCEL,
+      dept: dept,
+      position: position,
+      requestId: requestId,
+      staffName: `${staffFName} ${staffLName}`,
+      reportingManagerId: reportingManager,
+      managerName: reportingManagerName,
+    });
+
     return HttpStatusResponse.OK;
   }
 
@@ -71,6 +115,21 @@ class RequestService {
 
   public async getOwnPendingRequests(myId: number): Promise<IRequest[]> {
     const pendingRequests = await this.requestDb.getOwnPendingRequests(myId);
+    if (pendingRequests && pendingRequests.length > 0) {
+      /**
+       * Logging
+       */
+      await this.logService.logRequestHelper({
+        performedBy: myId,
+        requestType: Request.APPLICATION,
+        action: Action.RETRIEVE,
+        staffName: pendingRequests[0].staffName,
+        dept: pendingRequests[0].dept as Dept,
+        position: pendingRequests[0].position,
+        reportingManagerId: pendingRequests[0].reportingManager as any,
+        managerName: pendingRequests[0].managerName,
+      });
+    }
     return pendingRequests;
   }
 
@@ -80,34 +139,81 @@ class RequestService {
       return errMsg.USER_DOES_NOT_EXIST;
     }
 
-    const { role, position, reportingManager, dept } = employee;
-    const teamCount = await this.employeeService.getTeamCountByDept(
-      dept as Dept,
-    );
+    const {
+      role,
+      position,
+      reportingManager,
+      dept,
+      staffFName,
+      staffLName,
+      reportingManagerName,
+    } = employee;
+    const allDeptTeamCount = await this.employeeService.getAllDeptTeamCount();
 
     const isManagerOrHR = role === Role.HR || role === Role.Manager;
     const wfhStaff = isManagerOrHR
       ? await this.requestDb.getAllDeptSchedule()
       : await this.requestDb.getTeamSchedule(reportingManager, position);
 
+    // Check for any temp dept/teams
+    const activeReassignment =
+      await this.reassignmentService.getActiveReassignmentAsTempManager(
+        staffId,
+      );
+
     let schedule: any = {};
 
     if (isManagerOrHR) {
       schedule = {
-        deptName: dept,
-        ...teamCount,
-        data: {
-          ...wfhStaff,
-        },
+        ...allDeptTeamCount,
       };
+      for (const dept of Object.keys(allDeptTeamCount)) {
+        if (
+          activeReassignment &&
+          activeReassignment.active &&
+          activeReassignment.originalManagerDept === dept
+        ) {
+          allDeptTeamCount[dept].wfhStaff = wfhStaff[dept] || [];
+          allDeptTeamCount[dept].isTempTeam = true;
+        } else {
+          allDeptTeamCount[dept].wfhStaff = wfhStaff[dept] || [];
+        }
+      }
+
+      /**
+       * Logging
+       */
+      await this.logService.logRequestHelper({
+        performedBy: staffId,
+        requestType: Request.APPLICATION,
+        action: Action.RETRIEVE,
+        staffName: `${staffFName} ${staffLName}`,
+        dept: dept as Dept,
+        position: position,
+      });
     } else {
       schedule = {
-        deptName: dept,
-        totalTeamMembers: teamCount.teamMembers[position],
-        team: {
-          [position]: wfhStaff,
+        [dept]: {
+          teams: {
+            [position]: allDeptTeamCount[dept].teams[position],
+          },
         },
       };
+      schedule[dept].wfhStaff = wfhStaff;
+
+      /**
+       * Logging
+       */
+      await this.logService.logRequestHelper({
+        performedBy: staffId,
+        requestType: Request.APPLICATION,
+        action: Action.RETRIEVE,
+        staffName: `${staffFName} ${staffLName}`,
+        reportingManagerId: reportingManager,
+        managerName: reportingManagerName,
+        dept: dept as Dept,
+        position: position,
+      });
     }
 
     return schedule;
@@ -204,6 +310,21 @@ class RequestService {
 
       if (requestInsert) {
         responseDates.successDates.push(dateType);
+        const reqId = requestInsert as number;
+        /**
+         * Logging
+         */
+        await this.logService.logRequestHelper({
+          performedBy: requestDetails.staffId,
+          requestType: Request.APPLICATION,
+          action: Action.APPLY,
+          dept: dept as Dept,
+          position: position,
+          requestId: reqId,
+          staffName: `${staffFName} ${staffLName}`,
+          reportingManagerId: reportingManager,
+          managerName: reportingManagerName,
+        });
       } else {
         responseDates.insertErrorDates.push(dateType);
       }
@@ -217,28 +338,55 @@ class RequestService {
     return requestDetail;
   }
 
+  public async getApprovedRequestByRequestId(requestId: number) {
+    const requestDetail =
+      await this.requestDb.getApprovedRequestByRequestId(requestId);
+    return requestDetail;
+  }
+
   public async approveRequest(
     performedBy: number,
     requestId: number,
   ): Promise<string | null> {
+    let reassignment;
     const request = await this.getPendingRequestByRequestId(requestId);
     if (!request) {
       return null;
     }
+    const actionTakenBy: any =
+      await this.employeeService.getEmployee(performedBy);
+
     const employee = await this.employeeService.getEmployee(request.staffId);
     if (!employee) {
       return null;
     }
-    if (
-      employee.reportingManager !== performedBy &&
-      employee.tempReportingManager !== performedBy
-    ) {
-      return null;
+    if (performedBy !== employee.reportingManager) {
+      reassignment = await this.reassignmentService.getReassignmentActive(
+        request.reportingManager as any,
+        performedBy,
+      );
+      if (!reassignment) {
+        return null;
+      }
     }
     const result = await this.requestDb.approveRequest(performedBy, requestId);
     if (!result) {
       return null;
     }
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: performedBy,
+      requestType: Request.APPLICATION,
+      action: Action.APPROVE,
+      requestId: requestId,
+      staffName: reassignment?.tempManagerName ?? employee.reportingManagerName,
+      dept: actionTakenBy.dept,
+      position: actionTakenBy.position,
+    });
+
     return HttpStatusResponse.OK;
   }
 
@@ -247,19 +395,26 @@ class RequestService {
     requestId: number,
     reason: string,
   ): Promise<string | null> {
+    let reassignment;
     const request = await this.getPendingRequestByRequestId(requestId);
     if (!request) {
       return null;
     }
+    const managerDetails = await this.employeeService.getEmployee(
+      request.reportingManager!,
+    );
     const employee = await this.employeeService.getEmployee(request.staffId);
     if (!employee) {
       return null;
     }
-    if (
-      employee.reportingManager !== performedBy &&
-      employee.tempReportingManager !== performedBy
-    ) {
-      return null;
+    if (performedBy !== employee.reportingManager) {
+      reassignment = await this.reassignmentService.getReassignmentActive(
+        request.reportingManager as any,
+        performedBy,
+      );
+      if (!reassignment) {
+        return null;
+      }
     }
     const result = await this.requestDb.rejectRequest(
       performedBy,
@@ -269,6 +424,87 @@ class RequestService {
     if (!result) {
       return null;
     }
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: performedBy,
+      requestType: Request.APPLICATION,
+      action: Action.REJECT,
+      requestId: requestId,
+      staffName: reassignment?.tempManagerName ?? employee.reportingManagerName,
+      reason: reason,
+      dept: managerDetails!.dept as Dept,
+      position: managerDetails!.position,
+    });
+    return HttpStatusResponse.OK;
+  }
+
+  public async updateRequestStatusToExpired() {
+    const isStatusUpdated = await this.requestDb.updateRequestStatusToExpired();
+    if (isStatusUpdated) {
+      /**
+       * Logging
+       */
+      await this.logService.logRequestHelper({
+        performedBy: PerformedBy.SYSTEM,
+        requestType: Request.REASSIGNMENT,
+        action: Action.EXPIRE,
+      });
+    }
+  }
+
+  public async revokeRequest(
+    performedBy: number,
+    requestId: number,
+    reason: string,
+  ): Promise<string | null> {
+    let reassignment;
+    const request = await this.getApprovedRequestByRequestId(requestId);
+    if (!request) {
+      return null;
+    }
+
+    const managerDetails = await this.employeeService.getEmployee(
+      request.reportingManager!,
+    );
+    if (performedBy !== request.reportingManager) {
+      reassignment = await this.reassignmentService.getReassignmentActive(
+        request.reportingManager as any,
+        performedBy,
+      );
+      if (!reassignment) {
+        return null;
+      }
+    }
+
+    if (
+      checkPastWithdrawalDate(request.requestedDate) &&
+      !checkValidWithdrawalDate(request.requestedDate)
+    ) {
+      return null;
+    }
+
+    const result = await this.requestDb.revokeRequest(requestId, reason);
+    if (!result) {
+      return null;
+    }
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: performedBy,
+      requestType: Request.APPLICATION,
+      action: Action.REVOKE,
+      requestId: requestId,
+      staffName: reassignment?.tempManagerName ?? request.managerName,
+      reason: reason,
+      dept: managerDetails!.dept as Dept,
+      position: managerDetails!.position,
+    });
+
     return HttpStatusResponse.OK;
   }
 }

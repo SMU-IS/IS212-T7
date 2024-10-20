@@ -20,3 +20,14 @@ export interface IResponseData {
     requestId: number;
     position: string;
 }
+
+export interface IDepartment {
+    teams: {
+        [teamName: string]: number;
+    };
+    wfhStaff: IResponseData[]
+}
+
+export interface IResponseDept {
+    [departmentName: string]: IDepartment;
+}

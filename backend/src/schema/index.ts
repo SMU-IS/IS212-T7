@@ -29,10 +29,25 @@ const rejectionSchema = z.object({
   reason: z.string(),
 });
 
+const reassignmentRequestSchema = z.object({
+  staffId: z.number(),
+  startDate: z.string(),
+  endDate: z.string(),
+  tempReportingManagerId: z.number(),
+});
+
+const revocationSchema = z.object({
+  performedBy: z.number(),
+  requestId: z.number(),
+  reason: z.string(),
+});
+
 export {
   approvalSchema,
   numberSchema,
+  reassignmentRequestSchema,
   rejectionSchema,
   requestSchema,
   staffIdSchema,
+  revocationSchema,
 };

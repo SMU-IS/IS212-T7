@@ -4,11 +4,13 @@ import { useGetIdentity } from "@refinedev/core";
 import { EmployeeJWT } from "@/interfaces/employee";
 import axios from "axios";
 
-import { IResponseData } from "@/interfaces/schedule";
-import { Tag, Typography } from "antd";
+import { IResponseData, IResponseDept } from "@/interfaces/schedule";
+import { Typography } from "antd";
 
 import EventTableGroup from "@/components/scheduleTable/EventTableGroup";
-
+import {getColumns} from "@/components/utils/columnsConfig"
+// Buttons Flex
+import { Button, Flex } from "antd";
 // Tabs
 import { Tabs } from "antd";
 import type { TabsProps } from "antd";
@@ -21,16 +23,17 @@ import { Checkbox, Divider } from 'antd';
 import type { DatePickerProps } from 'antd';
 import { DatePicker, Space } from 'antd';
 
+
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const { Title } = Typography;
 
 export const TeamScheduleList = () => {
   const { data: user } = useGetIdentity<EmployeeJWT>();
-  const [allCalendarEvents, setallCalendarEvents] = useState<IResponseData[]>([]);
-  const [calendarEvents, setCalendarEvents] = useState<IResponseData[]>([]); // State for calendar events
-
-  const [deptName, setDeptName] = useState<string>('');
-  const [manpower, setManpower] = useState<Record<string, number>>({});
+  const [allCalendarEvents, setallCalendarEvents] = useState<IResponseData[]>([]); // Stores all calendar events (all arrangement within depart)
+  const [calendarEvents, setCalendarEvents] = useState<IResponseData[]>([]); // State for calendar events (filtered by teams)
+  const [allDeptData, setAllDeptData] = useState<IResponseDept>({}); // Stores all dept data - later use for filtering
+  const [selectedDepartment, setSelectedDepartment] = useState<keyof IResponseDept>(); // Default to CEO
+  const [manpower, setManpower] = useState<Record<string, number>>({}); // Manpower within the department and teams selected
 
   useEffect(() => {
     if (user?.staffId) {
@@ -46,124 +49,13 @@ export const TeamScheduleList = () => {
             },
             timeout: 300000,
         });
-        const eventArr: IResponseData[] = responseData?.data?.wfh_arrangements || [];
-        const teamData = responseData?.data?.department || {};
-    
-        const department = teamData.dept;
-        const manpowerData = Object.keys(teamData).reduce((acc: Record<string, number>, key) => {
-            if (key !== 'dept') {
-                acc[key] = teamData[key];
-            }
-            return acc;
-        }, {});
-        setDeptName(department);
-        setManpower(manpowerData);
-
-        // Update calendar events
-        if (Array.isArray(eventArr) && eventArr.length > 0) {
-            setCalendarEvents(eventArr || []); // Set the events if the data exists
-            setallCalendarEvents(eventArr || [])
-            
-        } else {
-            console.warn("No events to set in the calendar");
-        }
+        setAllDeptData(responseData?.data)
     } catch (error) {
       // console.error("Error fetching schedule data:", error);
     }
   };
-
-  const columns = [
-    {
-      title: "Staff Name",
-      dataIndex: "staffName",
-      key: "staffName",
-      render: (text: string, record: any) => {
-        const isCurrentUser = record.staffId === user?.staffId;
-        return (
-          <span
-            style={{
-              color: isCurrentUser ? "green" : "inherit",
-              fontWeight: isCurrentUser ? "bold" : "normal",
-            }}
-          >
-            {isCurrentUser ? `${text} (ME)` : text}
-          </span>
-        );
-      },
-      onCell: () => ({
-        style: {
-          flex: 2, // Adjust this value based on desired ratio
-        },
-      }),
-    },
-    {
-      title: "Manager Name",
-      dataIndex: "managerName",
-      key: "managerName",
-      onCell: () => ({
-        style: {
-          flex: 2, // Adjust this value based on desired ratio
-        },
-      }),
-    },
-    {
-      title: "Department",
-      dataIndex: "dept",
-      key: "dept",
-      onCell: () => ({
-        style: {
-          flex: 1, // Adjust this value based on desired ratio
-        },
-      }),
-    },
-    {
-      title: "Position (Team)",
-      dataIndex: "position",
-      key: "pos",
-      onCell: () => ({
-        style: {
-          flex: 1, // Adjust this value based on desired ratio
-        },
-      }),
-    },
-    {
-      title: "Request Type",
-      dataIndex: "requestType",
-      key: "requestType",
-      render: (requestType: string) => {
-        let color = "";
-        switch (requestType) {
-          case "FULL":
-            color = "purple"; // Color for full day requests
-            break;
-          case "PM":
-          case "AM":
-            color = "gold"; // Color for PM requests
-            break;
-          default:
-            color = "gray"; // Default color for unknown types
-            break;
-        }
-        return <Tag color={color}>{requestType}</Tag>;
-      },
-      onCell: () => ({
-        style: {
-          flex: 1, // Adjust this value based on desired ratio
-        },
-      }),
-    },
-    {
-      title: "Reason",
-      dataIndex: "reason",
-      key: "reason",
-      onCell: () => ({
-        style: {
-          flex: 3, // Adjust this value based on desired ratio
-        },
-      }),
-    },
-  ];
-
+  // Set table columns
+  const columns = getColumns(user || null); // Parse user to highlight current user
   // Group data by date - Incoming or Past
   const upcomingData = calendarEvents.reduce(
     (acc: Record<string, any[]>, item) => {
@@ -255,6 +147,24 @@ export const TeamScheduleList = () => {
     }
   }, [manpower]);
 
+  useEffect(() => {
+    const defaultDepartment = selectedDepartment || Object.keys(allDeptData)[0] as keyof IResponseDept;
+    setSelectedDepartment(defaultDepartment)
+    // Set Manpower
+    const teamData = allDeptData[defaultDepartment]?.teams || {};
+    const manpowerData = Object.keys(teamData).reduce((acc: Record<string, number>, key) => {
+        if (key !== 'dept') {
+            acc[key] = teamData[key];
+        }
+        return acc;
+    }, {});
+    setManpower(manpowerData)
+
+    const deptCalendarEvents = allDeptData[defaultDepartment]?.wfhStaff || [];
+    setCalendarEvents(deptCalendarEvents); // Set the events if the data exists
+    setallCalendarEvents(deptCalendarEvents)
+  }, [allDeptData, selectedDepartment])
+
   const onChange = (list: string[]) => {
     setCheckedList(list);
     let filteredEvents = allCalendarEvents
@@ -304,47 +214,57 @@ export const TeamScheduleList = () => {
 
   return (
     <div>
-      <Title level={3}>{deptName} Department</Title>
-      <Row gutter={16}>
-        <Col span={8}>
-          <Card bordered={false}>
+      <Title level={3}>Department</Title>
+      <Flex gap="small" wrap>
+        {Object.keys(allDeptData).map((department) => (
+            <Button
+              key={department}
+              type={selectedDepartment === department ? 'primary' : 'default'}
+              onClick={() => setSelectedDepartment(department as keyof IResponseData)}
+            >
+              {department}
+            </Button>
+          ))}
+      </Flex>
+      <Divider />
+      <Row gutter={[16, 16]} style={{ height: '100%' }}>
+        <Col xs={24} sm={12} md={8}>
+          <Card bordered={false} style={{ height: '100%' }}>
             <Statistic
               title="Upcoming WFH"
-              value={Object.values(upcomingData)
-                .flat() // Flatten the arrays into a single array
-                .length}
-              valueStyle={{ color: "#1890ff" }} // Set to a blue color for upcoming requests
-              prefix={<CalendarOutlined />} // Change the icon to something relevant for upcoming (e.g., calendar icon)
+              value={Object.values(upcomingData).flat().length}
+              valueStyle={{ color: "#1890ff" }}
+              prefix={<CalendarOutlined />}
             />
           </Card>
         </Col>
-        <Col span={8}>
-          <Card bordered={false}>
+        <Col xs={24} sm={12} md={8}>
+          <Card bordered={false} style={{ height: '100%' }}>
             <Statistic
               title="Past WFH"
-              value={Object.values(pastData)
-                .flat() // Flatten the arrays into a single array
-                .length}
-              valueStyle={{ color: "#808080" }} // Red color for past requests
-              prefix={<ClockCircleOutlined />} // Clock icon for past events
+              value={Object.values(pastData).flat().length}
+              valueStyle={{ color: "#808080" }}
+              prefix={<ClockCircleOutlined />}
             />
           </Card>
         </Col>
-        <Col span={8}>
-          <Card bordered={false}>
+        <Col xs={24} sm={12} md={8}>
+          <Card bordered={false} style={{ height: '100%' }}>
             <Statistic
-              title={selectedDate? "Working In Office (" + selectedDate + ")" : "Working In Office"}
-              value={selectedDate? totalManpower - Object.values(upcomingData)
-                .flat() // Flatten the arrays into a single array
-                .length + "/" + totalManpower: "Select a date"}
-              valueStyle={{ color: selectedDate? "#1890ff": "#808080" }} // Red color for past requests
-              prefix={<UserOutlined />} // Clock icon for past events
+              title={selectedDate ? `Working In Office (${selectedDate})` : "Working In Office"}
+              value={
+                selectedDate
+                  ? `${totalManpower - Object.values(upcomingData).flat().length}/${totalManpower}`
+                  : "Select a date"
+              }
+              valueStyle={{ color: selectedDate ? "#1890ff" : "#808080" }}
+              prefix={<UserOutlined />}
             />
           </Card>
         </Col>
       </Row>
       <Divider />
-        <Row justify="space-between" align="middle">
+        <Flex justify="space-between" align="flex-end">
             <Col>
                 <Title level={4}>Teams</Title>
                 <CheckboxGroup options={plainOptions} value={checkedList} onChange={onChange} />
@@ -354,7 +274,7 @@ export const TeamScheduleList = () => {
                 <DatePicker onChange={onChangeDate} />
                 </Space>
             </Col>
-        </Row>
+        </Flex>
         <Divider />
       <Tabs defaultActiveKey="1" items={tabItems} />
     </div>
