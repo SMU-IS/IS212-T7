@@ -1,5 +1,6 @@
 import type { RefineThemedLayoutV2HeaderProps } from "@refinedev/antd";
 import { useGetIdentity } from "@refinedev/core";
+
 import {
   Layout as AntdLayout,
   Avatar,
@@ -14,12 +15,7 @@ import { ColorModeContext } from "../../contexts/color-mode";
 import { usePendingCount } from "@/pages/approve-reject/requestsCount";
 
 import { Button } from "antd";
-import {
-  AlertOutlined,
-  AlertTwoTone,
-  DeleteOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { AlertOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
@@ -29,6 +25,7 @@ type IUser = {
   id: number;
   name: string;
   avatar: string;
+  role: number;
 };
 
 export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
@@ -38,7 +35,6 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   const { data: user } = useGetIdentity<IUser>();
   const { mode, setMode } = useContext(ColorModeContext);
   const navigate = useNavigate(); // Hook to handle navigation
-  const count = 1;
   const [pendingCount] = usePendingCount(); // Read the global state
 
   const headerStyles: React.CSSProperties = {
@@ -59,16 +55,18 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
-        <Badge count={pendingCount} offset={[-8, 0]}>
-          <Button
-            type="primary"
-            icon={<AlertOutlined />}
-            style={{ marginRight: 8 }}
-            onClick={() => navigate("/incomingRequests")} // Navigate to the route on click
-          >
-            Incoming WFH Requests
-          </Button>
-        </Badge>
+        <div hidden={user?.role == 2}>
+          <Badge count={pendingCount} offset={[-8, 0]}>
+            <Button
+              type="primary"
+              icon={<AlertOutlined />}
+              style={{ marginRight: 8 }}
+              onClick={() => navigate("/incomingRequests")} // Navigate to the route on click
+            >
+              Incoming WFH Requests
+            </Button>
+          </Badge>
+        </div>
         <Space style={{ marginLeft: "8px" }} size="middle">
           {user?.name && <Text strong>{user.name}</Text>}
           {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}

@@ -14,10 +14,8 @@ import {
   Statistic,
   Table,
   Typography,
-  Popconfirm,
   message,
 } from "antd";
-import type { PopconfirmProps } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import CountUp from "react-countup";
@@ -109,7 +107,6 @@ export const IncomingList: React.FC = () => {
   }, [filterStatus, dataSource]);
 
   useEffect(() => {
-    // Update selected status when currentPost changes
     setSelectedStatus(currentPost?.status);
   }, [currentPost]);
 
@@ -168,80 +165,70 @@ export const IncomingList: React.FC = () => {
     setDescription("");
   };
 
-  const confirmRevoke: PopconfirmProps["onConfirm"] = (e) => {
-    console.log(e);
-    message.success("Request revoked successfully");
-    return handleSave;
-  };
-
-  const handleRevoke = () => {
-    if (!description) {
-      message.warning("Please fill in the Reason before revoking.");
-      return;
-    }
-    confirmRevoke(); // Call the original confirmRevoke function if reason is filled
-  };
-
-  const cancelRevoke: PopconfirmProps["onCancel"] = (e) => {
-    console.log(e);
-    message.error("Not Revoked");
-  };
-
   const handleSave = async (values: any) => {
     const updatedPost = {
       ...currentPost,
       ...values,
       description: description || undefined,
     };
-
     try {
-      if (values.status === "Approved") {
-        const response = await axios.post(
-          `${backendUrl}/api/v1/approveRequest`,
-          {
+      const confirmAction = async () => {
+        if (values.status === "Approved") {
+          await axios.post(`${backendUrl}/api/v1/approveRequest`, {
             requestId: currentPost?.requestId,
             performedBy: currentPost?.reportingManager,
-          },
-        );
-      } else if (values.status === "Rejected") {
-        const response = await axios.post(
-          `${backendUrl}/api/v1/rejectRequest`,
-          {
+          });
+          message.success("Request approved successfully");
+        } else if (values.status === "Rejected") {
+          await axios.post(`${backendUrl}/api/v1/rejectRequest`, {
             requestId: currentPost?.requestId,
             performedBy: currentPost?.reportingManager,
             reason: description,
-          },
-        );
-      } else if (values.status === "Revoked") {
-        const response = await axios.post(
-          `${backendUrl}/api/v1/rejectRequest`,
-          {
+          });
+          message.success("Request has been rejected");
+        } else if (values.status === "Revoked") {
+          await axios.post(`${backendUrl}/api/v1/revokeRequest`, {
             requestId: currentPost?.requestId,
             performedBy: currentPost?.reportingManager,
             reason: description,
-          },
+          });
+          message.success("Request revoked successfully");
+        }
+
+        await fetchRequests(user?.staffId);
+
+        const updatedDataSource = dataSource.map((post) =>
+          post.requestId === currentPost?.requestId
+            ? {
+                ...updatedPost,
+                status:
+                  values.status === "Approved"
+                    ? "Approved"
+                    : values.status === "Rejected"
+                      ? "Rejected"
+                      : values.status === "Revoked"
+                        ? "Revoked"
+                        : post.status,
+              }
+            : post,
         );
-      }
 
-      await fetchRequests(user?.staffId);
+        setDataSource(updatedDataSource);
+        setFilteredData(
+          updatedDataSource.filter(
+            (post) => !filterStatus || post.status === filterStatus,
+          ),
+        );
+      };
 
-      const updatedDataSource = dataSource.map((post) =>
-        post.requestId === currentPost?.requestId
-          ? {
-              ...updatedPost,
-              status: values.status === "Approved" ? "Approved" : "Rejected",
-            }
-          : post,
-      );
-
-      setDataSource(updatedDataSource);
-      setFilteredData(
-        updatedDataSource.filter(
-          (post) => !filterStatus || post.status === filterStatus,
-        ),
-      );
+      Modal.confirm({
+        title: `Confirm ${values.status}`,
+        content: `Are you sure you want to ${values.status.toLowerCase()} this request?`,
+        onOk: confirmAction,
+      });
     } catch (error) {
       console.error("Error processing request:", error);
+      message.error(`Error ${values.status.toLowerCase()}ing request.`);
     }
 
     setModalVisible(false);
@@ -252,9 +239,7 @@ export const IncomingList: React.FC = () => {
 
   return (
     <List>
-      <Typography.Title level={5} s>
-        Approve/Reject WFH Requests
-      </Typography.Title>
+      <Typography.Title level={5}>Approve/Reject WFH Requests</Typography.Title>
       <Row gutter={16}>
         <Col span={4}>
           <Card bordered={true} style={{ borderColor: "lightblue" }}>
@@ -325,8 +310,8 @@ export const IncomingList: React.FC = () => {
         <Select.Option value="Approved">Approved</Select.Option>
         <Select.Option value="Expired">Expired</Select.Option>
         <Select.Option value="Rejected">Rejected</Select.Option>
-        <Select.Option value="Rejected">Withdrawn</Select.Option>
-        <Select.Option value="Rejected">Revoked</Select.Option>
+        <Select.Option value="Withdrawn">Withdrawn</Select.Option>
+        <Select.Option value="Revoked">Revoked</Select.Option>
       </Select>
 
       {/* Table */}
@@ -349,8 +334,12 @@ export const IncomingList: React.FC = () => {
                   : value === "Approved"
                     ? "green"
                     : value === "Expired"
-                      ? "red"
-                      : "orange"
+                      ? "grey"
+                      : value === "Withdrawn"
+                        ? "orange"
+                        : value === "Rejected"
+                          ? "red"
+                          : "pink"
               }
             />
           )}
@@ -370,7 +359,6 @@ export const IncomingList: React.FC = () => {
         />
       </Table>
 
-      {/* Modal for Editing */}
       <Modal
         title={
           currentPost?.status === "Pending"
@@ -412,8 +400,8 @@ export const IncomingList: React.FC = () => {
                 )}
                 {currentPost.status === "Approved" && (
                   <>
-                    <Select.Option value="Approved">Approved</Select.Option>
-                    <Select.Option value="Revoked">Revoked</Select.Option>
+                    <Select.Option value="Approved">Approve</Select.Option>
+                    <Select.Option value="Revoked">Revoke</Select.Option>
                   </>
                 )}
               </Select>
@@ -437,28 +425,18 @@ export const IncomingList: React.FC = () => {
               </Form.Item>
             )}
             <Form.Item>
-              <Popconfirm
-                title="Revoke request"
-                description="Do you confirm to  revoke request?"
-                onConfirm={handleRevoke}
-                onCancel={cancelRevoke}
-                okText="Yes"
-                cancelText="No"
-                disabled={currentPost.status === "Pending"}
+              <Button
+                type="primary"
+                danger={currentPost.status === "Approved"}
+                htmlType="submit"
+                disabled={
+                  (currentPost.status === "Pending" ||
+                    currentPost.status === "Approved") &&
+                  selectedStatus === currentPost.status
+                }
               >
-                <Button
-                  type="primary"
-                  danger={currentPost.status === "Approved"}
-                  htmlType="submit"
-                  disabled={
-                    (currentPost.status === "Pending" ||
-                      currentPost.status === "Approved") &&
-                    selectedStatus === currentPost.status // Disable only if status hasn't changed
-                  }
-                >
-                  {currentPost.status === "Pending" ? "Save" : "Revoke"}
-                </Button>
-              </Popconfirm>
+                {currentPost.status === "Pending" ? "Save" : "Revoke"}
+              </Button>
             </Form.Item>
           </Form>
         )}
