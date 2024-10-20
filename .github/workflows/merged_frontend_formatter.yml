@@ -1,9 +1,7 @@
 name: Run prettier for WFH Application System to format frontend code after merge.
 
 on:
-  push:
-    branches:
-      - master
+  workflow_call:
 
 jobs:
   run_formatter:
@@ -11,7 +9,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: backend
+        working-directory: frontend
 
     steps:
       - name: Check out the code.
@@ -29,3 +27,6 @@ jobs:
 
       - name: Format the code.
         run: npm run prettier
+
+      - name: Build the frontend.
+        run: npm run build
