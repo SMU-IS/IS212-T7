@@ -281,6 +281,8 @@ class WithdrawalService {
         performedBy: PerformedBy.SYSTEM,
         requestType: Request.WITHDRAWAL,
         action: Action.EXPIRE,
+        dept: PerformedBy.SYSTEM as any,
+        position: PerformedBy.SYSTEM as any,
       });
     }
   }
