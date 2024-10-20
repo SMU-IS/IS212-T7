@@ -33,12 +33,23 @@ export const RequestLogs = () => {
 
   const [searchText, setSearchText] = useState<string>(""); // For Name filter
 
+  // Utils - Sorting
   const sortAndSetLogs = (logsList: ILogEntry[]) => {
       const sortedLogsList = logsList.sort((a, b) => {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
-      
       setlogsShow(sortedLogsList);
+  };
+
+  const sortDepartmentsAlphabetically = (data: { [department: string]: IPositionLogs }): IDepartmentLogs => {
+      const sortedKeys = Object.keys(data).sort(); // Sort keys alphabetically
+      const sortedData: IDepartmentLogs = {}; // Ensure the return type matches IDepartmentLogs
+      // Construct a new object with sorted keys
+      sortedKeys.forEach(key => {
+          sortedData[key] = data[key]; // This should match the structure of IPositionLogs
+      });
+
+      return sortedData;
   };
 
   useEffect(() => {
@@ -56,7 +67,9 @@ export const RequestLogs = () => {
             timeout: 300000,
         });
         if (responseData?.data && !('errMsg' in responseData.data)){
-          setAllDeptData(responseData?.data)
+          console.log(responseData)
+          const sortedDeptData = sortDepartmentsAlphabetically(responseData?.data)
+          setAllDeptData(sortedDeptData)
           setHasLogs(true)
         }
     } catch (error) {
@@ -98,6 +111,8 @@ export const RequestLogs = () => {
     }
 
   };
+
+  // Empty Log Check
   if (!hasLogs){
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
