@@ -43,7 +43,7 @@ import { Typography } from "antd";
 import { MyRequests } from "./pages/my-requests/list";
 import { MyReassignments } from "./pages/my-reassignments/list";
 import { TeamScheduleList } from "./pages/team-schedule";
-
+import { RequestLogs } from "./pages/request-logs"
 import DepartmentSchedule from "@/pages/department-schedule/department-schedule";
 import { useCustomNotificationProvider } from "./components/toast";
 
@@ -139,6 +139,15 @@ const App = () => {
                     label: "Re-assign",
                   },
                 },
+                {
+                  name: "requestLogs",
+                  list: RequestLogs,
+                  icon: <UserSwitchOutlined />,
+                  meta: {
+                    canDelete: false,
+                    label: "Request Logs",
+                  },
+                }
               ]}
               options={{
                 syncWithLocation: true,
@@ -179,6 +188,10 @@ const App = () => {
                   <Route
                     path="/MyReassignments"
                     element={<MyReassignments />}
+                  />
+                  <Route
+                    path="/requestLogs"
+                    element={<RequestLogs />}
                   />
                   {/* <Route path="/myRequests" element={<MainRequests />} /> */}
                   <Route path="/incomingRequests" element={<IncomingList />} />

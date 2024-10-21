@@ -32,7 +32,7 @@ const withdrawalDb = new WithdrawalDb();
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
-const logService = new LogService(logDb);
+const logService = new LogService(logDb, employeeService);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
   requestDb,
@@ -397,16 +397,16 @@ router.post("/withdrawRequest", (ctx) =>
 
 /**
  * @openapi
- * /api/v1/getRoleOneEmployees:
+ * /api/v1/getRoleOneOrThreeEmployees:
  *   get:
- *     description: Get role 1 employees
+ *     description: Get role 1 or role 3 employees
  *     tags: [Employee]
  *     responses:
  *       200:
- *         description: Returns an array of role 1 employees object
+ *         description: Returns an array of role 1 or role 3 employees object
  */
-router.get("/getRoleOneEmployees", (ctx) =>
-  employeeController.getRoleOneEmployees(ctx),
+router.get("/getRoleOneOrThreeEmployees", (ctx) =>
+  employeeController.getRoleOneOrThreeEmployees(ctx),
 );
 
 /**
@@ -559,10 +559,17 @@ router.get("/getSubordinateRequestsForTempManager", (ctx) =>
 
 /**
  * @openapi
- * /api/v1/getLogsByDept:
+ * /api/v1/getAllLogs:
  *   get:
  *     description: Get all logs
  *     tags: [Logs]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
  *     responses:
  *       200:
  *         description: Returns all logs
@@ -611,6 +618,64 @@ router.get(
   "/getSubordinatesWithdrawalRequests",
   checkUserRolePermission(AccessControl.VIEW_SUB_WITHDRAWAL_REQUEST),
   (ctx) => withdrawalController.getSubordinatesWithdrawalRequests(ctx),
+);
+
+/**
+ * @openapi
+ * /api/v1/approveWithdrawalRequest:
+ *   post:
+ *     description: Approve subordinate's withdrawal request
+ *     tags: [Withdrawal Request]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               withdrawalId:
+ *                 type: number
+ *                 description: withdrawalId to be approved
+ *             required:
+ *               - performedBy
+ *               - withdrawalId
+ */
+router.post("/approveWithdrawalRequest", (ctx) =>
+  withdrawalController.approveWithdrawalRequest(ctx),
+);
+
+/**
+ * @openapi
+ * /api/v1/rejectWithdrawalRequest:
+ *   post:
+ *     description: Reject subordinate's withdrawal request
+ *     tags: [Withdrawal Request]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               withdrawalId:
+ *                 type: number
+ *                 description: withdrawalId to be approved
+ *               reason:
+ *                 type: number
+ *                 description: reason for rejection
+ *             required:
+ *               - performedBy
+ *               - withdrawalId
+ *               - reason
+ */
+router.post("/rejectWithdrawalRequest", (ctx) =>
+  withdrawalController.rejectWithdrawalRequest(ctx),
 );
 
 export default router;

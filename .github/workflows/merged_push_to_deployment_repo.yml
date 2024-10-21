@@ -1,0 +1,51 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  frontend_formatter:
+    uses: ./.github/workflows/merged_frontend_formatter.yml
+
+  backend_unit_tests:
+    uses: ./.github/workflows/merged_backend_unit_tests.yml
+
+  deploy:
+    needs:
+      - frontend_formatter
+      - backend_unit_tests
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.2.1
+        with:
+          fetch-depth: 0
+
+      - name: Get latest commit message
+        id: get_commit_message
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Copy to deployment repo
+        run: |
+          git config --global user.name "anonymouspanda-23"
+          git config --global user.email 46553691+anonymouspanda-23@users.noreply.github.com
+          APP_REPO_NAME=$(basename "$PWD")
+          cd ..
+          git clone https://x-access-token:${{ secrets.DEPLOY_PAT }}@github.com/anonymouspanda-23/IS212-T7-Deployment.git
+          cd IS212-T7-Deployment
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cd ../$APP_REPO_NAME
+          rsync -av --exclude='.git' --exclude='.github' . ../IS212-T7-Deployment/
+          cd ../IS212-T7-Deployment
+          git add .
+          git diff --staged --quiet || git commit -m "${{ steps.get_commit_message.outputs.commit_message }}"
+          git push origin master --force || echo "No changes to push"
+        env:
+          DEPLOY_PAT: ${{ secrets.DEPLOY_PAT }}
