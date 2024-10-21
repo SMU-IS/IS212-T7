@@ -105,7 +105,7 @@ export const IncomingList: React.FC = () => {
     setSelectedStatus(currentPost?.status);
   }, [currentPost]);
 
-  const handleStatusChange = (value) => {
+  const handleStatusChange = (value: string) => {
     setSelectedStatus(value);
     setShowDescription(value === "Rejected" || value === "Revoked");
   };
@@ -230,7 +230,7 @@ export const IncomingList: React.FC = () => {
     setCurrentPost(null);
     setDescription("");
     setShowDescription(false);
-    await fetchPendingRequests(); // Refresh the pending count
+    await fetchPendingRequests();
   };
 
   return (
@@ -293,7 +293,6 @@ export const IncomingList: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Filter by status */}
       <Select
         placeholder="Filter by status"
         style={{ width: 200, marginBottom: 16, float: "right", marginTop: 50 }}
@@ -310,7 +309,6 @@ export const IncomingList: React.FC = () => {
         <Select.Option value="Revoked">Revoked</Select.Option>
       </Select>
 
-      {/* Table */}
       <Table dataSource={filteredData} rowKey="requestId" pagination={false}>
         <Table.Column dataIndex="requestId" title="Request ID." />
         <Table.Column dataIndex="name" title="Name" />
