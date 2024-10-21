@@ -8,6 +8,7 @@ import { useCustomNotificationProvider } from "@/components/toast";
 import { ModalProvider, useModal } from "@/components/modal";
 import { Box } from "@chakra-ui/react";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
+import { Status } from "@/helper/requestLogsVar";
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -55,10 +56,8 @@ export const MyRequestsContent = () => {
         { params: { myId: staffId } },
       );
 
-      console.log(scheduleResponse.data);
-
       const approved = scheduleResponse.data
-        .filter((request: any) => request.status === "APPROVED")
+        .filter((request: any) => request.status === Status.APPROVED)
         .map((request: any) => ({
           date: formatDate(new Date(request.requestedDate)),
           type: request.requestType,
@@ -70,7 +69,7 @@ export const MyRequestsContent = () => {
         }));
 
       const rejected = scheduleResponse.data
-        .filter((request: any) => request.status === "REJECTED")
+        .filter((request: any) => request.status === Status.REJECTED)
         .map((request: any) => ({
           date: formatDate(new Date(request.requestedDate)),
           type: request.requestType,
@@ -82,7 +81,7 @@ export const MyRequestsContent = () => {
         }));
 
       const withdrawn = scheduleResponse.data
-        .filter((request: any) => request.status === "WITHDRAWN")
+        .filter((request: any) => request.status === Status.WITHDRAWN)
         .map((request: any) => ({
           date: formatDate(new Date(request.requestedDate)),
           type: request.requestType,
@@ -94,7 +93,7 @@ export const MyRequestsContent = () => {
         }));
 
       const revoked = scheduleResponse.data
-        .filter((request: any) => request.status === "REVOKED")
+        .filter((request: any) => request.status === Status.REVOKED)
         .map((request: any) => ({
           date: formatDate(new Date(request.requestedDate)),
           type: request.requestType,
@@ -110,7 +109,11 @@ export const MyRequestsContent = () => {
       setWithdrawnRequests(withdrawn);
       setRevokedRequests(revoked);
     } catch (error) {
-      console.error("Error fetching requests:", error);
+      toast.open({
+        message: "Error",
+        description: "Error fetching requests:",
+        type: "error",
+      });
     }
   };
 
@@ -168,10 +171,18 @@ export const MyRequestsContent = () => {
             "There was a problem cancelling your request. Please try again.",
           type: "error",
         });
-        console.error("Failed to cancel the request.");
+        toast.open({
+          message: "Error",
+          description: "Failed to cancel request",
+          type: "error",
+        });
       }
     } catch (error) {
-      console.error("Error cancelling request:", error);
+      toast.open({
+        message: "Error",
+        description: "Error cancelling requests:",
+        type: "error",
+      });
     }
   };
 
@@ -213,8 +224,6 @@ export const MyRequestsContent = () => {
         },
       );
 
-      console.log(response.data);
-
       if (response.status === 200) {
         fetchRequests(user?.staffId);
         toast.open({
@@ -232,7 +241,6 @@ export const MyRequestsContent = () => {
         });
       }
     } catch (error) {
-      console.error("Error withdrawing request:", error);
       toast.open({
         message: "Error",
         description: "An error occurred while withdrawing your request.",
@@ -282,7 +290,7 @@ export const MyRequestsContent = () => {
       title: "Action",
       key: "action",
       render: (_: any, request: any, index: number) => {
-        if (request.status === "PENDING") {
+        if (request.status === Status.PENDING) {
           return (
             <Button
               type="primary"
@@ -292,7 +300,7 @@ export const MyRequestsContent = () => {
               Cancel
             </Button>
           );
-        } else if (request.status === "APPROVED") {
+        } else if (request.status === Status.APPROVED) {
           return (
             <Button
               type="primary"
