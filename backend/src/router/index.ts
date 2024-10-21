@@ -63,6 +63,7 @@ const withdrawalController = new WithdrawalController(withdrawalService);
 const logController = new LogController(logService);
 
 const router = new Router();
+
 router.prefix("/api/v1");
 router.get("/swagger.json", (ctx) => {
   ctx.body = swaggerSpec;
