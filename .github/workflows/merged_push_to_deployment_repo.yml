@@ -42,7 +42,7 @@ jobs:
           cd IS212-T7-Deployment
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cd ../$APP_REPO_NAME
-          rsync -av --exclude='.git' --exclude='cloudbuild.yaml' --exclude='skaffold.yaml' --exclude='deployment/k8s/spm-gke-prod.yaml' --exclude='.github' . ../IS212-T7-Deployment/
+          rsync -av --exclude='.git' --exclude='.github' . ../IS212-T7-Deployment/
           cd ../IS212-T7-Deployment
           git add .
           git diff --staged --quiet || git commit -m "${{ steps.get_commit_message.outputs.commit_message }}"
