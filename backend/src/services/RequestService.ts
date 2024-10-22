@@ -10,7 +10,7 @@ import {
 } from "@/helpers/date";
 import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
-import initMailer from "@/config/mailer";
+import { Mailer } from "@/config/mailer";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -26,10 +26,16 @@ interface ResponseDates {
 class RequestService {
   private employeeService: EmployeeService;
   private requestDb: RequestDb;
+  private mailer: Mailer;
 
-  constructor(employeeService: EmployeeService, requestDb: RequestDb) {
+  constructor(
+    employeeService: EmployeeService,
+    requestDb: RequestDb,
+    mailer: Mailer
+  ) {
     this.employeeService = employeeService;
     this.requestDb = requestDb;
+    this.mailer = mailer;
   }
 
   public async getMySchedule(myId: number) {
@@ -206,13 +212,18 @@ class RequestService {
       }
     }
 
+    if (responseDates.successDates.length == 0) {
+      return responseDates;
+    }
+
     const employee = await this.employeeService.getEmployee(
       Number(requestDetails.staffId),
     );
-    const { email, reportingManager } = employee!;
+    const { email, reportingManager, tempReportingManager } = employee!;
     await this.pushRequestSentNotification(
       email,
       reportingManager,
+      tempReportingManager,
       responseDates.successDates,
       requestDetails.reason
     );
@@ -281,28 +292,48 @@ class RequestService {
     return HttpStatusResponse.OK;
   }
 
+  // TODO: Port over to notification service file.
   public async pushRequestSentNotification(
     staffEmail: string,
     managerId: number,
+    tempManagerId: number | null,
     requestDates: [string, string][],
     requestReason: string
   ) {
+    let managerName: string;
+    let managerEmail: string;
+
+    if (tempManagerId == null) {
+      const managerDetails = await this.employeeService.getEmployee(
+        Number(managerId)
+      );
+      const { staffFName, staffLName, email } = managerDetails!;
+      managerName = staffFName + " " + staffLName;
+      managerEmail = email;
+    } else {
+      const tempManagerDetails = await this.employeeService.getEmployee(
+        Number(tempManagerId)
+      );
+      const { staffFName, staffLName, email } = tempManagerDetails!;
+      managerName = staffFName + " " + staffLName;
+      managerEmail = email;
+    }
     try {
       let numItems = requestDates.length;
       if (numItems <= 0) {
         return "Nothing to send";
       }
       let reasonSet = false;
-      let transporter = initMailer();
+      let transporter = this.mailer.getTransporter();
       let staffName = staffEmail.split("@")[0];
 
-      let textBody = "Your WFH request for the following dates have been sent to your manager: \n";
+      let textBody = `Your WFH request for the following dates have been sent to ${managerName}(${managerEmail}):\n`;
 
       let htmlBody = `
         <html>
           <head>
           <body>
-            <p>Your WFH request for the following dates have been sent to your manager.</p>
+            <p>Your WFH request for the following dates have been sent to ${managerName}(<a href="mailto:${managerEmail}">${managerEmail}</a>).</p>
             <table style="border: 1px solid black; border-collapse: collapse;">
               <tr>
                 <th style="border: 1px solid black; border-collapse: collapse;">Requested Dates</th>
@@ -332,7 +363,7 @@ class RequestService {
           `;
         }
       }
-      textBody += `\nReason: ${requestReason}`
+      textBody += `\nReason: ${requestReason}\n`
       htmlBody += `
             </table>
           </body>

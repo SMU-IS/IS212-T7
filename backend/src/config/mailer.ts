@@ -1,13 +1,24 @@
 import nodemailer from "nodemailer";
 
-let transporter: nodemailer.Transporter | null = null;
+export class Mailer {
+  private static instance: Mailer | null = null;
+  private transporter: nodemailer.Transporter | null = null;
 
-const initMailer = (): nodemailer.Transporter => {
-  if (transporter) {
-    return transporter;
+  private constructor() {}
+
+  public static getInstance(): Mailer {
+    if (!Mailer.instance) {
+      Mailer.instance = new Mailer();
+    }
+    return Mailer.instance;
   }
 
-  transporter = nodemailer.createTransport({
+  public getTransporter(): nodemailer.Transporter {
+    if (this.transporter) {
+      return this.transporter;
+    }
+
+    this.transporter = nodemailer.createTransport({
     pool: true,
     host: String(process.env.SMTP_HOST),
     port: 587,
@@ -18,16 +29,16 @@ const initMailer = (): nodemailer.Transporter => {
     },
   });
 
-  // verify connection configuration
-  transporter.verify((error: Error | null, success: boolean) => {
+    // Verify connection configuration
+    this.transporter.verify((error: Error | null, success: boolean) => {
     if (error) {
       throw new Error(error.message);
     } else {
-      // console.log("Server is ready to take our messages:", success);
+      console.log("Server is ready to take our messages:", success);
     }
   });
 
-  return transporter;
-};
-
-export default initMailer;
+    return this.transporter;
+  }
+}
+export default Mailer;

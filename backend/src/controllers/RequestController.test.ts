@@ -5,6 +5,8 @@ import { errMsg, noteMsg, successMsg } from "@/helpers";
 import EmployeeService from "@/services/EmployeeService";
 import RequestService from "@/services/RequestService";
 import { Context } from "koa";
+import Mailer from "@/config/mailer";
+import { jest } from "@jest/globals";
 
 describe("RequestController", () => {
   let requestController: RequestController;
@@ -12,6 +14,7 @@ describe("RequestController", () => {
   let requestDbMock: RequestDb;
   let employeeDbMock: EmployeeDb;
   let employeeServiceMock: jest.Mocked<EmployeeService>;
+  let mockMailer: jest.Mocked<Mailer>;
   let ctx: Context;
   type ResponseDates = {
     successDates: [string, string][];
@@ -30,9 +33,11 @@ describe("RequestController", () => {
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
+    mockMailer = Mailer.getInstance() as jest.Mocked<Mailer>;
     requestServiceMock = new RequestService(
       employeeServiceMock,
       requestDbMock,
+      mockMailer
     ) as jest.Mocked<RequestService>;
     requestController = new RequestController(requestServiceMock);
     ctx = {

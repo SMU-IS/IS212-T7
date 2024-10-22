@@ -13,6 +13,7 @@ import RequestService from "@/services/RequestService";
 import swaggerSpec from "@/swagger";
 import Router from "koa-router";
 import { koaSwagger } from "koa2-swagger-ui";
+import Mailer from "@/config/mailer";
 
 /**
  * Databases
@@ -22,10 +23,15 @@ const employeeDb = new EmployeeDb();
 const reassignmentDb = new ReassignmentDb();
 
 /**
+ * External Services
+ */
+const mailer = Mailer.getInstance();
+
+/**
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
-const requestService = new RequestService(employeeService, requestDb);
+const requestService = new RequestService(employeeService, requestDb, mailer);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
   employeeService,
