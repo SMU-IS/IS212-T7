@@ -1,22 +1,30 @@
-import ReassignmentDb from "@/database/ReassignmentDb";
-import RequestDb from "@/database/RequestDb";
 import cron from "node-cron";
+import ReassignmentService from "./ReassignmentService";
+import RequestService from "./RequestService";
+import WithdrawalService from "./WithdrawalService";
 
 class CronJob {
-  private requestDb = new RequestDb();
-  private reassignmentDb = new ReassignmentDb();
+  private requestService: RequestService;
+  private reassignmentService: ReassignmentService;
+  private withdrawalService: WithdrawalService;
 
-  constructor(requestDb: RequestDb, reassignmentDb: ReassignmentDb) {
-    this.requestDb = requestDb;
-    this.reassignmentDb = reassignmentDb;
+  constructor(
+    requestService: RequestService,
+    reassignmentService: ReassignmentService,
+    withdrawalService: WithdrawalService,
+  ) {
+    this.requestService = requestService;
+    this.reassignmentService = reassignmentService;
+    this.withdrawalService = withdrawalService;
   }
 
-  public async execute() {
+  public execute() {
     // To run at 00:00 AM daily
     cron.schedule("0 0 * * *", () => {
-      this.requestDb.updateRequestStatusToExpired();
-      this.reassignmentDb.setActiveReassignmentPeriod();
-      this.reassignmentDb.setInactiveReassignmentPeriod();
+      this.requestService.updateRequestStatusToExpired();
+      this.withdrawalService.updateWithdrawalStatusToExpired();
+      this.reassignmentService.setActiveReassignmentPeriod();
+      this.reassignmentService.setInactiveReassignmentPeriod();
     });
   }
 }

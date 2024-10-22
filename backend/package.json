@@ -11,8 +11,7 @@
     "test:watch": "jest --watchAll",
     "lint": "eslint src/**/*.ts",
     "format": "eslint src/**/*.ts --fix",
-    "prettier": "npx prettier --write .",
-    "validate": "npm run test & npm run format & npm run prettier"
+    "prettier": "npx prettier --write ."
   },
   "author": "",
   "license": "ISC",

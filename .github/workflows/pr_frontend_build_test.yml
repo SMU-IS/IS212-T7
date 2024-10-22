@@ -1,0 +1,38 @@
+name: Run build for WFH Application System frontend before merge.
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  run_formatter:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Check out the code.
+        uses: actions/checkout@v4.2.1
+        with:
+          fetch-depth: 0
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+
+      - name: Set up NodeJS latest stable version.
+        uses: actions/setup-node@v4.0.4
+        with:
+          node-version: 22.x
+
+      - name: Install dependencies.
+        run: |
+          npm install --package-lock-only
+          npm ci
+
+      - name: Format the code.
+        run: npm run prettier
+
+      - name: Build the frontend.
+        run: npm run build

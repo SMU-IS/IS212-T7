@@ -36,6 +36,23 @@ const reassignmentRequestSchema = z.object({
   tempReportingManagerId: z.number(),
 });
 
+const revocationSchema = z.object({
+  performedBy: z.number(),
+  requestId: z.number(),
+  reason: z.string(),
+});
+
+const withdrawalApprovalSchema = z.object({
+  performedBy: z.number(),
+  withdrawalId: z.number(),
+});
+
+const withdrawalRejectionSchema = z.object({
+  performedBy: z.number(),
+  withdrawalId: z.number(),
+  reason: z.string(),
+});
+
 export {
   approvalSchema,
   numberSchema,
@@ -43,4 +60,7 @@ export {
   rejectionSchema,
   requestSchema,
   staffIdSchema,
+  revocationSchema,
+  withdrawalApprovalSchema,
+  withdrawalRejectionSchema,
 };

@@ -12,6 +12,12 @@ export interface IReassignment {
   tempManagerName: string;
   status: Status;
   active: boolean | null;
+  originalManagerDept: string;
+}
+
+export interface IHandleReassignment {
+  reassignmentId: number;
+  action: any;
 }
 
 const Schema = mongoose.Schema;
@@ -28,6 +34,7 @@ const ReassignmentSchema = new Schema<IReassignment>(
     staffName: { type: String, required: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
+    originalManagerDept: { type: String, required: true },
     tempReportingManagerId: { type: Number, required: true },
     tempManagerName: { type: String, required: true },
     status: {
@@ -36,7 +43,7 @@ const ReassignmentSchema = new Schema<IReassignment>(
       enum: [Status.PENDING, Status.APPROVED, Status.REJECTED, Status.EXPIRED],
       default: Status.PENDING,
     },
-    active: { type: Boolean, required: false },
+    active: { type: Boolean, required: false, default: null },
   },
   {
     timestamps: true,

@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 import Employee from "./Employee";
-import Request from "./Request";
+import Log from "./Log";
 import Reassignment from "./Reassignment";
+import Request from "./Request";
+import Withdrawal from "./Withdrawal";
 
 const getModels = async () => {
   // In case you using mongoose 6
@@ -16,7 +18,9 @@ const getModels = async () => {
     mongoose,
     Employee,
     Request,
+    Withdrawal,
     Reassignment,
+    Log,
   };
 };
 

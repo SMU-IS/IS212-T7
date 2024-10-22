@@ -94,6 +94,31 @@ function checkPastDate(date: Date) {
   return false;
 }
 
+function checkPastWithdrawalDate(date: Date) {
+  let singaporeTime = dayjs().tz("Asia/Singapore");
+  singaporeTime = singaporeTime.hour(0).minute(0).second(0).millisecond(0);
+  const tomorrowInSingapore = singaporeTime.add(1, "day");
+  let dateInput = dayjs(date).tz("Asia/Singapore");
+  dateInput = dateInput.hour(0).minute(0).second(0).millisecond(0);
+  if (
+    dateInput.isBefore(tomorrowInSingapore)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function checkValidWithdrawalDate(date: Date) {
+  let singaporeTime = dayjs().tz("Asia/Singapore");
+  singaporeTime = singaporeTime.hour(0).minute(0).second(0).millisecond(0);
+  let dateInput = dayjs(date).tz("Asia/Singapore");
+  dateInput = dateInput.hour(0).minute(0).second(0).millisecond(0);
+  if (singaporeTime.isBefore(dateInput)) {
+    return true;
+  }
+  return false;
+}
+
 function checkWeekend(date: Date) {
   let dateInput = dayjs(date).tz("Asia/Singapore");
   let dayOfWeek = dateInput.day();
@@ -104,9 +129,7 @@ function checkWeekend(date: Date) {
 }
 
 function checkLatestDate(date: Date, testDate: Date | null = null) {
-  let singaporeTime = dayjs(testDate || new Date()).tz(
-    "Asia/Singapore"
-  );
+  let singaporeTime = dayjs(testDate || new Date()).tz("Asia/Singapore");
   singaporeTime = singaporeTime.hour(0).minute(0).second(0).millisecond(0);
   let dateInput = dayjs(date).tz("Asia/Singapore");
   dateInput = dateInput.hour(0).minute(0).second(0).millisecond(0);
@@ -120,4 +143,12 @@ function checkLatestDate(date: Date, testDate: Date | null = null) {
   return false;
 }
 
-export { weekMap, checkDate, checkPastDate, checkLatestDate, checkWeekend };
+export {
+  weekMap,
+  checkDate,
+  checkPastDate,
+  checkLatestDate,
+  checkWeekend,
+  checkPastWithdrawalDate,
+  checkValidWithdrawalDate,
+};

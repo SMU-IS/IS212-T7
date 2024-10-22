@@ -16,10 +16,7 @@ interface InsertDocument {
 
 class RequestDb {
   public async getMySchedule(myId: number): Promise<IRequest[]> {
-    const schedule = await Request.find(
-      { staffId: myId },
-      "-_id -createdAt -updatedAt",
-    );
+    const schedule = await Request.find({ staffId: myId }, "-_id -updatedAt");
     return schedule;
   }
 
@@ -38,6 +35,17 @@ class RequestDb {
       status: Status.PENDING,
     });
     return pendingRequests;
+  }
+
+  public async updateRequestinitiatedWithdrawalValue(
+    requestId: number,
+  ): Promise<boolean> {
+    const { modifiedCount } = await Request.updateOne(
+      { requestId, initiatedWithdrawal: false },
+      { $set: { initiatedWithdrawal: true } },
+    );
+
+    return modifiedCount > 0;
   }
 
   public async cancelPendingRequests(
@@ -73,6 +81,7 @@ class RequestDb {
           Status.WITHDRAWN,
           Status.REJECTED,
           Status.EXPIRED,
+          Status.REVOKED,
         ],
       },
     });
@@ -118,63 +127,47 @@ class RequestDb {
       },
       {
         $group: {
-          _id: {
-            dept: "$dept",
-            position: "$position",
-          },
+          _id: "$dept",
           requests: { $push: "$$ROOT" },
-        },
-      },
-      {
-        $group: {
-          _id: "$_id.dept",
-          teams: {
-            $push: {
-              position: "$_id.position",
-              requests: "$requests",
-            },
-          },
         },
       },
       {
         $project: {
           _id: 0,
           dept: "$_id",
-          teams: 1,
+          requests: 1,
         },
       },
     ]);
 
-    const formattedSchedule: any = {};
-    deptSchedule.forEach((dept) => {
-      formattedSchedule[dept.dept] = {};
-      dept.teams.forEach((team: any) => {
-        formattedSchedule[dept.dept][team.position] = team.requests;
-      });
-    });
+    const formattedSchedule = deptSchedule.reduce((acc: any, dept: any) => {
+      acc[dept.dept] = dept.requests;
+      return acc;
+    }, {});
 
     return formattedSchedule;
   }
 
-  public async getCompanySchedule() {
-    const request = await Request.find(
-      { status: Status.APPROVED },
-      "-_id -createdAt -updatedAt",
-    );
-    return request;
-  }
-
-  public async postRequest(document: InsertDocument): Promise<boolean> {
+  public async postRequest(
+    document: InsertDocument,
+  ): Promise<boolean | number> {
     try {
-      const requestInsert = await Request.create(document);
-      return !!requestInsert;
+      const { requestId } = await Request.create(document);
+      return requestId;
     } catch (error) {
       return false;
     }
   }
 
-  public async updateRequestStatusToExpired(): Promise<void> {
+  public async updateRequestStatusToExpired(): Promise<any> {
     const now = dayjs().utc(true).startOf("day");
+    const requests = await Request.find({
+      status: Status.PENDING,
+      requestedDate: now.toDate(),
+    });
+
+    if (!requests.length) return [];
+
     await Request.updateMany(
       {
         status: Status.PENDING,
@@ -186,6 +179,8 @@ class RequestDb {
         },
       },
     );
+
+    return requests;
   }
 
   public async approveRequest(
@@ -236,6 +231,57 @@ class RequestDb {
           status: Status.REJECTED,
           reason: reason,
           performedBy: performedBy,
+        },
+      },
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+
+  public async getApprovedRequestByRequestId(requestId: number) {
+    const requestDetail = await Request.findOne(
+      {
+        requestId,
+        status: Status.APPROVED,
+      },
+      "-_id -createdAt -updatedAt",
+    );
+    return requestDetail;
+  }
+
+  public async revokeRequest(
+    requestId: number,
+    reason: string,
+  ): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.APPROVED,
+      },
+      {
+        $set: {
+          status: Status.REVOKED,
+          reason: reason,
+        },
+      },
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+
+  public async setWithdrawnStatus(requestId: number): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.APPROVED,
+      },
+      {
+        $set: {
+          status: Status.WITHDRAWN,
         },
       },
     );

@@ -1,0 +1,14 @@
+[
+  {
+    "requestId": 16,
+    "staffId": 140880,
+    "staffName": "Heng Chan",
+    "reportingManager": 140008,
+    "managerName": "Jaclyn Lee",
+    "dept": "Sales",
+    "position": "Account Manager",
+    "reason": "Plans cancelled",
+    "requestedDate": "2024-10-22",
+    "requestType": "AM"
+  }
+]
