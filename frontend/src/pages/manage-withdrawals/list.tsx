@@ -15,6 +15,7 @@ import {
   Descriptions,
   Modal,
   Tag
+
 } from "antd";
 import axios from "axios";
 import { formatDate } from "@/utils/wfh-dateUtils";
@@ -175,6 +176,7 @@ export const ManageWithdrawals: React.FC = () => {
       key: "requestedDate",
       render: (dateString: string) => formatDate(new Date(dateString)),
     },
+
     { title: "Request Type", dataIndex: "requestType", key: "requestType",    render: (type: any) => {
       let color = "";
       switch (type) {
@@ -220,6 +222,7 @@ export const ManageWithdrawals: React.FC = () => {
 
   return (
     <List>
+
       <Row gutter={[16, 16]}>
         <Col xs={24} md={12}>
           <Title level={3}>Manage Withdrawals</Title>
@@ -241,6 +244,7 @@ export const ManageWithdrawals: React.FC = () => {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={8}>
+
           <Card bordered={false}>
             <Statistic
               title="Pending Withdrawals"
@@ -250,6 +254,7 @@ export const ManageWithdrawals: React.FC = () => {
           </Card>
         </Col>
         <Col xs={24} sm={8}>
+
           <Card bordered={false}>
             <Statistic
               title="Approved Withdrawals"
@@ -259,6 +264,7 @@ export const ManageWithdrawals: React.FC = () => {
           </Card>
         </Col>
         <Col xs={24} sm={8}>
+
           <Card bordered={false}>
             <Statistic
               title="Rejected Withdrawals"
@@ -268,7 +274,6 @@ export const ManageWithdrawals: React.FC = () => {
           </Card>
         </Col>
       </Row>
-
       <div style={{ overflowX: 'auto', marginTop: 16 }}>
         <Table 
           columns={columns} 
@@ -341,7 +346,6 @@ export const ManageWithdrawals: React.FC = () => {
                 ) : null
               }
             </Form.Item>
-
             <Form.Item style={{textAlign:'center'}}>
               <Button type="primary" htmlType="submit">
                 Save
@@ -385,3 +389,4 @@ export const ManageWithdrawals: React.FC = () => {
     </List>
   );
 };
+
