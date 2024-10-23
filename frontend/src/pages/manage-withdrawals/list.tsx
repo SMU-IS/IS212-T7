@@ -220,10 +220,27 @@ export const ManageWithdrawals: React.FC = () => {
 
   return (
     <List>
-      <Title level={3}>Manage Withdrawals</Title>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={12}>
+          <Title level={3}>Manage Withdrawals</Title>
+        </Col>
+        <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+          <Select
+            placeholder="Filter by status"
+            style={{ width: '100%', maxWidth: 200, marginBottom: 16 }}
+            onChange={(value) => setFilterStatus(value)}
+            allowClear
+          >
+            <Select.Option value={undefined}>All</Select.Option>
+            <Select.Option value="PENDING">Pending</Select.Option>
+            <Select.Option value="APPROVED">Approved</Select.Option>
+            <Select.Option value="REJECTED">Rejected</Select.Option>
+          </Select>
+        </Col>
+      </Row>
 
-      <Row gutter={16}>
-        <Col span={8}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={8}>
           <Card bordered={false}>
             <Statistic
               title="Pending Withdrawals"
@@ -232,7 +249,7 @@ export const ManageWithdrawals: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={8}>
           <Card bordered={false}>
             <Statistic
               title="Approved Withdrawals"
@@ -241,7 +258,7 @@ export const ManageWithdrawals: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={8}>
           <Card bordered={false}>
             <Statistic
               title="Rejected Withdrawals"
@@ -252,19 +269,15 @@ export const ManageWithdrawals: React.FC = () => {
         </Col>
       </Row>
 
-      <Select
-        placeholder="Filter by status"
-        style={{ width: 200, marginBottom: 16,  float: "right", marginTop: 50}}
-        onChange={(value) => setFilterStatus(value)}
-        allowClear
-      >
-        <Select.Option value={undefined}>All</Select.Option>
-        <Select.Option value="PENDING" >Pending</Select.Option>
-        <Select.Option value="APPROVED">Approved</Select.Option>
-        <Select.Option value="REJECTED">Rejected</Select.Option>
-      </Select>
+      <div style={{ overflowX: 'auto', marginTop: 16 }}>
+        <Table 
+          columns={columns} 
+          dataSource={filteredData} 
+          rowKey="id"
+          scroll={{ x: 'max-content' }}
+        />
+      </div>
 
-      <Table columns={columns} dataSource={filteredData} rowKey="id" />
 
       {/* Edit Modal */}
       <Modal
@@ -280,7 +293,7 @@ export const ManageWithdrawals: React.FC = () => {
       >
         {selectedWithdrawal && (
           <Form form={form} onFinish={handleEditSubmit}>
-            <Descriptions layout="vertical" bordered>
+            <Descriptions layout="vertical" bordered column={{ xs: 1, sm: 2, md: 3 }}>
               <Descriptions.Item label="Withdrawal Id">
                 {selectedWithdrawal.withdrawalId}
               </Descriptions.Item>
