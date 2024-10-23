@@ -14,6 +14,7 @@ import {
   Typography,
   Descriptions,
   Modal,
+  Tag
 } from "antd";
 import axios from "axios";
 import { formatDate } from "@/utils/wfh-dateUtils";
@@ -174,7 +175,22 @@ export const ManageWithdrawals: React.FC = () => {
       key: "requestedDate",
       render: (dateString: string) => formatDate(new Date(dateString)),
     },
-    { title: "Request Type", dataIndex: "requestType", key: "requestType" },
+    { title: "Request Type", dataIndex: "requestType", key: "requestType",    render: (type: any) => {
+      let color = "";
+      switch (type) {
+        case "FULL":
+          color = "purple";
+          break;
+        case "PM":
+        case "AM":
+          color = "gold";
+          break;
+        default:
+          color = "gray";
+          break;
+      }
+      return <Tag color={color}>{type}</Tag>;
+    }, },
     {
       title: "Status",
       dataIndex: "status",
@@ -250,7 +266,7 @@ export const ManageWithdrawals: React.FC = () => {
 
       <Table columns={columns} dataSource={filteredData} rowKey="id" />
 
-     
+      {/* Edit Modal */}
       <Modal
         title="Manage Withdrawal"
         open={editModalVisible}
@@ -259,6 +275,8 @@ export const ManageWithdrawals: React.FC = () => {
           form.resetFields();
         }}
         footer={null}
+        width="90%"
+        style={{ maxWidth: '600px' }}
       >
         {selectedWithdrawal && (
           <Form form={form} onFinish={handleEditSubmit}>
@@ -268,6 +286,9 @@ export const ManageWithdrawals: React.FC = () => {
               </Descriptions.Item>
               <Descriptions.Item label="Staff Name">
                 {selectedWithdrawal.staffName}
+              </Descriptions.Item>
+              <Descriptions.Item label="Department">
+                {(selectedWithdrawal.dept)}
               </Descriptions.Item>
               <Descriptions.Item label="WFH Date">
                 {formatDate(new Date(selectedWithdrawal.requestedDate))}
@@ -308,7 +329,7 @@ export const ManageWithdrawals: React.FC = () => {
               }
             </Form.Item>
 
-            <Form.Item>
+            <Form.Item style={{textAlign:'center'}}>
               <Button type="primary" htmlType="submit">
                 Save
               </Button>
@@ -331,11 +352,13 @@ export const ManageWithdrawals: React.FC = () => {
           >
             Yes
           </Button>
-            <Button key="cancel"  onClick={() => setConfirmModalVisible(false)}>
+            <Button key="cancel" onClick={() => setConfirmModalVisible(false)}>
             No
           </Button>
           </div>
         ]}
+        width="90%"
+        style={{ maxWidth: '400px' }}
       >
         <Typography.Text>
           Are you sure you want to{" "}
@@ -349,4 +372,3 @@ export const ManageWithdrawals: React.FC = () => {
     </List>
   );
 };
-
