@@ -42,7 +42,7 @@ class WithdrawalService {
     const request = await this.withdrawalDb.getWithdrawalRequest(
       Number(requestId),
     );
-    if (request.length < 1) {
+    if (!request || request.length < 1) {
       return null;
     }
     return request;
@@ -74,6 +74,7 @@ class WithdrawalService {
       dept,
       position,
       requestedDate,
+      requestType
     } = request!;
 
     if (
@@ -92,8 +93,10 @@ class WithdrawalService {
       dept,
       position,
       requestedDate,
+      requestType
     };
     const result = await this.withdrawalDb.withdrawRequest(document);
+
     if (!result) {
       return null;
     }
