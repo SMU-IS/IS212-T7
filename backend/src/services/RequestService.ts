@@ -343,11 +343,10 @@ class RequestService {
     const employee = await this.employeeService.getEmployee(
       Number(requestDetails.staffId),
     );
-    const { email, reportingManager, tempReportingManager } = employee!;
+    const { email, reportingManager } = employee!;
     await this.notificationService.pushRequestSentNotification(
       email,
       reportingManager,
-      tempReportingManager,
       responseDates.successDates,
       requestDetails.reason
     )

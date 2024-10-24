@@ -29,8 +29,6 @@ const generateMockEmployeeTest = async (overrides = {}) => ({
   hashedPassword: await hashPassword("test-password"),
   reportingManager: 140894,
   reportingManagerName: "Rahim Khalid",
-  tempReportingManager: null,
-  tempReportingManagerName: null,
   role: 2,
   ...overrides,
 });

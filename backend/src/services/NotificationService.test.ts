@@ -33,7 +33,6 @@ describe("NotificationService", () => {
   describe("pushRequestSentNotification", () => {
     const mockStaffEmail = "staff@lurence.org";
     const mockManagerId = 1;
-    const mockTempManagerId = null;
     const mockRequestDates: [string, string][] = [["2023-06-01", "Full Day"]];
     const mockRequestReason = "Working on project";
 
@@ -47,7 +46,6 @@ describe("NotificationService", () => {
       const result = await notificationService.pushRequestSentNotification(
         mockStaffEmail,
         mockManagerId,
-        mockTempManagerId,
         mockRequestDates,
         mockRequestReason
       );
@@ -63,7 +61,6 @@ describe("NotificationService", () => {
       const result = await notificationService.pushRequestSentNotification(
         mockStaffEmail,
         mockManagerId,
-        mockTempManagerId,
         mockRequestDates,
         mockRequestReason
       );
@@ -71,25 +68,6 @@ describe("NotificationService", () => {
       expect(result).toBe("Failed to send email");
       expect(employeeServiceMock.getEmployee).toHaveBeenCalledWith(mockManagerId);
       expect(mockMailer.getTransporter().sendMail).not.toHaveBeenCalled();
-    });
-
-    it("should use tempManagerId when provided", async () => {
-      const mockTempManagerId = 2;
-      employeeServiceMock.getEmployee.mockResolvedValue({
-        staffFName: "Jane",
-        staffLName: "Smith",
-        email: "jane.smith@example.com",
-      } as any);
-
-      await notificationService.pushRequestSentNotification(
-        mockStaffEmail,
-        mockManagerId,
-        mockTempManagerId,
-        mockRequestDates,
-        mockRequestReason
-      );
-
-      expect(employeeServiceMock.getEmployee).toHaveBeenCalledWith(mockTempManagerId);
     });
 
     it("should handle error when sending email fails", async () => {
@@ -104,7 +82,6 @@ describe("NotificationService", () => {
       const result = await notificationService.pushRequestSentNotification(
         mockStaffEmail,
         mockManagerId,
-        mockTempManagerId,
         mockRequestDates,
         mockRequestReason
       );
@@ -122,7 +99,6 @@ describe("NotificationService", () => {
       const result = await notificationService.pushRequestSentNotification(
         mockStaffEmail,
         mockManagerId,
-        mockTempManagerId,
         [],
         mockRequestReason
       );

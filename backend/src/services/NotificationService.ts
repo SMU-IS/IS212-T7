@@ -18,9 +18,8 @@ class NotificationService {
     this.mailer = mailer;
   }
 
-  private async getManagerDetails(managerId: number, tempManagerId: number | null): Promise<ManagerDetails> {
-    const id = tempManagerId ?? managerId;
-    const managerDetails = await this.employeeService.getEmployee(id);
+  private async getManagerDetails(managerId: number): Promise<ManagerDetails> {
+    const managerDetails = await this.employeeService.getEmployee(managerId);
     if (!managerDetails) throw new Error("Manager details not found");
 
     return {
@@ -94,12 +93,11 @@ class NotificationService {
   public async pushRequestSentNotification(
     staffEmail: string,
     managerId: number,
-    tempManagerId: number | null,
     requestDates: [string, string][],
     requestReason: string
   ): Promise<string> {
     try {
-      const managerDetails = await this.getManagerDetails(managerId, tempManagerId);
+      const managerDetails = await this.getManagerDetails(managerId);
       const emailContent = this.createEmailContent(managerDetails, requestDates, requestReason);
       await this.sendEmail(staffEmail, emailContent);
       return "Email sent successfully!";
