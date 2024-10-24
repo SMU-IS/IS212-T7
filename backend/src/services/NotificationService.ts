@@ -58,9 +58,7 @@ class NotificationService {
     requestDates: [string, string][],
     requestReason: string,
   ): string {
-    console.log(requestType);
-
-    let textBody = `Your ${requestType} for the following dates have been sent to ${manager.name}(${manager.email}):\n`;
+    let textBody = `Your ${requestType.toLowerCase()} for the following dates have been sent to ${manager.name}(${manager.email}):\n`;
     requestDates.forEach(([date, type]) => {
       textBody += `${date}, ${type}\n`;
     });
@@ -90,7 +88,7 @@ class NotificationService {
     <html>
       <head></head>
       <body>
-        <p>Your ${requestType} for the following dates have been sent to ${manager.name} (<a href="mailto:${manager.email}">${manager.email}</a>).</p>
+        <p>Your ${requestType.toLowerCase()} for the following dates have been sent to ${manager.name} (<a href="mailto:${manager.email}">${manager.email}</a>).</p>
         <table style="border: 1px solid black; border-collapse: collapse;">
           <tr>
             <th style="border: 1px solid black; border-collapse: collapse;">Requested Dates</th>

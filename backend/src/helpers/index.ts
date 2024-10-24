@@ -115,8 +115,8 @@ enum PerformedBy {
 }
 
 enum EmailHeaders {
-  REQUEST_SENT = "WFH Request Sent",
-  REASSIGNMENT_SENT = "Your reassignment is successfully applied.",
+  REQUEST_SENT = "[Application] WFH Request Sent",
+  REASSIGNMENT_SENT = "[Reassignment] Reassignment Request Sent",
 }
 
 export {

@@ -9,7 +9,7 @@ import {
   Request,
   Status,
 } from "@/helpers";
-import dayjs from "dayjs";
+import { getDatesInRange } from "@/helpers/date";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 import NotificationService from "./NotificationService";
@@ -80,14 +80,14 @@ class ReassignmentService {
       position: currentManager!.position,
     });
 
-    const currSGTimeStamp = dayjs().tz("Asia/Singapore").format("YYYY-MM-DD");
+    const datesInBetween = getDatesInRange(startDate, endDate);
 
     await this.notificationService.pushRequestSentNotification(
       EmailHeaders.REASSIGNMENT_SENT,
       currentManager!.email,
       tempReportingManager!.staffId,
       Request.REASSIGNMENT,
-      [[currSGTimeStamp, ""]],
+      [[datesInBetween, ""]],
       "",
     );
   }
