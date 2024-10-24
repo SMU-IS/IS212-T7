@@ -1,11 +1,11 @@
 import RequestDb from "@/database/RequestDb";
 import {
   Action,
-  Dept,
+  Dept, EmailHeaders,
   errMsg,
   HttpStatusResponse,
   PerformedBy,
-  Request,
+  Request
 } from "@/helpers";
 import { Role } from "@/helpers/";
 import {
@@ -345,6 +345,7 @@ class RequestService {
     );
     const { email, reportingManager } = employee!;
     await this.notificationService.pushRequestSentNotification(
+      EmailHeaders.REQUEST_SENT,
       email,
       reportingManager,
       responseDates.successDates,

@@ -31,6 +31,7 @@ describe("NotificationService", () => {
   });
 
   describe("pushRequestSentNotification", () => {
+    const emailSubject = "Email Subject";
     const mockStaffEmail = "staff@lurence.org";
     const mockManagerId = 1;
     const mockRequestDates: [string, string][] = [["2023-06-01", "Full Day"]];
@@ -44,6 +45,7 @@ describe("NotificationService", () => {
       } as any);
 
       const result = await notificationService.pushRequestSentNotification(
+        emailSubject,
         mockStaffEmail,
         mockManagerId,
         mockRequestDates,
@@ -59,6 +61,7 @@ describe("NotificationService", () => {
       employeeServiceMock.getEmployee.mockResolvedValue(null);
 
       const result = await notificationService.pushRequestSentNotification(
+        emailSubject,
         mockStaffEmail,
         mockManagerId,
         mockRequestDates,
@@ -80,6 +83,7 @@ describe("NotificationService", () => {
       (mockTransporter.sendMail as jest.Mock).mockRejectedValue(new Error("Send failed") as never);
 
       const result = await notificationService.pushRequestSentNotification(
+        emailSubject,
         mockStaffEmail,
         mockManagerId,
         mockRequestDates,
@@ -97,6 +101,7 @@ describe("NotificationService", () => {
       } as any);
 
       const result = await notificationService.pushRequestSentNotification(
+        emailSubject,
         mockStaffEmail,
         mockManagerId,
         [],

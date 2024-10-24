@@ -76,14 +76,14 @@ class NotificationService {
   `;
   }
 
-  private async sendEmail(staffEmail: string, content: { text: string; html: string }): Promise<void> {
+  private async sendEmail(emailSubject: string, staffEmail: string, content: { text: string; html: string }): Promise<void> {
     const transporter = this.mailer.getTransporter();
     const staffName = staffEmail.split("@")[0];
 
     const mailOptions = {
       from: 'noreply@lurence.org',
       to: `${staffName}@yopmail.com`,
-      subject: 'WFH Request Sent',
+      subject: emailSubject,
       text: content.text,
       html: content.html
     };
@@ -92,6 +92,7 @@ class NotificationService {
   }
 
   public async pushRequestSentNotification(
+    emailSubject: string,
     staffEmail: string,
     managerId: number,
     requestDates: [string, string][],
@@ -100,7 +101,7 @@ class NotificationService {
     try {
       const managerDetails = await this.getManagerDetails(managerId);
       const emailContent = this.createEmailContent(managerDetails, requestDates, requestReason);
-      await this.sendEmail(staffEmail, emailContent);
+      await this.sendEmail(emailSubject, staffEmail, emailContent);
       return "Email sent successfully!";
     } catch (error) {
       return errMsg.FAILED_TO_SEND_EMAIL;

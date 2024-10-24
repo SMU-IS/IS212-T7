@@ -114,6 +114,10 @@ enum PerformedBy {
   PERFORMED_BY_SYSTEM = "Performed By System",
 }
 
+enum EmailHeaders {
+  REQUEST_SENT = "WFH Request Sent"
+}
+
 export {
   AccessControl,
   Action,
@@ -128,4 +132,5 @@ export {
   errMsg,
   noteMsg,
   successMsg,
+  EmailHeaders
 };

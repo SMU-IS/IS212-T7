@@ -4,11 +4,11 @@ import LogDb from "@/database/LogDb";
 import RequestDb from "@/database/RequestDb";
 import {
   AccessControl,
-  Action,
+  Action, EmailHeaders,
   errMsg,
   HttpStatusResponse,
   PerformedBy,
-  Role,
+  Role
 } from "@/helpers";
 import { initializeCounter } from "@/helpers/counter";
 import * as dateUtils from "@/helpers/date";
@@ -184,6 +184,7 @@ describe("postRequest", () => {
   });
 
   it("should return successDates for successful date inputted", async () => {
+    const emailSubject = EmailHeaders.REQUEST_SENT;
     const requestDetails = {
       staffId: 3,
       staffName: "Amy Cheong",
@@ -217,6 +218,7 @@ describe("postRequest", () => {
     expect(result).toEqual(expectedResponse);
     expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledTimes(1);
     expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledWith(
+      emailSubject,
       email,
       reportingManager,
       expectedResponse.successDates,
