@@ -1,5 +1,6 @@
 import EmployeeService from "@/services/EmployeeService";
 import Mailer from "@/config/mailer";
+import { errMsg } from "@/helpers";
 
 interface ManagerDetails {
   name: string;
@@ -102,8 +103,7 @@ class NotificationService {
       await this.sendEmail(staffEmail, emailContent);
       return "Email sent successfully!";
     } catch (error) {
-      // console.error('Error sending email:', error);
-      return "Failed to send email";
+      return errMsg.FAILED_TO_SEND_EMAIL;
     }
   }
 }
