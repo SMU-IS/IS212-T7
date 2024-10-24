@@ -52,8 +52,6 @@ class EmployeeController {
       reportingManager,
       reportingManagerName,
       role,
-      tempReportingManager,
-      tempReportingManagerName,
     } = result;
 
     const name = `${staffFName} ${staffLName}`;
@@ -67,8 +65,6 @@ class EmployeeController {
       reportingManager,
       reportingManagerName,
       role,
-      tempReportingManager,
-      tempReportingManagerName,
     };
   }
 
@@ -103,7 +99,13 @@ class EmployeeController {
   }
 
   public async getRoleOneOrThreeEmployees(ctx: Context) {
-    const employees = await this.employeeService.getRoleOneOrThreeEmployees();
+    const { id } = ctx.request.header;
+    if (!id) {
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_HEADER);
+    }
+    const employees = await this.employeeService.getRoleOneOrThreeEmployees(
+      Number(id),
+    );
     ctx.body = employees;
   }
 }

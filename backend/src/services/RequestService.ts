@@ -2,6 +2,7 @@ import RequestDb from "@/database/RequestDb";
 import {
   Action,
   Dept,
+  EmailHeaders,
   errMsg,
   HttpStatusResponse,
   PerformedBy,
@@ -21,6 +22,7 @@ import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 import ReassignmentService from "./ReassignmentService";
+import NotificationService from "@/services/NotificationService";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -36,17 +38,20 @@ interface ResponseDates {
 class RequestService {
   private logService: LogService;
   private employeeService: EmployeeService;
+  private notificationService: NotificationService;
   private reassignmentService: ReassignmentService;
   private requestDb: RequestDb;
 
   constructor(
     logService: LogService,
     employeeService: EmployeeService,
+    notificationService: NotificationService,
     requestDb: RequestDb,
     reassignmentService: ReassignmentService,
   ) {
     this.logService = logService;
     this.employeeService = employeeService;
+    this.notificationService = notificationService;
     this.requestDb = requestDb;
     this.reassignmentService = reassignmentService;
   }
@@ -225,11 +230,6 @@ class RequestService {
     return schedule;
   }
 
-  public async getCompanySchedule() {
-    const companySchedule = await this.requestDb.getCompanySchedule();
-    return companySchedule;
-  }
-
   public async getPendingOrApprovedRequests(myId: number) {
     const requests = await this.requestDb.getPendingOrApprovedRequests(myId);
     return requests;
@@ -336,6 +336,24 @@ class RequestService {
         responseDates.insertErrorDates.push(dateType);
       }
     }
+
+    if (responseDates.successDates.length == 0) {
+      return responseDates;
+    }
+
+    const employee = await this.employeeService.getEmployee(
+      Number(requestDetails.staffId),
+    );
+    const { email, reportingManager } = employee!;
+    await this.notificationService.pushRequestSentNotification(
+      EmailHeaders.REQUEST_SENT,
+      email,
+      reportingManager,
+      Request.APPLICATION,
+      responseDates.successDates,
+      requestDetails.reason,
+    );
+
     return responseDates;
   }
 
@@ -376,7 +394,7 @@ class RequestService {
         return null;
       }
     }
-    const result = await this.requestDb.approveRequest(performedBy, requestId);
+    const result = await this.requestDb.approveRequest(requestId);
     if (!result) {
       return null;
     }
@@ -423,11 +441,7 @@ class RequestService {
         return null;
       }
     }
-    const result = await this.requestDb.rejectRequest(
-      performedBy,
-      requestId,
-      reason,
-    );
+    const result = await this.requestDb.rejectRequest(requestId, reason);
     if (!result) {
       return null;
     }

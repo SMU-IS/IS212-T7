@@ -12,9 +12,9 @@ const generateMockEmployee = async (overrides = {}) => ({
   hashedPassword: await hashPassword("test-password"),
   reportingManager: null,
   reportingManagerName: null,
-  role: 1,
   tempReportingManager: null,
   tempReportingManagerName: null,
+  role: 1,
   ...overrides,
 });
 
@@ -30,8 +30,6 @@ const generateMockEmployeeTest = async (overrides = {}) => ({
   reportingManager: 140894,
   reportingManagerName: "Rahim Khalid",
   role: 2,
-  tempReportingManager: null,
-  tempReportingManagerName: null,
   ...overrides,
 });
 
@@ -73,7 +71,6 @@ const mockRequestData = {
     reason: "Raining",
     status: "REJECTED",
     requestId: 22,
-    performedBy: 140894,
   },
   testing: {
     staffId: 140003,
@@ -87,8 +84,27 @@ const mockRequestData = {
     reason: "Raining",
     status: "REJECTED",
     requestId: 22,
-    performedBy: 140894,
   },
 };
 
-export { generateMockEmployee, generateMockEmployeeTest, mockRequestData };
+const mockWithdrawalData = {
+  requestId: 22,
+  staffId: 140003,
+  staffName: "Janice Chan",
+  reportingManager: 140894,
+  managerName: "Rahim Khalid",
+  dept: "Sales",
+  position: "Account Manager",
+  reason: "Plans cancelled",
+  requestedDate: new Date(),
+  requestType: "AM",
+  withdrawalId: 1,
+  status: "PENDING",
+};
+
+export {
+  generateMockEmployee,
+  generateMockEmployeeTest,
+  mockRequestData,
+  mockWithdrawalData,
+};

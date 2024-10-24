@@ -59,7 +59,7 @@ export const MyRequestsContent = () => {
       if (scheduleResponse.data == "No requests found") {
         return;
       }
-
+        
       const approved = scheduleResponse.data
         .filter((request: any) => request.status === Status.APPROVED)
         .map((request: any) => ({
