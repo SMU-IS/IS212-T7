@@ -11,6 +11,7 @@ import WithdrawalService from "@/services/WithdrawalService";
 import WithdrawalDb from "@/database/WithdrawalDb";
 import mongoose from "mongoose";
 import Mailer from "@/config/mailer";
+import NotificationService from "@/services/NotificationService";
 
 const startCronJob = async () => {
   const requestDb = new RequestDb();
@@ -18,10 +19,12 @@ const startCronJob = async () => {
   const employeeDb = new EmployeeDb();
   const employeeService = new EmployeeService(employeeDb);
 
+  const mailer = Mailer.getInstance();
+
+  const notificationService = new NotificationService(employeeService, mailer);
+
   const logDb = new LogDb();
   const logService = new LogService(logDb, employeeService);
-
-  const mailer = Mailer.getInstance();
 
   const reassignmentDb = new ReassignmentDb();
   const reassignmentService = new ReassignmentService(
@@ -34,8 +37,8 @@ const startCronJob = async () => {
   const requestService = new RequestService(
     logService,
     employeeService,
+    notificationService,
     requestDb,
-    mailer,
     reassignmentService,
   );
 

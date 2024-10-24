@@ -24,6 +24,7 @@ import { Context } from "koa";
 import Mailer from "@/config/mailer";
 import { jest } from "@jest/globals";
 import UtilsController from "./UtilsController";
+import NotificationService from "@/services/NotificationService";
 
 describe("RequestController", () => {
   let requestController: RequestController;
@@ -48,6 +49,7 @@ describe("RequestController", () => {
 
   let logDbMock: jest.Mocked<LogDb>;
   let logServiceMock: jest.Mocked<LogService>;
+  let notificationServiceMock: jest.Mocked<NotificationService>;
 
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
@@ -69,11 +71,17 @@ describe("RequestController", () => {
       employeeServiceMock,
       logServiceMock,
     ) as jest.Mocked<ReassignmentService>;
+
+    notificationServiceMock = new NotificationService(
+      employeeServiceMock,
+      mockMailer
+    ) as jest.Mocked<NotificationService>;
+
     requestServiceMock = new RequestService(
       logServiceMock,
       employeeServiceMock,
+      notificationServiceMock,
       requestDbMock,
-      mockMailer,
       reassignmentServiceMock,
     ) as jest.Mocked<RequestService>;
     requestController = new RequestController(requestServiceMock);

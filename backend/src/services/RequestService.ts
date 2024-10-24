@@ -19,9 +19,9 @@ import {
 } from "@/helpers/date";
 import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
-import { Mailer } from "@/config/mailer";
 import LogService from "./LogService";
 import ReassignmentService from "./ReassignmentService";
+import NotificationService from "@/services/NotificationService";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -37,21 +37,21 @@ interface ResponseDates {
 class RequestService {
   private logService: LogService;
   private employeeService: EmployeeService;
+  private notificationService: NotificationService;
   private reassignmentService: ReassignmentService;
   private requestDb: RequestDb;
-  private mailer: Mailer;
 
   constructor(
     logService: LogService,
     employeeService: EmployeeService,
+    notificationService: NotificationService,
     requestDb: RequestDb,
-    mailer: Mailer,
     reassignmentService: ReassignmentService,
   ) {
     this.logService = logService;
     this.employeeService = employeeService;
+    this.notificationService = notificationService;
     this.requestDb = requestDb;
-    this.mailer = mailer;
     this.reassignmentService = reassignmentService;
   }
 
@@ -344,13 +344,13 @@ class RequestService {
       Number(requestDetails.staffId),
     );
     const { email, reportingManager, tempReportingManager } = employee!;
-    await this.pushRequestSentNotification(
+    await this.notificationService.pushRequestSentNotification(
       email,
       reportingManager,
       tempReportingManager,
       responseDates.successDates,
       requestDetails.reason
-    );
+    )
 
     return responseDates;
   }
@@ -543,103 +543,6 @@ class RequestService {
       return null;
     }
     return HttpStatusResponse.OK;
-  }
-
-  // TODO: Port over to notification service file.
-  public async pushRequestSentNotification(
-    staffEmail: string,
-    managerId: number,
-    tempManagerId: number | null,
-    requestDates: [string, string][],
-    requestReason: string
-  ) {
-    let managerName: string;
-    let managerEmail: string;
-
-    if (tempManagerId == null) {
-      const managerDetails = await this.employeeService.getEmployee(
-        Number(managerId)
-      );
-      const { staffFName, staffLName, email } = managerDetails!;
-      managerName = staffFName + " " + staffLName;
-      managerEmail = email;
-    } else {
-      const tempManagerDetails = await this.employeeService.getEmployee(
-        Number(tempManagerId)
-      );
-      const { staffFName, staffLName, email } = tempManagerDetails!;
-      managerName = staffFName + " " + staffLName;
-      managerEmail = email;
-    }
-    try {
-      let numItems = requestDates.length;
-      if (numItems <= 0) {
-        return "Nothing to send";
-      }
-      let reasonSet = false;
-      let transporter = this.mailer.getTransporter();
-      let staffName = staffEmail.split("@")[0];
-
-      let textBody = `Your WFH request for the following dates have been sent to ${managerName}(${managerEmail}):\n`;
-
-      let htmlBody = `
-        <html>
-          <head>
-          <body>
-            <p>Your WFH request for the following dates have been sent to ${managerName}(<a href="mailto:${managerEmail}">${managerEmail}</a>).</p>
-            <table style="border: 1px solid black; border-collapse: collapse;">
-              <tr>
-                <th style="border: 1px solid black; border-collapse: collapse;">Requested Dates</th>
-                <th style="border: 1px solid black; border-collapse: collapse;">Duration</th>
-                <th style="border: 1px solid black; border-collapse: collapse;">Reason</th>
-              </tr>
-      `;
-
-      for (const dateType of requestDates) {
-        const [date, type] = dateType;
-        textBody += date + ", " + type + "\n";
-        if (!reasonSet) {
-          htmlBody += `
-            <tr>
-              <td style="border: 1px solid black; border-collapse: collapse;">${date.toString()}</td>
-              <td style="border: 1px solid black; border-collapse: collapse;">${type.toString()}</td>
-              <td style="border: 1px solid black; border-collapse: collapse;" rowspan="${numItems.toString()}">${requestReason.toString()}</td>
-            </tr>
-          `;
-          reasonSet = true;
-        } else {
-          htmlBody += `
-            <tr>
-              <td style="border: 1px solid black; border-collapse: collapse;">${date.toString()}</td>
-              <td style="border: 1px solid black; border-collapse: collapse;">${type.toString()}</td>
-            </tr>
-          `;
-        }
-      }
-      textBody += `\nReason: ${requestReason}\n`
-      htmlBody += `
-            </table>
-          </body>
-        </html>
-      `
-
-      // Email details
-      const mailOptions = {
-        from: 'noreply@lurence.org',
-        to: `${staffName}@yopmail.com`,
-        subject: 'WFH Request Sent',
-        text: textBody,
-        html: htmlBody
-      };
-
-      // Send email
-      await transporter.sendMail(mailOptions);
-
-      return "Email sent successfully!";
-    } catch (error) {
-      console.error('Error sending email:', error);
-      return "Failed to send email"
-    }
   }
 }
 export default RequestService;
