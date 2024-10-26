@@ -19,10 +19,11 @@ import {
   weekMap,
 } from "@/helpers/date";
 import { IRequest } from "@/models/Request";
+import NotificationService from "@/services/NotificationService";
+import dayjs from "dayjs";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 import ReassignmentService from "./ReassignmentService";
-import NotificationService from "@/services/NotificationService";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -344,15 +345,31 @@ class RequestService {
     const employee = await this.employeeService.getEmployee(
       Number(requestDetails.staffId),
     );
-    const { email, reportingManager } = employee!;
-    await this.notificationService.pushRequestSentNotification(
-      EmailHeaders.REQUEST_SENT,
-      email,
-      reportingManager,
-      Request.APPLICATION,
-      responseDates.successDates,
-      requestDetails.reason,
-    );
+    if (employee) {
+      await this.notificationService.pushRequestSentNotification(
+        EmailHeaders.REQUEST_SENT,
+        employee.email,
+        employee.reportingManager,
+        Request.APPLICATION,
+        responseDates.successDates,
+        requestDetails.reason,
+      );
+
+      const manager = await this.employeeService.getEmployee(
+        Number(employee.reportingManager),
+      );
+      if (manager) {
+        const emailSubject = `[${Request.APPLICATION}] Pending Application Request`;
+        const emailContent = `You have a pending application request from ${employee.staffFName} ${employee.staffLName}, ${employee.email}.<br><br>Reason for application: ${requestDetails.reason}.<br><br>Please login to the portal to approve the request.`;
+        await this.notificationService.notify(
+          manager.email,
+          emailSubject,
+          emailContent,
+          null,
+          responseDates.successDates,
+        );
+      }
+    }
 
     return responseDates;
   }
@@ -466,7 +483,22 @@ class RequestService {
     const requests = await this.requestDb.updateRequestStatusToExpired();
     if (!!requests) {
       for (const request of requests) {
-        const { requestId } = request;
+        const { requestId, staffId, requestedDate, requestType } = request;
+        const employee = await this.employeeService.getEmployee(staffId);
+
+        const emailSubject = `[${Request.APPLICATION}] Application Expired`;
+        const emailContent = `Your application has expired. Please re-apply.`;
+        const dayjsDate = dayjs(requestedDate);
+        const formattedDate = dayjsDate.format("YYYY-MM-DD");
+
+        await this.notificationService.notify(
+          employee!.email,
+          emailSubject,
+          emailContent,
+          null,
+          [[formattedDate, requestType]],
+        );
+
         /**
          * Logging
          */
