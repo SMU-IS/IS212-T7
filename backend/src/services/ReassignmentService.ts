@@ -68,6 +68,27 @@ class ReassignmentService {
 
     await this.reassignmentDb.insertReassignmentRequest(request);
 
+    const datesInBetween = getDatesInRange(startDate, endDate);
+
+    await this.notificationService.pushRequestSentNotification(
+      EmailHeaders.REASSIGNMENT_SENT,
+      currentManager!.email,
+      tempReportingManager!.staffId,
+      Request.REASSIGNMENT,
+      [[datesInBetween, "-"]],
+      "-",
+    );
+
+    const emailSubject = `[${Request.REASSIGNMENT}] Pending Reassignment Request`;
+    const emailContent = `You have a pending reassignment request from ${managerName} and requires your approval. Please login to the portal to approve the request.`;
+    await this.notificationService.notify(
+      tempReportingManager!.email,
+      emailSubject,
+      emailContent,
+      [startDate, endDate],
+      null
+    );
+
     /**
      * Logging
      */
@@ -79,17 +100,6 @@ class ReassignmentService {
       dept: currentManager!.dept as Dept,
       position: currentManager!.position,
     });
-
-    const datesInBetween = getDatesInRange(startDate, endDate);
-
-    await this.notificationService.pushRequestSentNotification(
-      EmailHeaders.REASSIGNMENT_SENT,
-      currentManager!.email,
-      tempReportingManager!.staffId,
-      Request.REASSIGNMENT,
-      [[datesInBetween, ""]],
-      "",
-    );
   }
 
   public async getReassignmentStatus(staffId: number) {
