@@ -2,6 +2,7 @@ import RequestDb from "@/database/RequestDb";
 import {
   Action,
   Dept,
+  EmailHeaders,
   errMsg,
   HttpStatusResponse,
   PerformedBy,
@@ -21,6 +22,8 @@ import { IRequest } from "@/models/Request";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 import ReassignmentService from "./ReassignmentService";
+import NotificationService from "@/services/NotificationService";
+import dayjs from "dayjs";
 
 interface ResponseDates {
   successDates: [string, string][];
@@ -36,17 +39,20 @@ interface ResponseDates {
 class RequestService {
   private logService: LogService;
   private employeeService: EmployeeService;
+  private notificationService: NotificationService;
   private reassignmentService: ReassignmentService;
   private requestDb: RequestDb;
 
   constructor(
     logService: LogService,
     employeeService: EmployeeService,
+    notificationService: NotificationService,
     requestDb: RequestDb,
     reassignmentService: ReassignmentService,
   ) {
     this.logService = logService;
     this.employeeService = employeeService;
+    this.notificationService = notificationService;
     this.requestDb = requestDb;
     this.reassignmentService = reassignmentService;
   }
@@ -331,6 +337,40 @@ class RequestService {
         responseDates.insertErrorDates.push(dateType);
       }
     }
+
+    if (responseDates.successDates.length == 0) {
+      return responseDates;
+    }
+
+    const employee = await this.employeeService.getEmployee(
+      Number(requestDetails.staffId),
+    );
+    if (employee) {
+      await this.notificationService.pushRequestSentNotification(
+        EmailHeaders.REQUEST_SENT,
+        employee.email,
+        employee.reportingManager,
+        Request.APPLICATION,
+        responseDates.successDates,
+        requestDetails.reason,
+      );
+
+      const manager = await this.employeeService.getEmployee(
+        Number(employee.reportingManager),
+      );
+      if (manager) {
+        const emailSubject = `[${Request.APPLICATION}] Pending application Request`;
+        const emailContent = `You have a pending application request from ${employee.staffFName} ${employee.staffLName}, ${employee.email}.<br><br>Reason for application: ${requestDetails.reason}.<br><br>Please login to the portal to approve the request.`;
+        await this.notificationService.notify(
+          manager.email,
+          emailSubject,
+          emailContent,
+          null,
+          responseDates.successDates,
+        );
+      }
+    }
+
     return responseDates;
   }
 
@@ -375,6 +415,23 @@ class RequestService {
     if (!result) {
       return null;
     }
+    const manager = await this.employeeService.getEmployee(Number(performedBy));
+    if (manager) {
+      const emailSubject = `[${Request.APPLICATION}] Application approved`;
+      const emailContent = `Your application has been approved by ${manager.staffFName} ${manager.staffLName}, ${manager.email}.<br><br>Please login to the portal to view the request.`;
+      const dayjsDate = dayjs(request.requestedDate);
+      const formattedDate = dayjsDate.format("YYYY-MM-DD");
+      const requestedDate: [string, string][] = [
+        [String(formattedDate), String(request.requestType)],
+      ];
+      await this.notificationService.notify(
+        employee.email,
+        emailSubject,
+        emailContent,
+        null,
+        requestedDate,
+      );
+    }
 
     /**
      * Logging
@@ -418,12 +475,27 @@ class RequestService {
         return null;
       }
     }
-    const result = await this.requestDb.rejectRequest(
-      requestId,
-      reason,
-    );
+    const result = await this.requestDb.rejectRequest(requestId, reason);
     if (!result) {
       return null;
+    }
+
+    const manager = await this.employeeService.getEmployee(Number(performedBy));
+    if (manager) {
+      const emailSubject = `[${Request.APPLICATION}] Application rejected`;
+      const emailContent = `Your application has been rejected by ${manager.staffFName} ${manager.staffLName}, ${manager.email}.<br><br>Reason: ${reason}<br><br>Please login to the portal to view the request.`;
+      const dayjsDate = dayjs(request.requestedDate);
+      const formattedDate = dayjsDate.format("YYYY-MM-DD");
+      const requestedDate: [string, string][] = [
+        [String(formattedDate), String(request.requestType)],
+      ];
+      await this.notificationService.notify(
+        employee.email,
+        emailSubject,
+        emailContent,
+        null,
+        requestedDate,
+      );
     }
 
     /**

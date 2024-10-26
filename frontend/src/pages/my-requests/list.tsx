@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
-import { Table, Button, Typography, Tabs, Tag } from "antd";
-import axios from "axios";
-import { useGetIdentity } from "@refinedev/core";
+import { ModalProvider, useModal } from "@/components/modal";
+import { useCustomNotificationProvider } from "@/components/toast";
+import { Status } from "@/helper/requestLogsVar";
 import { EmployeeJWT } from "@/interfaces/employee";
 import { formatDate } from "@/utils/wfh-dateUtils";
-import { useCustomNotificationProvider } from "@/components/toast";
-import { ModalProvider, useModal } from "@/components/modal";
 import { Box } from "@chakra-ui/react";
+import { useGetIdentity } from "@refinedev/core";
+import { Button, Table, Tabs, Tag, Typography } from "antd";
+import axios from "axios";
+import { useEffect, useState } from "react";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
-import { Status } from "@/helper/requestLogsVar";
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -55,6 +55,10 @@ export const MyRequestsContent = () => {
         `${backendUrl}/api/v1/getMySchedule`,
         { params: { myId: staffId } },
       );
+
+      if (scheduleResponse.data == "No requests found") {
+        return;
+      }
 
       const approved = scheduleResponse.data
         .filter((request: any) => request.status === Status.APPROVED)

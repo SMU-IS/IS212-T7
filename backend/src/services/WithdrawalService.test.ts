@@ -1,14 +1,17 @@
+import Mailer from "@/config/mailer";
 import EmployeeDb from "@/database/EmployeeDb";
 import LogDb from "@/database/LogDb";
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
 import WithdrawalDb from "@/database/WithdrawalDb";
 import { Action, HttpStatusResponse, PerformedBy, Status } from "@/helpers";
+import NotificationService from "@/services/NotificationService";
 import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
 import WithdrawalService from "@/services/WithdrawalService";
 import { mockRequestData, mockWithdrawalData } from "@/tests/mockData";
 import { jest } from "@jest/globals";
+import nodemailer from "nodemailer";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 
@@ -19,6 +22,9 @@ describe("getWithdrawalRequest", () => {
   let employeeServiceMock: jest.Mocked<EmployeeService>;
   let logDbMock: jest.Mocked<LogDb>;
   let logServiceMock: jest.Mocked<LogService>;
+  let mockMailer: jest.Mocked<Mailer>;
+  let mockTransporter: jest.Mocked<nodemailer.Transporter>;
+  let notificationServiceMock: jest.Mocked<NotificationService>;
   let reassignmentDbMock: ReassignmentDb;
   let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
   let withdrawalService: WithdrawalService;
@@ -31,6 +37,18 @@ describe("getWithdrawalRequest", () => {
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
+    mockTransporter = {
+      sendMail: jest.fn().mockResolvedValue(null as never),
+    } as unknown as jest.Mocked<nodemailer.Transporter>;
+    mockMailer = {
+      getInstance: jest.fn().mockReturnThis(),
+      getTransporter: jest.fn().mockReturnValue(mockTransporter),
+    } as unknown as jest.Mocked<Mailer>;
+
+    notificationServiceMock = new NotificationService(
+      employeeServiceMock,
+      mockMailer,
+    ) as jest.Mocked<NotificationService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
     logServiceMock = new LogService(
@@ -43,10 +61,12 @@ describe("getWithdrawalRequest", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
+      notificationServiceMock,
       requestDbMock,
       reassignmentServiceMock,
     );
@@ -86,6 +106,9 @@ describe("withdrawRequest", () => {
   let employeeServiceMock: jest.Mocked<EmployeeService>;
   let logDbMock: jest.Mocked<LogDb>;
   let logServiceMock: jest.Mocked<LogService>;
+  let mockMailer: jest.Mocked<Mailer>;
+  let mockTransporter: jest.Mocked<nodemailer.Transporter>;
+  let notificationServiceMock: jest.Mocked<NotificationService>;
   let reassignmentDbMock: ReassignmentDb;
   let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
   let withdrawalService: WithdrawalService;
@@ -98,6 +121,18 @@ describe("withdrawRequest", () => {
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
+    mockTransporter = {
+      sendMail: jest.fn().mockResolvedValue(null as never),
+    } as unknown as jest.Mocked<nodemailer.Transporter>;
+    mockMailer = {
+      getInstance: jest.fn().mockReturnThis(),
+      getTransporter: jest.fn().mockReturnValue(mockTransporter),
+    } as unknown as jest.Mocked<Mailer>;
+
+    notificationServiceMock = new NotificationService(
+      employeeServiceMock,
+      mockMailer,
+    ) as jest.Mocked<NotificationService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
     logServiceMock = new LogService(
@@ -110,10 +145,12 @@ describe("withdrawRequest", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
+      notificationServiceMock,
       requestDbMock,
       reassignmentServiceMock,
     );

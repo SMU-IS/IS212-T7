@@ -1,25 +1,38 @@
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
-import { Action, Dept, errMsg, PerformedBy, Request, Status } from "@/helpers";
+import {
+  Action,
+  Dept,
+  EmailHeaders,
+  errMsg,
+  PerformedBy,
+  Request,
+  Status,
+} from "@/helpers";
+import { getDatesInRange } from "@/helpers/date";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
+import NotificationService from "./NotificationService";
 
 class ReassignmentService {
   private reassignmentDb: ReassignmentDb;
   private requestDb: RequestDb;
   private employeeService: EmployeeService;
   private logService: LogService;
+  private notificationService: NotificationService;
 
   constructor(
     reassignmentDb: ReassignmentDb,
     requestDb: RequestDb,
     employeeService: EmployeeService,
     logService: LogService,
+    notificationService: NotificationService,
   ) {
     this.reassignmentDb = reassignmentDb;
     this.requestDb = requestDb;
     this.employeeService = employeeService;
     this.logService = logService;
+    this.notificationService = notificationService;
   }
 
   public async insertReassignmentRequest(
@@ -54,6 +67,27 @@ class ReassignmentService {
     };
 
     await this.reassignmentDb.insertReassignmentRequest(request);
+
+    const datesInBetween = getDatesInRange(startDate, endDate);
+
+    await this.notificationService.pushRequestSentNotification(
+      EmailHeaders.REASSIGNMENT_SENT,
+      currentManager!.email,
+      tempReportingManager!.staffId,
+      Request.REASSIGNMENT,
+      [[datesInBetween, "-"]],
+      "-",
+    );
+
+    const emailSubject = `[${Request.REASSIGNMENT}] Pending Reassignment Request`;
+    const emailContent = `You have a pending reassignment request from ${managerName} and requires your approval. Please login to the portal to approve the request.`;
+    await this.notificationService.notify(
+      tempReportingManager!.email,
+      emailSubject,
+      emailContent,
+      [startDate, endDate],
+      null
+    );
 
     /**
      * Logging
