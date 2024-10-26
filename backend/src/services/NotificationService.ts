@@ -192,7 +192,7 @@ class NotificationService {
         </tr>
     `,
         )
-        .join(""); // Join the array of strings into a single string
+        .join("");
     } else if (dateRange) {
       const [startDate, endDate] = dateRange;
       tableHeader = "";
