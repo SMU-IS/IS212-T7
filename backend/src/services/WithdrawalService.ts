@@ -285,9 +285,11 @@ class WithdrawalService {
   public async updateWithdrawalStatusToExpired() {
     const withdrawalRequests =
       await this.withdrawalDb.updateWithdrawalStatusToExpired();
-    if (!!withdrawalRequests) {
+
+    if (withdrawalRequests.length > 1) {
       const { requestId, requestedDate, requestType, staffId } =
         withdrawalRequests[0];
+
       const employee = await this.employeeService.getEmployee(staffId);
 
       const emailSubject = `[${Request.WITHDRAWAL}] Withdrawal Expired`;
