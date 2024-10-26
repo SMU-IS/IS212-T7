@@ -286,7 +286,7 @@ class WithdrawalService {
     const withdrawalRequests =
       await this.withdrawalDb.updateWithdrawalStatusToExpired();
 
-    if (withdrawalRequests.length > 0) {
+    if (withdrawalRequests && withdrawalRequests.length > 0) {
       const { requestId, requestedDate, requestType, staffId } =
         withdrawalRequests[0];
 
