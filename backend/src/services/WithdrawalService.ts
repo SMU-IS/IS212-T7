@@ -287,14 +287,13 @@ class WithdrawalService {
       await this.withdrawalDb.updateWithdrawalStatusToExpired();
     if (!!withdrawalRequests) {
       const { requestId, requestedDate, requestType, staffId } =
-        withdrawalRequests;
+        withdrawalRequests[0];
       const employee = await this.employeeService.getEmployee(staffId);
 
-      const emailSubject = `[${Request.APPLICATION}] Application Expired`;
-      const emailContent = `Your application has expired. Please re-apply.`;
+      const emailSubject = `[${Request.WITHDRAWAL}] Withdrawal Expired`;
+      const emailContent = `Your request withdrawal has expired. Please contact your reporting manager for more details.`;
       const dayjsDate = dayjs(requestedDate);
       const formattedDate = dayjsDate.format("YYYY-MM-DD");
-
       await this.notificationService.notify(
         employee!.email,
         emailSubject,

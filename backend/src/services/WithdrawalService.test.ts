@@ -493,52 +493,47 @@ describe("updateWithdrawalStatusToExpired", () => {
   });
 
   it("should update withdrawal status, notify the employee, and log the action", async () => {
-    // Mock data
-    const mockRequest = {
-      requestId: "123",
-      requestedDate: "2024-10-26T10:00:00Z",
-      requestType: "SomeType",
-      staffId: "staff123",
-    };
+    const mockRequest = [
+      {
+        requestId: "123",
+        requestedDate: "2024-10-26T10:00:00Z",
+        requestType: "SomeType",
+        staffId: "staff123",
+      },
+    ];
     const mockEmployee = {
       email: "employee@example.com",
     };
 
-    // Set up mock return values
     withdrawalDbMock.updateWithdrawalStatusToExpired.mockResolvedValue(
       mockRequest,
     );
     employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
 
-    // Call the method
     await withdrawalService.updateWithdrawalStatusToExpired();
 
-    // Assertions for withdrawalDb.updateWithdrawalStatusToExpired
     expect(withdrawalDbMock.updateWithdrawalStatusToExpired).toHaveBeenCalled();
 
-    // Assertions for employeeService.getEmployee
     expect(employeeServiceMock.getEmployee).toHaveBeenCalledWith(
-      mockRequest.staffId,
+      mockRequest[0].staffId,
     );
 
-    // Assertions for notificationService.notify
     expect(notificationServiceMock.notify).toHaveBeenCalledWith(
       mockEmployee.email,
-      `[APPLICATION] Application Expired`,
-      `Your application has expired. Please re-apply.`,
+      `[WITHDRAWAL] Withdrawal Expired`,
+      `Your request withdrawal has expired. Please contact your reporting manager for more details.`,
       null,
       [
         [
-          dayjs(mockRequest.requestedDate).format("YYYY-MM-DD"),
-          mockRequest.requestType,
+          dayjs(mockRequest[0].requestedDate).format("YYYY-MM-DD"),
+          mockRequest[0].requestType,
         ],
       ],
     );
 
-    // Assertions for logService.logRequestHelper
     expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
       performedBy: PerformedBy.SYSTEM,
-      requestId: mockRequest.requestId,
+      requestId: mockRequest[0].requestId,
       requestType: "WITHDRAWAL",
       action: Action.EXPIRE,
       dept: PerformedBy.PERFORMED_BY_SYSTEM,
@@ -547,13 +542,10 @@ describe("updateWithdrawalStatusToExpired", () => {
   });
 
   it("should not proceed with notification and logging if no withdrawal request is found", async () => {
-    // Set up mock return values
     withdrawalDbMock.updateWithdrawalStatusToExpired.mockResolvedValue(null);
 
-    // Call the method
     await withdrawalService.updateWithdrawalStatusToExpired();
 
-    // Assertions to ensure notification and logging are not called
     expect(employeeServiceMock.getEmployee).not.toHaveBeenCalled();
     expect(notificationServiceMock.notify).not.toHaveBeenCalled();
     expect(logServiceMock.logRequestHelper).not.toHaveBeenCalled();

@@ -20,7 +20,7 @@ class CronJob {
 
   public execute() {
     // To run at 00:00 AM daily
-    cron.schedule("0 0 * * *", () => {
+    cron.schedule("* * * * *", () => {
       this.requestService.updateRequestStatusToExpired();
       this.withdrawalService.updateWithdrawalStatusToExpired();
       this.reassignmentService.setActiveReassignmentPeriod();
