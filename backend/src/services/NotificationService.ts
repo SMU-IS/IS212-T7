@@ -148,7 +148,7 @@ class NotificationService {
     approveEmail: string,
     emailSubject: string,
     emailBodyContent: string,
-    dateRange: Date[] | null,
+    dateRange: [string, string] | null,
     requestedDates: [string, string][] | null,
   ): Promise<any> {
     let emailContentHtml;
@@ -171,7 +171,7 @@ class NotificationService {
   }
 
   private notifHtmlBody(
-    dateRange: Date[] | null,
+    dateRange: [string, string] | null,
     requestedDates: [string, string][] | null,
     emailBodyContent: string,
   ): string {
