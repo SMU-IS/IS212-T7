@@ -65,7 +65,7 @@ class ReassignmentService {
     const formattedEndDate = dayjsEndDate.format("YYYY-MM-DD");
 
     let emailSubject = `[${Request.REASSIGNMENT}] Pending Reassignment Request`;
-    let emailContent = `You have a pending reassignment request from ${managerName} (${currentManager!.email}) and requires your approval. Please login to the portal to approve the request.`;
+    let emailContent = `You have a pending reassignment request from ${managerName}, ${currentManager!.email} (${currentManager!.dept} - ${currentManager!.position}) and requires your approval. Please login to the portal to approve the request.`;
     await this.notificationService.notify(
       tempReportingManager!.email,
       emailSubject,
@@ -75,7 +75,7 @@ class ReassignmentService {
     );
 
     emailSubject = `[${Request.REASSIGNMENT}] Pending Reassignment Request`;
-    emailContent = `Your reassignment request for the following dates have been sent to ${tempReportingManager?.staffFName} ${tempReportingManager?.staffLName} (${tempReportingManager!.email}).`;
+    emailContent = `Your reassignment request for the following dates have been sent to ${tempReportingManager?.staffFName} ${tempReportingManager?.staffLName}, ${tempReportingManager?.email} (${tempReportingManager?.dept} - ${tempReportingManager?.position}).`;
     await this.notificationService.notify(
       currentManager!.email,
       emailSubject,
@@ -237,7 +237,7 @@ class ReassignmentService {
       const formattedEndDate = dayjsEndDate.format("YYYY-MM-DD");
 
       const emailSubject = `[${Request.REASSIGNMENT}] Reassignment ${reassignmentAction}`;
-      const emailContent = `Your reassignment request has been ${reassignmentAction.toLowerCase()} by ${currentManager.staffFName} ${currentManager.staffLName} (${currentManager.email}). Please login to the portal to view the reassignment request.`;
+      const emailContent = `Your reassignment request has been ${reassignmentAction.toLowerCase()} by ${currentManager.staffFName} ${currentManager.staffLName}, ${currentManager.email} (${currentManager.dept} - ${currentManager.position}). Please login to the portal to view the reassignment request.`;
       await this.notificationService.notify(
         requestedManager.email,
         emailSubject,

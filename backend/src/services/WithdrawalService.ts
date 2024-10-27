@@ -120,7 +120,7 @@ class WithdrawalService {
     ];
     if (employee && manager) {
       let emailSubject = `[${Request.WITHDRAWAL}] Pending Withdrawal Request`;
-      let emailContent = `Your withdrawal request has been sent to ${manager.staffFName} ${manager.staffLName} (${manager.email}).`;
+      let emailContent = `Your withdrawal request has been sent to ${manager.staffFName} ${manager.staffLName}, ${manager.email} (${manager.dept} - ${manager.position}).`;
       await this.notificationService.notify(
         employee.email,
         emailSubject,
@@ -130,7 +130,7 @@ class WithdrawalService {
       );
 
       emailSubject = `[${Request.WITHDRAWAL}] Pending Withdrawal Request`;
-      emailContent = `You have a pending withdrawal request from ${employee.staffFName} ${employee.staffLName} (${employee.email}).<br><br>Please login to the portal to approve the request.`;
+      emailContent = `You have a pending withdrawal request from ${employee.staffFName} ${employee.staffLName}, ${employee.email} (${employee.dept} - ${employee.position}).<br><br>Please login to the portal to approve the request.`;
       await this.notificationService.notify(
         manager.email,
         emailSubject,
@@ -260,7 +260,7 @@ class WithdrawalService {
 
     if (managerDetails && employee) {
       const emailSubject = `[${Request.WITHDRAWAL}] Withdrawal Approved`;
-      const emailContent = `Your withdrawal request has been approved by ${managerDetails.staffFName} ${managerDetails.staffLName} (${managerDetails.email}).<br><br>Please login to the portal to view the request.`;
+      const emailContent = `Your withdrawal request has been approved by ${managerDetails.staffFName} ${managerDetails.staffLName}, ${managerDetails.email} (${managerDetails.dept} - ${managerDetails.position}).<br><br>Please login to the portal to view the request.`;
       const dayjsDate = dayjs(request.requestedDate);
       const formattedDate = dayjsDate.format("YYYY-MM-DD");
       const requestedDate: [string, string][] = [
@@ -317,7 +317,7 @@ class WithdrawalService {
     const employee = await this.employeeService.getEmployee(request.staffId);
     if (managerDetails && employee) {
       const emailSubject = `[${Request.WITHDRAWAL}] Withdrawal Rejected`;
-      const emailContent = `Your withdrawal request has been rejected by ${managerDetails.staffFName} ${managerDetails.staffLName} (${managerDetails.email}).<br><br>Reason: ${reason}<br><br>Please login to the portal to view the request.`;
+      const emailContent = `Your withdrawal request has been rejected by ${managerDetails.staffFName} ${managerDetails.staffLName}, ${managerDetails.email} (${managerDetails.dept} - ${managerDetails.position}).<br><br>Reason: ${reason}<br><br>Please login to the portal to view the request.`;
       const dayjsDate = dayjs(request.requestedDate);
       const formattedDate = dayjsDate.format("YYYY-MM-DD");
       const requestedDate: [string, string][] = [

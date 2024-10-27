@@ -110,7 +110,7 @@ class RequestService {
     );
     if (manager) {
       let emailSubject = `[${Request.APPLICATION}] Pending Application Cancelled`;
-      let emailContent = `${staffFName} ${staffLName} (${email}) has cancelled pending application.<br><br>Please login to the portal to view updated request list.`;
+      let emailContent = `${staffFName} ${staffLName}, ${email} (${dept} - ${position}) has cancelled pending application.<br><br>Please login to the portal to view updated request list.`;
       await this.notificationService.notify(
         manager.email,
         emailSubject,
@@ -120,7 +120,7 @@ class RequestService {
       );
 
       emailSubject = `[${Request.APPLICATION}] Pending Application Cancelled`;
-      emailContent = `Your application cancellation has been sent to ${manager.staffFName} ${manager.staffLName} (${manager.email}).`;
+      emailContent = `Your application cancellation has been sent to ${manager.staffFName} ${manager.staffLName}, ${manager.email} (${manager.dept} - ${manager.position}).`;
       await this.notificationService.notify(
         email,
         emailSubject,
@@ -391,7 +391,7 @@ class RequestService {
       );
       if (manager) {
         const emailSubject = `[${Request.APPLICATION}] Pending Application Request`;
-        const emailContent = `You have a pending application request from ${employee.staffFName} ${employee.staffLName} (${employee.email}).<br><br>Reason for application: ${requestDetails.reason}.<br><br>Please login to the portal to approve the request.`;
+        const emailContent = `You have a pending application request from ${employee.staffFName} ${employee.staffLName}, ${employee.email} (${employee.dept} - ${employee.position}).<br><br>Reason for application: ${requestDetails.reason}.<br><br>Please login to the portal to approve the request.`;
         await this.notificationService.notify(
           manager.email,
           emailSubject,
@@ -449,7 +449,7 @@ class RequestService {
     const manager = await this.employeeService.getEmployee(Number(performedBy));
     if (manager) {
       const emailSubject = `[${Request.APPLICATION}] Application Approved`;
-      const emailContent = `Your application has been approved by ${manager.staffFName} ${manager.staffLName} (${manager.email}).<br><br>Please login to the portal to view the request.`;
+      const emailContent = `Your application has been approved by ${manager.staffFName} ${manager.staffLName}, ${manager.email} (${manager.dept} - ${manager.position}).<br><br>Please login to the portal to view the request.`;
       const dayjsDate = dayjs(request.requestedDate);
       const formattedDate = dayjsDate.format("YYYY-MM-DD");
       const requestedDate: [string, string][] = [
@@ -514,7 +514,7 @@ class RequestService {
     const manager = await this.employeeService.getEmployee(Number(performedBy));
     if (manager) {
       const emailSubject = `[${Request.APPLICATION}] Application Rejected`;
-      const emailContent = `Your application has been rejected by ${manager.staffFName} ${manager.staffLName} (${manager.email}).<br><br>Reason: ${reason}<br><br>Please login to the portal to view the request.`;
+      const emailContent = `Your application has been rejected by ${manager.staffFName} ${manager.staffLName}, ${manager.email} (${manager.dept} - ${manager.position}).<br><br>Reason: ${reason}<br><br>Please login to the portal to view the request.`;
       const dayjsDate = dayjs(request.requestedDate);
       const formattedDate = dayjsDate.format("YYYY-MM-DD");
       const requestedDate: [string, string][] = [
@@ -626,7 +626,7 @@ class RequestService {
       const employee = await this.employeeService.getEmployee(request.staffId);
       if (employee) {
         const emailSubject = `[${Request.APPLICATION}] Application Revoked`;
-        const emailContent = `Your application has been revoked by ${managerDetails.staffFName} ${managerDetails.staffLName} (${managerDetails.email}).<br><br>Reason: ${reason}.<br><br>Please login to the portal to view the revocation.`;
+        const emailContent = `Your application has been revoked by ${managerDetails.staffFName} ${managerDetails.staffLName}, ${managerDetails.email} (${managerDetails.dept} - ${managerDetails.position}).<br><br>Reason: ${reason}.<br><br>Please login to the portal to view the revocation.`;
         await this.notificationService.notify(
           employee.email,
           emailSubject,
