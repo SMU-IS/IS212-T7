@@ -21,7 +21,10 @@ import LogService from "@/services/LogService";
 import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
 import { Context } from "koa";
+import Mailer from "@/config/mailer";
+import { jest } from "@jest/globals";
 import UtilsController from "./UtilsController";
+import NotificationService from "@/services/NotificationService";
 
 describe("RequestController", () => {
   let requestController: RequestController;
@@ -31,6 +34,7 @@ describe("RequestController", () => {
   let reassignmentDbMock: ReassignmentDb;
   let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
   let employeeServiceMock: jest.Mocked<EmployeeService>;
+  let mockMailer: jest.Mocked<Mailer>;
   let ctx: Context;
   type ResponseDates = {
     successDates: [string, string][];
@@ -45,6 +49,7 @@ describe("RequestController", () => {
 
   let logDbMock: jest.Mocked<LogDb>;
   let logServiceMock: jest.Mocked<LogService>;
+  let notificationServiceMock: jest.Mocked<NotificationService>;
 
   beforeEach(() => {
     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
@@ -53,6 +58,7 @@ describe("RequestController", () => {
     employeeServiceMock = new EmployeeService(
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
+    mockMailer = Mailer.getInstance() as jest.Mocked<Mailer>;
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
     logServiceMock = new LogService(
       logDbMock,
@@ -64,10 +70,18 @@ describe("RequestController", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
+
+    notificationServiceMock = new NotificationService(
+      employeeServiceMock,
+      mockMailer,
+    ) as jest.Mocked<NotificationService>;
+
     requestServiceMock = new RequestService(
       logServiceMock,
       employeeServiceMock,
+      notificationServiceMock,
       requestDbMock,
       reassignmentServiceMock,
     ) as jest.Mocked<RequestService>;
@@ -566,7 +580,7 @@ describe("cancelPendingRequests", () => {
 
   it("should return OK if the request is successfully cancelled", async () => {
     mockRequestService.cancelPendingRequests.mockResolvedValue(
-      HttpStatusResponse.OK,
+      HttpStatusResponse.OK as never,
     );
 
     await requestController.cancelPendingRequests(ctx);
@@ -577,7 +591,7 @@ describe("cancelPendingRequests", () => {
 
   it("should return NOT_MODIFIED if the request was not modified", async () => {
     mockRequestService.cancelPendingRequests.mockResolvedValue(
-      HttpStatusResponse.NOT_MODIFIED,
+      HttpStatusResponse.NOT_MODIFIED as never,
     );
 
     await requestController.cancelPendingRequests(ctx);
@@ -615,7 +629,7 @@ describe("getAllSubordinatesRequests", () => {
       { requestId: 2, status: Status.APPROVED },
     ];
     mockRequestService.getAllSubordinatesRequests.mockResolvedValue(
-      mockRequests,
+      mockRequests as never,
     );
 
     await requestController.getAllSubordinatesRequests(ctx);
@@ -627,7 +641,9 @@ describe("getAllSubordinatesRequests", () => {
   });
 
   it("should handle cases where no requests are found", async () => {
-    mockRequestService.getAllSubordinatesRequests.mockResolvedValue([]);
+    mockRequestService.getAllSubordinatesRequests.mockResolvedValue(
+      [] as never,
+    );
 
     await requestController.getAllSubordinatesRequests(ctx);
 
@@ -640,7 +656,7 @@ describe("getAllSubordinatesRequests", () => {
   it("should handle errors gracefully", async () => {
     const errorMessage = "Service error";
     mockRequestService.getAllSubordinatesRequests.mockRejectedValue(
-      new Error(errorMessage),
+      new Error(errorMessage) as never,
     );
 
     await expect(
@@ -675,7 +691,7 @@ describe("getOwnPendingRequests", () => {
       { requestId: 2, status: "pending" },
     ];
     mockRequestService.getOwnPendingRequests.mockResolvedValue(
-      mockPendingRequests,
+      mockPendingRequests as never,
     );
 
     await requestController.getOwnPendingRequests(ctx);
@@ -685,7 +701,7 @@ describe("getOwnPendingRequests", () => {
   });
 
   it("should handle cases where no pending requests are found", async () => {
-    mockRequestService.getOwnPendingRequests.mockResolvedValue([]);
+    mockRequestService.getOwnPendingRequests.mockResolvedValue([] as never);
 
     await requestController.getOwnPendingRequests(ctx);
 
@@ -712,7 +728,7 @@ describe("getOwnPendingRequests", () => {
   it("should handle errors from the service gracefully", async () => {
     const errorMessage = "Service error";
     mockRequestService.getOwnPendingRequests.mockRejectedValue(
-      new Error(errorMessage),
+      new Error(errorMessage) as never,
     );
 
     await expect(requestController.getOwnPendingRequests(ctx)).rejects.toThrow(
@@ -743,7 +759,7 @@ describe("getMySchedule", () => {
 
   it("should return schedule for the given myId", async () => {
     const mockSchedule = [{ date: "2024-10-20", event: "Meeting" }];
-    mockRequestService.getMySchedule.mockResolvedValue(mockSchedule);
+    mockRequestService.getMySchedule.mockResolvedValue(mockSchedule as never);
 
     await requestController.getMySchedule(ctx);
 
@@ -752,7 +768,7 @@ describe("getMySchedule", () => {
   });
 
   it("should handle cases where no schedule is found", async () => {
-    mockRequestService.getMySchedule.mockResolvedValue([]);
+    mockRequestService.getMySchedule.mockResolvedValue([] as never);
 
     await requestController.getMySchedule(ctx);
 
@@ -778,7 +794,9 @@ describe("getMySchedule", () => {
 
   it("should handle errors from the service gracefully", async () => {
     const errorMessage = "Service error";
-    mockRequestService.getMySchedule.mockRejectedValue(new Error(errorMessage));
+    mockRequestService.getMySchedule.mockRejectedValue(
+      new Error(errorMessage) as never,
+    );
 
     await expect(requestController.getMySchedule(ctx)).rejects.toThrow(
       errorMessage,
@@ -810,7 +828,7 @@ describe("getSchedule", () => {
 
   it("should return schedule for the given id", async () => {
     const mockSchedule = [{ date: "2024-10-20", event: "Meeting" }];
-    mockRequestService.getSchedule.mockResolvedValue(mockSchedule);
+    mockRequestService.getSchedule.mockResolvedValue(mockSchedule as never);
 
     await requestController.getSchedule(ctx);
 
@@ -819,7 +837,7 @@ describe("getSchedule", () => {
   });
 
   it("should handle cases where no schedule is found", async () => {
-    mockRequestService.getSchedule.mockResolvedValue([]);
+    mockRequestService.getSchedule.mockResolvedValue([] as never);
 
     await requestController.getSchedule(ctx);
 
@@ -835,7 +853,7 @@ describe("getSchedule", () => {
       error: {
         format: jest.fn().mockReturnValue("Invalid Id format"),
       },
-    });
+    }) as any;
 
     await requestController.getSchedule(ctx);
 
@@ -873,7 +891,7 @@ describe("approveRequest", () => {
       error: {
         format: jest.fn().mockReturnValue("Invalid approval details"),
       },
-    });
+    }) as any;
 
     await requestController.approveRequest(ctx);
 
@@ -890,9 +908,11 @@ describe("approveRequest", () => {
 
     approvalSchema.safeParse = jest.fn().mockReturnValue({
       success: true,
-    });
+    }) as any;
 
-    mockRequestService.approveRequest.mockResolvedValue(HttpStatusResponse.OK);
+    mockRequestService.approveRequest.mockResolvedValue(
+      HttpStatusResponse.OK as never,
+    );
 
     await requestController.approveRequest(ctx);
 
@@ -908,10 +928,10 @@ describe("approveRequest", () => {
 
     approvalSchema.safeParse = jest.fn().mockReturnValue({
       success: true,
-    });
+    }) as any;
 
     mockRequestService.approveRequest.mockResolvedValue(
-      HttpStatusResponse.NOT_MODIFIED,
+      HttpStatusResponse.NOT_MODIFIED as never,
     );
 
     await requestController.approveRequest(ctx);
@@ -949,7 +969,7 @@ describe("rejectRequest", () => {
       error: {
         format: jest.fn().mockReturnValue("Invalid rejection details"),
       },
-    });
+    }) as any;
 
     await requestController.rejectRequest(ctx);
 
@@ -967,9 +987,11 @@ describe("rejectRequest", () => {
 
     rejectionSchema.safeParse = jest.fn().mockReturnValue({
       success: true,
-    });
+    }) as any;
 
-    mockRequestService.rejectRequest.mockResolvedValue(HttpStatusResponse.OK);
+    mockRequestService.rejectRequest.mockResolvedValue(
+      HttpStatusResponse.OK as never,
+    );
 
     await requestController.rejectRequest(ctx);
 
@@ -990,10 +1012,10 @@ describe("rejectRequest", () => {
 
     rejectionSchema.safeParse = jest.fn().mockReturnValue({
       success: true,
-    });
+    }) as any;
 
     mockRequestService.rejectRequest.mockResolvedValue(
-      HttpStatusResponse.NOT_MODIFIED,
+      HttpStatusResponse.NOT_MODIFIED as never,
     );
 
     await requestController.rejectRequest(ctx);
@@ -1035,7 +1057,7 @@ describe("revokeRequest", () => {
       error: {
         format: jest.fn().mockReturnValue("Invalid revocation details"),
       },
-    });
+    }) as any;
 
     await requestController.revokeRequest(ctx);
 
@@ -1053,9 +1075,11 @@ describe("revokeRequest", () => {
 
     revocationSchema.safeParse = jest.fn().mockReturnValue({
       success: true,
-    });
+    }) as any;
 
-    mockRequestService.revokeRequest.mockResolvedValue(HttpStatusResponse.OK);
+    mockRequestService.revokeRequest.mockResolvedValue(
+      HttpStatusResponse.OK as never,
+    );
 
     await requestController.revokeRequest(ctx);
 
@@ -1076,10 +1100,10 @@ describe("revokeRequest", () => {
 
     revocationSchema.safeParse = jest.fn().mockReturnValue({
       success: true,
-    });
+    }) as any;
 
     mockRequestService.revokeRequest.mockResolvedValue(
-      HttpStatusResponse.NOT_MODIFIED,
+      HttpStatusResponse.NOT_MODIFIED as never,
     );
 
     await requestController.revokeRequest(ctx);

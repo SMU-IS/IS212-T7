@@ -1,25 +1,27 @@
+import { useCustomNotificationProvider } from "@/components/toast";
 import { EmployeeJWT } from "@/interfaces/employee";
+import { formatDate } from "@/utils/wfh-dateUtils";
 import { List, TagField } from "@refinedev/antd";
 import { useGetIdentity } from "@refinedev/core";
 import {
   Button,
   Card,
   Col,
+  Descriptions,
   Form,
   Input,
+  Modal,
   Row,
   Select,
   Statistic,
   Table,
+  Tag,
   Typography,
-  Descriptions,
-  Modal,
 } from "antd";
 import axios from "axios";
-import { formatDate } from "@/utils/wfh-dateUtils";
 import React, { useEffect, useState } from "react";
 import CountUp from "react-countup";
-import { useCustomNotificationProvider } from "@/components/toast";
+import { usePendingWithdrawalsCount } from "./requestsCount";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const { Title } = Typography;
@@ -35,7 +37,9 @@ export const ManageWithdrawals: React.FC = () => {
   const { data: user } = useGetIdentity<EmployeeJWT>();
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [filteredData, setFilteredData] = useState<any[]>([]);
-  const [filterStatus, setFilterStatus] = useState<string | undefined>(undefined);
+  const [filterStatus, setFilterStatus] = useState<string | undefined>(
+    undefined,
+  );
   const toast = useCustomNotificationProvider();
 
   // Modal states
@@ -43,6 +47,7 @@ export const ManageWithdrawals: React.FC = () => {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<any>(null);
   const [formValues, setFormValues] = useState<any>(null);
+  const { pendingWithdrawalsCount, fetchPendingWithdrawals } = usePendingWithdrawalsCount();
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -55,11 +60,10 @@ export const ManageWithdrawals: React.FC = () => {
     try {
       const response = await axios.get(
         `${backendUrl}/api/v1/getSubordinatesWithdrawalRequests`,
-        { headers: { id: staffId } }
+        { headers: { id: staffId } },
       );
       setWithdrawals(response.data);
       setFilteredData(response.data);
-      
     } catch (error) {
       console.error("Error fetching withdrawals:", error);
       toast.open({
@@ -110,8 +114,8 @@ export const ManageWithdrawals: React.FC = () => {
         response = await axios.post(
           `${backendUrl}/api/v1/approveWithdrawalRequest`,
           {
-            ...basePayload
-          }
+            ...basePayload,
+          },
         );
       } else if (formValues.status === "REJECTED") {
         response = await axios.post(
@@ -119,7 +123,7 @@ export const ManageWithdrawals: React.FC = () => {
           {
             ...basePayload,
             reason: formValues.reason,
-          }
+          },
         );
       }
 
@@ -130,16 +134,15 @@ export const ManageWithdrawals: React.FC = () => {
                 ...withdrawal,
                 status: formValues.status,
               }
-            : withdrawal
+            : withdrawal,
         );
 
         setWithdrawals(updatedWithdrawals);
         setFilteredData(
           updatedWithdrawals.filter(
-            (withdrawal) => !filterStatus || withdrawal.status === filterStatus
-          )
+            (withdrawal) => !filterStatus || withdrawal.status === filterStatus,
+          ),
         );
-      
 
         toast.open({
           message: "Success",
@@ -161,41 +164,71 @@ export const ManageWithdrawals: React.FC = () => {
       setSelectedWithdrawal(null);
       setFormValues(null);
       form.resetFields();
+      await fetchPendingWithdrawals();
     }
   };
 
   const columns = [
     { title: "Withdrawal Id", dataIndex: "withdrawalId", key: "withdrawalId" },
     { title: "Staff Name", dataIndex: "staffName", key: "staffName" },
-    { title: "Department/Team", dataIndex: "dept", key: "dept"},
+    { title: "Department/Team", dataIndex: "dept", key: "dept" },
     {
       title: "WFH Date",
       dataIndex: "requestedDate",
       key: "requestedDate",
       render: (dateString: string) => formatDate(new Date(dateString)),
     },
-    { title: "Request Type", dataIndex: "requestType", key: "requestType" },
+
+    {
+      title: "Request Type",
+      dataIndex: "requestType",
+      key: "requestType",
+      render: (type: any) => {
+        let color = "";
+        switch (type) {
+          case "FULL":
+            color = "purple";
+            break;
+          case "PM":
+          case "AM":
+            color = "gold";
+            break;
+          default:
+            color = "gray";
+            break;
+        }
+        return <Tag color={color}>{type}</Tag>;
+      },
+    },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => <TagField 
-      value={status} 
-      color={
-        status === "PENDING"
-          ? "blue"
-          : status === "APPROVED"
-            ? "green"
+      render: (status: string) => (
+        <TagField
+          value={status}
+          color={
+            status === "PENDING"
+              ? "blue"
+              : status === "APPROVED"
+                ? "green"
                 : status === "REJECTED"
                   ? "red"
                   : "pink"
-      } />,
+          }
+        />
+      ),
     },
     {
       title: "Action",
       key: "action",
       render: (_: any, record: any) => (
-        <Button onClick={() => handleEditClick(record)} disabled={record.status === "APPROVED"}>Edit</Button>
+        <Button
+          onClick={() => handleEditClick(record)}
+          disabled={record.status === "APPROVED"}
+        >
+          Edit
+        </Button>
       ),
     },
   ];
@@ -204,10 +237,27 @@ export const ManageWithdrawals: React.FC = () => {
 
   return (
     <List>
-      <Title level={3}>Manage Withdrawals</Title>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={12}>
+          <Title level={3}>Manage Withdrawals</Title>
+        </Col>
+        <Col xs={24} md={12} style={{ textAlign: "right" }}>
+          <Select
+            placeholder="Filter by status"
+            style={{ width: "100%", maxWidth: 200, marginBottom: 16 }}
+            onChange={(value) => setFilterStatus(value)}
+            allowClear
+          >
+            <Select.Option value={undefined}>All</Select.Option>
+            <Select.Option value="PENDING">Pending</Select.Option>
+            <Select.Option value="APPROVED">Approved</Select.Option>
+            <Select.Option value="REJECTED">Rejected</Select.Option>
+          </Select>
+        </Col>
+      </Row>
 
-      <Row gutter={16}>
-        <Col span={8}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={8}>
           <Card bordered={false}>
             <Statistic
               title="Pending Withdrawals"
@@ -216,7 +266,7 @@ export const ManageWithdrawals: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={8}>
           <Card bordered={false}>
             <Statistic
               title="Approved Withdrawals"
@@ -225,7 +275,7 @@ export const ManageWithdrawals: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={8}>
           <Card bordered={false}>
             <Statistic
               title="Rejected Withdrawals"
@@ -235,22 +285,16 @@ export const ManageWithdrawals: React.FC = () => {
           </Card>
         </Col>
       </Row>
+      <div style={{ overflowX: "auto", marginTop: 16 }}>
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          rowKey="id"
+          scroll={{ x: "max-content" }}
+        />
+      </div>
 
-      <Select
-        placeholder="Filter by status"
-        style={{ width: 200, marginBottom: 16,  float: "right", marginTop: 50}}
-        onChange={(value) => setFilterStatus(value)}
-        allowClear
-      >
-        <Select.Option value={undefined}>All</Select.Option>
-        <Select.Option value="PENDING" >Pending</Select.Option>
-        <Select.Option value="APPROVED">Approved</Select.Option>
-        <Select.Option value="REJECTED">Rejected</Select.Option>
-      </Select>
-
-      <Table columns={columns} dataSource={filteredData} rowKey="id" />
-
-     
+      {/* Edit Modal */}
       <Modal
         title="Manage Withdrawal"
         open={editModalVisible}
@@ -259,15 +303,24 @@ export const ManageWithdrawals: React.FC = () => {
           form.resetFields();
         }}
         footer={null}
+        width="90%"
+        style={{ maxWidth: "600px" }}
       >
         {selectedWithdrawal && (
           <Form form={form} onFinish={handleEditSubmit}>
-            <Descriptions layout="vertical" bordered>
+            <Descriptions
+              layout="vertical"
+              bordered
+              column={{ xs: 1, sm: 2, md: 3 }}
+            >
               <Descriptions.Item label="Withdrawal Id">
                 {selectedWithdrawal.withdrawalId}
               </Descriptions.Item>
               <Descriptions.Item label="Staff Name">
                 {selectedWithdrawal.staffName}
+              </Descriptions.Item>
+              <Descriptions.Item label="Department">
+                {selectedWithdrawal.dept}
               </Descriptions.Item>
               <Descriptions.Item label="WFH Date">
                 {formatDate(new Date(selectedWithdrawal.requestedDate))}
@@ -277,7 +330,11 @@ export const ManageWithdrawals: React.FC = () => {
               </Descriptions.Item>
             </Descriptions>
 
-            <Form.Item name="status" label="Status" rules={[{ required: true }]}>
+            <Form.Item
+              name="status"
+              label="Status"
+              rules={[{ required: true }]}
+            >
               <Select>
                 <Select.Option value="APPROVED">Approve</Select.Option>
                 <Select.Option value="REJECTED">Reject</Select.Option>
@@ -307,8 +364,7 @@ export const ManageWithdrawals: React.FC = () => {
                 ) : null
               }
             </Form.Item>
-
-            <Form.Item>
+            <Form.Item style={{ textAlign: "center" }}>
               <Button type="primary" htmlType="submit">
                 Save
               </Button>
@@ -323,30 +379,36 @@ export const ManageWithdrawals: React.FC = () => {
         open={confirmModalVisible}
         onCancel={() => setConfirmModalVisible(false)}
         footer={[
-          <div key="footer-buttons" style={{ display: 'flex', justifyContent: 'center', width: '100%', gap: '16px'}}>
-          <Button
-            key="submit"
-            type="primary"
-            onClick={handleConfirmAction}
+          <div
+            key="footer-buttons"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+              gap: "16px",
+            }}
           >
-            Yes
-          </Button>
-            <Button key="cancel"  onClick={() => setConfirmModalVisible(false)}>
-            No
-          </Button>
-          </div>
+            <Button key="submit" type="primary" onClick={handleConfirmAction}>
+              Yes
+            </Button>
+            <Button key="cancel" onClick={() => setConfirmModalVisible(false)}>
+              No
+            </Button>
+          </div>,
         ]}
+        width="90%"
+        style={{ maxWidth: "400px" }}
       >
         <Typography.Text>
           Are you sure you want to{" "}
           {formValues?.status?.toLowerCase() === "approved"
             ? formValues.status.toLowerCase().slice(0, -1)
             : formValues?.status?.toLowerCase() === "rejected"
-            ? formValues.status.toLowerCase().slice(0, -2)
-            : formValues?.status?.toLowerCase() || "update"} this withdrawal?
+              ? formValues.status.toLowerCase().slice(0, -2)
+              : formValues?.status?.toLowerCase() || "update"}{" "}
+          this withdrawal?
         </Typography.Text>
       </Modal>
     </List>
   );
 };
-
