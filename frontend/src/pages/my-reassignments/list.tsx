@@ -1,31 +1,25 @@
-import { useEffect, useState, useContext } from "react";
 import { EmployeeJWT } from "@/interfaces/employee";
 import { useGetIdentity } from "@refinedev/core";
 import {
   Button,
-  Typography,
-  Divider,
-  List,
-  Skeleton,
-  Select,
-  Statistic,
   Card,
-  Modal,
   DatePicker,
+  Divider,
   Input,
+  List,
   message,
+  Modal,
+  Select,
+  Skeleton,
+  Statistic,
+  Typography,
 } from "antd";
 import axios from "axios";
+import type { Dayjs } from "dayjs";
+import moment from "moment";
+import { useContext, useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { ColorModeContext } from "../../contexts/color-mode";
-import moment from "moment";
-import dayjs from "dayjs";
-import type { Dayjs } from "dayjs";
-
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
-const { Title } = Typography;
-const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 interface DataType {
   dept: string;
@@ -36,19 +30,29 @@ interface DataType {
   staffName: string;
 }
 
-const fetchRequests = async () => {
-  try {
-    const response = await axios.get(
-      `${backendUrl}/api/v1/getRoleOneOrThreeEmployees`,
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching requests:", error);
-    return [];
-  }
-};
+interface DataType {
+  dept: string;
+  email: string;
+  position: string;
+  role: number;
+  staffId: number;
+  staffName: string;
+}
+
+interface AssignmentStatus {
+  reassignmentId: number;
+  status: string; // pending, approved, or rejected
+  staffName: string;
+  startDate: string; // ISO date string
+  endDate: string; // ISO date string
+  tempManagerName: string;
+}
 
 export const MyReassignments = () => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const { Title } = Typography;
+  const { Option } = Select;
+  const { RangePicker } = DatePicker;
   const { data: user } = useGetIdentity<EmployeeJWT>();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DataType[]>([]);
@@ -56,6 +60,7 @@ export const MyReassignments = () => {
   const [selectedDept, setSelectedDept] = useState<string | undefined>(
     undefined,
   );
+  const [assignmentsModalVisible, setAssignmentsModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<DataType | null>(
     null,
@@ -64,27 +69,38 @@ export const MyReassignments = () => {
     [Dayjs | null, Dayjs | null] | null
   >(null);
   const { mode } = useContext(ColorModeContext);
+  const [assignmentsData, setAssignmentsData] =
+    useState<AssignmentStatus | null>(null);
 
   const loadMoreData = () => {
     if (loading) {
       return;
     }
     setLoading(true);
-
-    fetchRequests()
-      .then((res) => {
-        setData(res);
-        setFilteredData(res);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
   };
 
   useEffect(() => {
-    loadMoreData();
-  }, []);
+    if (user?.staffId) {
+      fetchRequests(user.staffId);
+    }
+  }, [user?.staffId]);
+
+  const fetchRequests = async (staffId: any) => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(
+        `${backendUrl}/api/v1/getRoleOneOrThreeEmployees`,
+        { headers: { id: staffId } },
+      );
+      setLoading(false);
+      setData(data);
+      setFilteredData(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+      return [];
+    }
+  };
 
   const handleDeptChange = (value: string) => {
     setSelectedDept(value);
@@ -131,11 +147,12 @@ export const MyReassignments = () => {
       };
 
       try {
+        handleModalClose();
+        message.success("Successfully requested reassignment");
         await axios.post(
           `${backendUrl}/api/v1/requestReassignment`,
           requestBody,
         );
-        handleModalClose();
       } catch (error) {
         console.error("Error assigning role:", error);
       }
@@ -144,9 +161,64 @@ export const MyReassignments = () => {
     }
   };
 
+  const disablePastDates = (current: moment.Moment) => {
+    return current && current < moment().startOf("day");
+  };
+
+  // Fetch reassignment status (handling object response)
+  const fetchReassignmentStatus = async (staffId: number) => {
+    try {
+      const response = await axios.get(
+        `${backendUrl}/api/v1/getReassignmentStatus`,
+        {
+          headers: { id: staffId },
+        },
+      );
+
+      handleModalClose();
+
+      return response.data; // Directly return the object from the response
+    } catch (error) {
+      console.error("Error fetching reassignment status:", error);
+      return null; // Return null in case of an error
+    }
+  };
+
+  const handleExistingAssignmentsClick = async () => {
+    if (user?.staffId) {
+      const assignments = await fetchReassignmentStatus(Number(user.staffId));
+      setAssignmentsData(assignments); // Set the assignments object directly
+      setAssignmentsModalVisible(true);
+    } else {
+      message.error("User ID not available");
+    }
+  };
+
   return (
     <div style={{ width: "80vw", margin: "auto" }}>
-      <Title level={4}>Reassign Role</Title>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "10px",
+        }}
+      >
+        <Title level={4} style={{ margin: 0 }}>
+          Reassign Role
+        </Title>
+        <Button
+          type="default"
+          style={{
+            color: "black",
+            backgroundColor: "skyblue",
+            borderColor: "skyblue",
+          }} // Change to your desired color
+          onClick={handleExistingAssignmentsClick}
+        >
+          My Current Re-Assignments
+        </Button>
+      </div>
 
       <Card bordered={true} style={{ padding: 0, marginBottom: 20 }}>
         <Statistic title="Total Employees" value={filteredData.length} />
@@ -164,6 +236,49 @@ export const MyReassignments = () => {
           </Option>
         ))}
       </Select>
+
+      <Modal
+        title="My Current Re-Assignments"
+        visible={assignmentsModalVisible}
+        onCancel={() => setAssignmentsModalVisible(false)}
+        footer={null}
+      >
+        {Array.isArray(assignmentsData) && assignmentsData.length > 0 ? (
+          <List
+            dataSource={assignmentsData}
+            renderItem={(assignment) => (
+              <List.Item key={assignment.reassignmentId}>
+                <List.Item.Meta
+                  title={`Assigned Temp Manager: ${assignment.tempManagerName}`}
+                  description={
+                    <>
+                      <span
+                        style={{
+                          color:
+                            assignment.status === "PENDING"
+                              ? "orange"
+                              : assignment.status === "APPROVED"
+                                ? "green"
+                                : assignment.status === "REJECTED"
+                                  ? "red"
+                                  : "black",
+                          fontWeight:
+                            assignment.status === "PENDING" ? "bold" : "normal",
+                        }}
+                      >
+                        {`Status: ${assignment.status}`}
+                      </span>
+                      {` | Start Date: ${moment(assignment.startDate).format("YYYY-MM-DD")} | End Date: ${moment(assignment.endDate).format("YYYY-MM-DD")}`}
+                    </>
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        ) : (
+          <p>No current re-assignments available.</p>
+        )}
+      </Modal>
 
       <div
         id="scrollableDiv"
@@ -228,30 +343,16 @@ export const MyReassignments = () => {
               disabled
               style={{ marginBottom: 16 }}
             />
-            <Input
-              name="Position"
-              value={selectedEmployee.position}
-              disabled
-              style={{ marginBottom: 16 }}
-            />
-            <Input
-              name="Department"
-              value={selectedEmployee.dept}
-              disabled
-              style={{ marginBottom: 16 }}
-            />
             <RangePicker
-              style={{ width: "100%", marginBottom: 16 }}
-              minDate={dayjs(moment().startOf("day").toDate())}
-              value={dateRange} // Add this line to bind the date range to the picker
-              onChange={(dates) => {
-                setDateRange(dates);
-              }}
+              disabledDate={disablePastDates as any}
+              value={dateRange}
+              onChange={(dates) => setDateRange(dates)}
+              style={{ width: "100%" }}
             />
             <Button
               type="primary"
               onClick={handleAssignRole}
-              disabled={!dateRange}
+              style={{ marginTop: 16, width: "100%" }}
             >
               Assign Role
             </Button>
