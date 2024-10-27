@@ -35,6 +35,7 @@ describe('Employee Integration Tests', () => {
   afterAll(async () => {
     await mongoose.disconnect();
     await mongoServer.stop();
+    mockServer.close();
   });
 
   beforeEach(async () => {
