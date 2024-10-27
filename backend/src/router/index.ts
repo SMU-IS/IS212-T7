@@ -1,3 +1,4 @@
+import Mailer from "@/config/mailer";
 import EmployeeController from "@/controllers/EmployeeController";
 import LogController from "@/controllers/LogController";
 import ReassignmentController from "@/controllers/ReassignmentController";
@@ -12,6 +13,7 @@ import { AccessControl } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import EmployeeService from "@/services/EmployeeService";
 import LogService from "@/services/LogService";
+import NotificationService from "@/services/NotificationService";
 import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
 import WithdrawalService from "@/services/WithdrawalService";
@@ -29,19 +31,27 @@ const logDb = new LogDb();
 const withdrawalDb = new WithdrawalDb();
 
 /**
+ * External Services
+ */
+const mailer = Mailer.getInstance();
+
+/**
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
 const logService = new LogService(logDb, employeeService);
+const notificationService = new NotificationService(employeeService, mailer);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
   requestDb,
   employeeService,
   logService,
+  notificationService,
 );
 const requestService = new RequestService(
   logService,
   employeeService,
+  notificationService,
   requestDb,
   reassignmentService,
 );
@@ -51,6 +61,7 @@ const withdrawalService = new WithdrawalService(
   requestService,
   reassignmentService,
   employeeService,
+  notificationService,
 );
 
 /**
@@ -63,6 +74,7 @@ const withdrawalController = new WithdrawalController(withdrawalService);
 const logController = new LogController(logService);
 
 const router = new Router();
+
 router.prefix("/api/v1");
 router.get("/swagger.json", (ctx) => {
   ctx.body = swaggerSpec;
@@ -464,6 +476,29 @@ router.post("/requestReassignment", (ctx) =>
 router.get("/getReassignmentStatus", (ctx) =>
   reassignmentController.getReassignmentStatus(ctx),
 );
+
+/**
+ * @openapi
+ * /api/v1/getTempMgrReassignmentStatus:
+ *   get:
+ *     description: Get all reassignment status
+ *     tags: [Reassignment]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Temp Manager's Staff Id
+ *     responses:
+ *       200:
+ *         description: Returns all reassignment status
+ */
+router.get("/getTempMgrReassignmentStatus", (ctx) =>
+  reassignmentController.getTempMgrReassignmentStatus(ctx),
+);
+
+
 
 /**
  * @openapi

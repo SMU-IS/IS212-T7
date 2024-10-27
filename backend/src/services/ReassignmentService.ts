@@ -1,25 +1,38 @@
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
-import { Action, Dept, errMsg, PerformedBy, Request, Status } from "@/helpers";
+import {
+  Action,
+  Dept,
+  EmailHeaders,
+  errMsg,
+  PerformedBy,
+  Request,
+  Status,
+} from "@/helpers";
+import { getDatesInRange } from "@/helpers/date";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
+import NotificationService from "./NotificationService";
 
 class ReassignmentService {
   private reassignmentDb: ReassignmentDb;
   private requestDb: RequestDb;
   private employeeService: EmployeeService;
   private logService: LogService;
+  private notificationService: NotificationService;
 
   constructor(
     reassignmentDb: ReassignmentDb,
     requestDb: RequestDb,
     employeeService: EmployeeService,
     logService: LogService,
+    notificationService: NotificationService,
   ) {
     this.reassignmentDb = reassignmentDb;
     this.requestDb = requestDb;
     this.employeeService = employeeService;
     this.logService = logService;
+    this.notificationService = notificationService;
   }
 
   public async insertReassignmentRequest(
@@ -55,6 +68,27 @@ class ReassignmentService {
 
     await this.reassignmentDb.insertReassignmentRequest(request);
 
+    const datesInBetween = getDatesInRange(startDate, endDate);
+
+    await this.notificationService.pushRequestSentNotification(
+      EmailHeaders.REASSIGNMENT_SENT,
+      currentManager!.email,
+      tempReportingManager!.staffId,
+      Request.REASSIGNMENT,
+      [[datesInBetween, "-"]],
+      "-",
+    );
+
+    const emailSubject = `[${Request.REASSIGNMENT}] Pending Reassignment Request`;
+    const emailContent = `You have a pending reassignment request from ${managerName} and requires your approval. Please login to the portal to approve the request.`;
+    await this.notificationService.notify(
+      tempReportingManager!.email,
+      emailSubject,
+      emailContent,
+      [startDate, endDate],
+      null
+    );
+
     /**
      * Logging
      */
@@ -88,6 +122,28 @@ class ReassignmentService {
 
     return await this.reassignmentDb.getReassignmentRequest(staffId);
   }
+
+  public async getTempMgrReassignmentStatus(staffId: number) {
+    const { staffFName, staffLName, dept, position }: any =
+      await this.employeeService.getEmployee(staffId);
+
+    const staffName = `${staffFName} ${staffLName}`;
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: staffId,
+      requestType: Request.REASSIGNMENT,
+      action: Action.RETRIEVE,
+      staffName: staffName,
+      dept: dept as Dept,
+      position: position,
+    });
+
+    return await this.reassignmentDb.getTempMgrReassignmentRequest(staffId);
+  }
+
 
   public async setActiveReassignmentPeriod(): Promise<void> {
     const isActiveUpdated =
@@ -188,7 +244,7 @@ class ReassignmentService {
 
     // filter approved requests based on reassignment dates
     return subordinateRequests.filter((request) => {
-      if (request.status === Status.APPROVED) {
+      if (request.status === Status.APPROVED || request.status === Status.REJECTED) {
         const requestDate = new Date(request.requestedDate);
         const reassignmentStartDate = new Date(reassignment.startDate);
         const reassignmentEndDate = new Date(reassignment.endDate);

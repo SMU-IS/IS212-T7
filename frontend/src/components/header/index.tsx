@@ -9,17 +9,13 @@ import {
   Typography,
   Badge,
 } from "antd";
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
-import { usePendingCount } from "@/pages/approve-reject/requestsCount";
-
+import { usePendingCount } from "@/pages/approve-reject/requestsCount"; // Importing the hook
+import { usePendingWithdrawalsCount } from "@/pages/manage-withdrawals/requestsCount";
+import { useReassignmentsCounts } from "@/pages/handle-reassignments/requestsCount";
 import { Button } from "antd";
-import {
-  AlertOutlined,
-  AlertTwoTone,
-  DeleteOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { AlertOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
@@ -29,6 +25,7 @@ type IUser = {
   id: number;
   name: string;
   avatar: string;
+  role: number;
 };
 
 export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
@@ -38,8 +35,9 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   const { data: user } = useGetIdentity<IUser>();
   const { mode, setMode } = useContext(ColorModeContext);
   const navigate = useNavigate(); // Hook to handle navigation
-  const count = 1;
-  const [pendingCount] = usePendingCount(); // Read the global state
+  const { pendingCount } = usePendingCount();
+  const { pendingWithdrawalsCount } = usePendingWithdrawalsCount();
+  const { totalPendingCount } = useReassignmentsCounts();
 
   const headerStyles: React.CSSProperties = {
     backgroundColor: "transparent",
@@ -56,19 +54,27 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
     headerStyles.zIndex = 1;
   }
 
+  const totalCount = useMemo(() => {
+    return pendingCount + pendingWithdrawalsCount + totalPendingCount;
+  }, [pendingCount, pendingWithdrawalsCount, totalPendingCount]);
+
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
-        <Badge count={pendingCount} offset={[-8, 0]}>
-          <Button
-            type="primary"
-            icon={<AlertOutlined />}
-            style={{ marginRight: 8 }}
-            onClick={() => navigate("/incomingRequests")} // Navigate to the route on click
-          >
-            Incoming WFH Requests
-          </Button>
-        </Badge>
+
+        <div hidden={user?.role == 2}>
+          <Badge count={totalCount} offset={[-8, 0]}>
+            <Button
+              type="primary"
+              icon={<AlertOutlined />}
+              style={{ marginRight: 8 }}
+              onClick={() => navigate("/mainRequests")} // Navigate to the route on click
+              >
+              Incoming Requests
+            </Button>
+          </Badge>
+        </div>
+
         <Space style={{ marginLeft: "8px" }} size="middle">
           {user?.name && <Text strong>{user.name}</Text>}
           {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}

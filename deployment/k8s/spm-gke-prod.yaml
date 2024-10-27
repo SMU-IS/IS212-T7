@@ -1,5 +1,12 @@
 # backend Deployment File
 
+# Namespace for backend
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prod
+
 # ServiceAccount for cluster
 ---
 apiVersion: v1
@@ -8,12 +15,19 @@ metadata:
   name: spm-service-account
   namespace: prod
 
-# Namespace for backend
+# SecretProvider for cluster
 ---
-apiVersion: v1
-kind: Namespace
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
 metadata:
-  name: prod
+  name: env
+  namespace: prod
+spec:
+  provider: gke
+  parameters:
+    secrets: |
+      - resourceName: "projects/PROJECT_ID/secrets/env/versions/4"
+        path: ".env"
 
 # Deployment for backend Application
 ---
@@ -35,17 +49,24 @@ spec:
       labels:
         app: backend-deployment
     spec:
+      serviceAccountName: spm-service-account
       containers:
         - name: backend-container
           image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/BACKEND_CONTAINER:SHORT_SHA
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3001
-          command: ["sh", "-c", "npm run dev"]
-          resources:
-            limits:
-              memory: "100Mi"
-              cpu: "100m"
+          command: ["sh", "-c", "cp environment/.env .env && npm run dev"]
+          volumeMounts:
+            - mountPath: "/app/environment"
+              name: env
+      volumes:
+        - name: env
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: env
       restartPolicy: Always
 
 # Service for backend Application
@@ -57,14 +78,28 @@ metadata:
   namespace: prod
   labels:
     app: backend-service
+  annotations:
+    cloud.google.com/backend-config: '{"default": "backend-healthcheck-config"}'
 spec:
   selector:
     app: backend-deployment
   ports:
     - protocol: TCP
-      port: 3000
+      port: 3001
       targetPort: 3001
   type: NodePort
+
+# FrontendConfig for backend Application.
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: application-frontend-config
+  namespace: prod
+spec:
+  redirectToHttps:
+    enabled: true
+    responseCodeName: MOVED_PERMANENTLY_DEFAULT
 
 # Ingress for backend Application.
 ---
@@ -75,17 +110,29 @@ metadata:
   namespace: prod
   annotations:
     kubernetes.io/ingress.class: "gce"
-    kubernetes.io/ingress.allow-http: "true"
-    kubernetes.io/ingress.global-static-ip-name: spm-gke-cluster-prod-ip
+    kubernetes.io/ingress.allow-http: "false"
+    networking.gke.io/v1beta1.FrontendConfig: application-frontend-config
+    kubernetes.io/ingress.global-static-ip-name: spm-gke-alb
 spec:
-  rules:
-    - host: lurence.org
-    - http:
-        paths:
-          - path: "/*"
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: backend-service
-                port:
-                  number: 3000
+  tls:
+    - secretName: cloudflare
+  defaultBackend:
+    service:
+      name: backend-service
+      port:
+        number: 3001
+
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: backend-healthcheck-config
+  namespace: prod
+  labels:
+    app: backend-service
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    port: 3001
+    type: HTTP
+    requestPath: /api/v1

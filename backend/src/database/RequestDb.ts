@@ -40,10 +40,10 @@ class RequestDb {
   public async updateRequestinitiatedWithdrawalValue(
     requestId: number,
   ): Promise<boolean> {
-    const { modifiedCount } = await Request.updateOne({
-      requestId,
-      initiatedWithdrawal: true,
-    });
+    const { modifiedCount } = await Request.updateOne(
+      { requestId, initiatedWithdrawal: false },
+      { $set: { initiatedWithdrawal: true } },
+    );
 
     return modifiedCount > 0;
   }
@@ -122,7 +122,6 @@ class RequestDb {
           reason: 1,
           status: 1,
           requestId: 1,
-          performedBy: 1,
         },
       },
       {
@@ -146,14 +145,6 @@ class RequestDb {
     }, {});
 
     return formattedSchedule;
-  }
-
-  public async getCompanySchedule() {
-    const request = await Request.find(
-      { status: Status.APPROVED },
-      "-_id -createdAt -updatedAt",
-    );
-    return request;
   }
 
   public async postRequest(
@@ -192,7 +183,6 @@ class RequestDb {
   }
 
   public async approveRequest(
-    performedBy: number,
     requestId: number,
   ): Promise<string | null> {
     const { modifiedCount } = await Request.updateMany(
@@ -203,7 +193,6 @@ class RequestDb {
       {
         $set: {
           status: Status.APPROVED,
-          performedBy: performedBy,
         },
       },
     );
@@ -225,7 +214,6 @@ class RequestDb {
   }
 
   public async rejectRequest(
-    performedBy: number,
     requestId: number,
     reason: string,
   ): Promise<string | null> {
@@ -238,7 +226,6 @@ class RequestDb {
         $set: {
           status: Status.REJECTED,
           reason: reason,
-          performedBy: performedBy,
         },
       },
     );
