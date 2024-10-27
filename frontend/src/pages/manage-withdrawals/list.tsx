@@ -33,6 +33,18 @@ const formatter = (value: any) => {
   return value;
 };
 
+// New validation function to check if withdrawal action is allowed
+const isWithdrawalActionAllowed = (requestedDate: string): boolean => {
+  const currentDate = new Date();
+  // Set time to beginning of the day (00:00:00) for requested date
+  const withdrawalDate = new Date(requestedDate);
+  withdrawalDate.setHours(0, 0, 0, 0);
+  
+  // Compare current date with withdrawal date
+  return currentDate < withdrawalDate;
+};
+
+
 export const ManageWithdrawals: React.FC = () => {
   const { data: user } = useGetIdentity<EmployeeJWT>();
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
@@ -102,6 +114,19 @@ export const ManageWithdrawals: React.FC = () => {
 
   const handleConfirmAction = async () => {
     if (!formValues || !selectedWithdrawal || !user?.staffId) return;
+
+    if (!isWithdrawalActionAllowed(selectedWithdrawal.requestedDate)) {
+      toast.open({
+        message: "Action Not Allowed",
+        description: "Withdrawals can only be managed before 00:00 of the applied WFH date.",
+        type: "error",
+      });
+      setConfirmModalVisible(false);
+      setSelectedWithdrawal(null);
+      setFormValues(null);
+      form.resetFields();
+      return;
+    }
 
     try {
       let response;
