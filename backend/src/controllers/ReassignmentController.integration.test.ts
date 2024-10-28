@@ -7,9 +7,11 @@ import { readFileSync } from "fs";
 import { Server } from "http";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
+import nodemailer from "nodemailer";
 import path from "path";
 import request from "supertest";
 
+jest.mock("nodemailer");
 jest.unmock("mongoose");
 jest.unmock("@/models/Reassignment");
 jest.unmock("@/models/Employee");
@@ -39,6 +41,9 @@ describe("Reassignment Integration Tests", () => {
   const employees = JSON.parse(fileContent2);
 
   beforeAll(async () => {
+    const mockTransporter = { verify: jest.fn((cb) => cb(null, true)) };
+    (nodemailer.createTransport as jest.Mock).mockReturnValue(mockTransporter);
+
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
 
