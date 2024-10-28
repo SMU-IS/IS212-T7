@@ -58,6 +58,10 @@ class ReassignmentService {
       return errMsg.NON_REJECTED_REASSIGNMENT;
     }
 
+    if (currentManager!.role !== tempReportingManager!.role) {
+      return errMsg.SAME_ROLE_REASSIGNMENT;
+    }
+
     const request = {
       ...reassignmentRequest,
       staffName: `${currentManager!.staffFName} ${currentManager!.staffLName}`,
