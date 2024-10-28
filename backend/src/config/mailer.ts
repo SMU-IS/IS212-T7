@@ -32,6 +32,8 @@ export class Mailer {
     this.transporter.verify((error: Error | null, success: boolean) => {
       if (error) {
         throw new Error(error.message);
+      } else {
+        console.log("Server is ready to take our messages:", success);
       }
     });
 
