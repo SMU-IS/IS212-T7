@@ -31,6 +31,14 @@ class ReassignmentController {
       ctx.body = {
         errMsg: errMsg.NON_REJECTED_REASSIGNMENT,
       };
+    } else if (result == errMsg.PAST_DATE_NOT_ALLOWED) {
+      ctx.body = {
+        errMsg: errMsg.PAST_DATE_NOT_ALLOWED,
+      };
+    } else if (result == errMsg.CURRENT_DATE_NOT_ALLOWED) {
+      ctx.body = {
+        errMsg: errMsg.CURRENT_DATE_NOT_ALLOWED,
+      };
     } else {
       ctx.body = HttpStatusResponse.OK;
     }
@@ -48,7 +56,6 @@ class ReassignmentController {
     ctx.body = reassignmentReq;
   }
 
-  
   public async getTempMgrReassignmentStatus(ctx: Context) {
     const { id } = ctx.request.header;
     if (!id) {
@@ -56,7 +63,9 @@ class ReassignmentController {
     }
     const sanitisedStaffId = numberSchema.parse(id);
     const reassignmentReq =
-      await this.reassignmentService.getTempMgrReassignmentStatus(sanitisedStaffId);
+      await this.reassignmentService.getTempMgrReassignmentStatus(
+        sanitisedStaffId,
+      );
 
     ctx.body = reassignmentReq;
   }

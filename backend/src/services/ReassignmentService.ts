@@ -1,10 +1,10 @@
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
 import { Action, Dept, errMsg, PerformedBy, Request, Status } from "@/helpers";
+import dayjs from "dayjs";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 import NotificationService from "./NotificationService";
-import dayjs from "dayjs";
 
 class ReassignmentService {
   private reassignmentDb: ReassignmentDb;
@@ -32,6 +32,15 @@ class ReassignmentService {
   ): Promise<any> {
     const { staffId, tempReportingManagerId, startDate, endDate } =
       reassignmentRequest;
+
+    const now = dayjs().utc(true);
+    const startDateUTC = dayjs(startDate).utc(true);
+    if (startDateUTC.isBefore(now, "day")) {
+      return errMsg.PAST_DATE_NOT_ALLOWED;
+    } else if (startDateUTC.isSame(now, "day")) {
+      return errMsg.CURRENT_DATE_NOT_ALLOWED;
+    }
+
     const currentManager = await this.employeeService.getEmployee(staffId);
     const tempReportingManager = await this.employeeService.getEmployee(
       tempReportingManagerId,
