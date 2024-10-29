@@ -92,6 +92,7 @@ describe("postRequest", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -467,6 +468,7 @@ describe("getPendingOrApprovedRequests", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -542,6 +544,7 @@ describe("cancel pending requests", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -565,7 +568,7 @@ describe("cancel pending requests", () => {
     employeeDbMock.getEmployee = jest.fn() as any;
     employeeServiceMock.getEmployee = jest.fn() as any;
     UtilsController.throwAPIError = jest.fn();
-
+    notificationServiceMock.notify = jest.fn();
     jest.resetAllMocks();
   });
 
@@ -581,20 +584,30 @@ describe("cancel pending requests", () => {
 
   it("should cancel user's pending request", async () => {
     const { staffId, requestId } = mockRequestData.PENDING;
-    requestDbMock.cancelPendingRequests.mockResolvedValue(
-      mockRequestData.APPROVED as any,
-    );
+    const mockCancelledRequest = [
+      {
+        requestedDate: "2024-10-26",
+        requestType: "AM",
+      },
+    ];
+
+    requestDbMock.cancelPendingRequests.mockResolvedValue(mockCancelledRequest);
+
     employeeServiceMock.getEmployee.mockResolvedValue({
       staffFName: "Janice",
       staffLName: "Chan",
       reportingManager: 140894,
       reportingManagerName: "Rahim Khalid",
+      email: "janice.chan@example.com",
+      dept: "Finance",
+      position: "Analyst",
     } as IEmployee);
 
     const result = await requestService.cancelPendingRequests(
       staffId,
       requestId,
     );
+
     expect(result).toEqual(HttpStatusResponse.OK);
   });
 });
@@ -644,6 +657,7 @@ describe("get pending requests", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -938,7 +952,6 @@ describe("get schedule", () => {
     const employee = {
       role: Role.Manager,
       position: "Manager",
-      reportingManager: 3,
       dept: "Sales",
       staffFName: "John",
       staffLName: "Doe",
@@ -996,7 +1009,6 @@ describe("get schedule", () => {
     const employee = {
       role: Role.Manager,
       position: "Manager",
-      reportingManager: 4,
       dept: "Marketing",
       staffFName: "Alice",
       staffLName: "Johnson",
@@ -1234,6 +1246,7 @@ describe("get own pending requests", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     notificationServiceMock = new NotificationService(
@@ -1317,6 +1330,7 @@ describe("reject pending requests", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -1461,6 +1475,7 @@ describe("approve pending requests", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -1593,6 +1608,7 @@ describe("getPendingRequestByRequestId", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
