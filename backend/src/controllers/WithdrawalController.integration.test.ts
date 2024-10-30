@@ -153,7 +153,7 @@ describe("Withdrawal Integration Tests", () => {
 
     it("should return HttpStatusResponse.NOT_MODIFIED if request is pending", async () => {
       const requestBody = {
-        requestId: 1,
+        requestId: 3,
       };
       const response = await request(mockServer)
         .post("/api/v1/withdrawRequest")
@@ -165,13 +165,13 @@ describe("Withdrawal Integration Tests", () => {
 
     it("should return HttpStatusResponse.NOT_MODIFIED if there is an existing pending withdrawal", async () => {
       const requestBody = {
-        requestId: 1,
+        requestId: 3,
       };
       const response = await request(mockServer)
         .post("/api/v1/withdrawRequest")
         .send(requestBody);
 
-      await Request.findOneAndUpdate({ requestId: 1 }, { status: "APPROVED" });
+      await Request.findOneAndUpdate({ requestId: 3 }, { status: "APPROVED" });
 
       expect(response.status).toBe(200);
       expect(response.text).toEqual(HttpStatusResponse.NOT_MODIFIED);
@@ -179,15 +179,15 @@ describe("Withdrawal Integration Tests", () => {
 
     it("should return HttpStatusResponse.NOT_MODIFIED if there is an existing approved withdrawal", async () => {
       const requestBody = {
-        requestId: 1,
+        requestId: 3,
       };
       const response = await request(mockServer)
         .post("/api/v1/withdrawRequest")
         .send(requestBody);
 
-      await Request.findOneAndUpdate({ requestId: 1 }, { status: "APPROVED" });
+      await Request.findOneAndUpdate({ requestId: 3 }, { status: "APPROVED" });
       await Withdrawal.findOneAndUpdate(
-        { requestId: 1 },
+        { requestId: 3 },
         { status: "APPROVED" },
       );
 
@@ -197,13 +197,13 @@ describe("Withdrawal Integration Tests", () => {
 
     it("should return HttpStatusResponse.NOT_MODIFIED for a request with past date", async () => {
       const requestBody = {
-        requestId: 2,
+        requestId: 4,
       };
       const response = await request(mockServer)
         .post("/api/v1/withdrawRequest")
         .send(requestBody);
 
-      await Request.findOneAndUpdate({ requestId: 2 }, { status: "APPROVED" });
+      await Request.findOneAndUpdate({ requestId: 4 }, { status: "APPROVED" });
 
       expect(response.status).toBe(200);
       expect(response.text).toEqual(HttpStatusResponse.NOT_MODIFIED);
@@ -211,14 +211,14 @@ describe("Withdrawal Integration Tests", () => {
 
     it("should return HttpStatusResponse.NOT_MODIFIED for a request with today's date", async () => {
       const requestBody = {
-        requestId: 2,
+        requestId: 4,
       };
       const response = await request(mockServer)
         .post("/api/v1/withdrawRequest")
         .send(requestBody);
 
       await Request.findOneAndUpdate(
-        { requestId: 2 },
+        { requestId: 4 },
         { status: "APPROVED" },
         { requestedDate: new Date() },
       );
@@ -231,11 +231,11 @@ describe("Withdrawal Integration Tests", () => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const requestBody = {
-        requestId: 3,
+        requestId: 5,
       };
 
       await Request.findOneAndUpdate(
-        { requestId: 3 },
+        { requestId: 5 },
         {
           status: "APPROVED",
           requestedDate: tomorrow,
@@ -274,7 +274,7 @@ describe("Withdrawal Integration Tests", () => {
       const id = "151408";
       const expectedResponse = [
         {
-          requestId: 1,
+          requestId: 3,
           staffId: 150245,
           staffName: "Benjamin Tan",
           reportingManager: 151408,
@@ -311,7 +311,7 @@ describe("Withdrawal Integration Tests", () => {
       );
       const expectedResponse = [
         {
-          requestId: 1,
+          requestId: 3,
           staffId: 150245,
           staffName: "Benjamin Tan",
           reportingManager: 151408,
@@ -325,7 +325,7 @@ describe("Withdrawal Integration Tests", () => {
           status: "PENDING",
         },
         {
-          requestId: 5,
+          requestId: 6,
           staffId: 140008,
           staffName: "Jaclyn Lee",
           reportingManager: 140001,
@@ -379,7 +379,7 @@ describe("Withdrawal Integration Tests", () => {
       );
       const expectedResponse = [
         {
-          requestId: 1,
+          requestId: 3,
           staffId: 150245,
           staffName: "Benjamin Tan",
           reportingManager: 151408,
