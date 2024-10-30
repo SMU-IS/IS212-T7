@@ -1,4 +1,4 @@
-import { errMsg, Status, successMsg } from "@/helpers";
+import { errMsg, HttpStatusResponse, Status, successMsg } from "@/helpers";
 import { app } from "@/index";
 import Employee from "@/models/Employee";
 import Request from "@/models/Request";
@@ -335,6 +335,7 @@ describe("Request Integration Test", () => {
         .send(revocationDetails);
 
       expect(response.status).toBe(200);
+      expect(response.text).toEqual(HttpStatusResponse.NOT_MODIFIED);
     });
 
     it("should return an error if revocation details are invalid", async () => {
@@ -348,7 +349,20 @@ describe("Request Integration Test", () => {
         .post("/api/v1/revokeRequest")
         .send(invalidRevocationDetails);
 
+      const expectedResponse = {
+        errMsg: {
+          _errors: [],
+          performedBy: {
+            _errors: ["Expected number, received string"],
+          },
+          requestId: {
+            _errors: ["Expected number, received null"],
+          },
+        },
+      };
+
       expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toStrictEqual(expectedResponse);
     });
 
     it("should return NOT_MODIFIED if the request could not be revoked", async () => {
@@ -363,6 +377,7 @@ describe("Request Integration Test", () => {
         .send(revocationDetails);
 
       expect(response.status).toBe(200);
+      expect(response.text).toEqual(HttpStatusResponse.NOT_MODIFIED);
     });
   });
 
