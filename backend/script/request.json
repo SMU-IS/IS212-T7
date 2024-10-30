@@ -5,6 +5,7 @@
     "reportingManager": 151408,
     "managerName": "Philip Lee",
     "dept": "Engineering",
+    "position": "Call Centre",
     "requestedDate": "2024-09-15",
     "reason": "Take care of son",
     "requestType": "AM"
@@ -15,6 +16,7 @@
     "reportingManager": 151408,
     "managerName": "Philip Lee",
     "dept": "Engineering",
+    "position": "Call Centre",
     "requestedDate": "2024-09-16",
     "reason": "Take care of daugher",
     "requestType": "AM"
@@ -25,6 +27,7 @@
     "reportingManager": 151408,
     "managerName": "Philip Lee",
     "dept": "Engineering",
+    "position": "Call Centre",
     "requestedDate": "2024-09-17",
     "reason": "Take care of mother",
     "requestType": "AM"
@@ -35,6 +38,18 @@
     "reportingManager": 151408,
     "managerName": "Philip Lee",
     "dept": "Engineering",
+    "position": "Call Centre",
+    "requestedDate": "2024-09-18",
+    "reason": "Take care of father",
+    "requestType": "AM"
+  },
+  {
+    "staffId": 140008,
+    "staffName": "Jaclyn Lee",
+    "reportingManager": 140001,
+    "managerName": "Derek Tan",
+    "dept": "Sales",
+    "position": "Sales Manager",
     "requestedDate": "2024-09-18",
     "reason": "Take care of father",
     "requestType": "AM"
