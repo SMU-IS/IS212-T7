@@ -75,7 +75,7 @@ describe("Request Integration Test", () => {
   }, 60000);
 
   describe("cancelPendingRequests", () => {
-    it("should successfully cancel a pending request when valid staffId and requestId are provided", async () => {
+    it("should successfully cancel a pending request and return OK when valid staffId and requestId are provided", async () => {
       const requestBody = {
         staffId: 140001,
         requestId: 1,
@@ -86,10 +86,10 @@ describe("Request Integration Test", () => {
         .send(requestBody);
 
       expect(response.status).toBe(200);
-      expect(response.body).toStrictEqual({});
+      expect(response.text).toStrictEqual(HttpStatusResponse.OK);
     });
 
-    it("should return empty if no pending request is found for given staffId and requestId", async () => {
+    it("should return NOT_MODIFIED if no pending request is found for given staffId and requestId", async () => {
       const requestBody = {
         staffId: 140001,
         requestId: 2,
@@ -100,7 +100,7 @@ describe("Request Integration Test", () => {
         .send(requestBody);
 
       expect(response.status).toBe(200);
-      expect(response.body).toStrictEqual({});
+      expect(response.text).toStrictEqual(HttpStatusResponse.NOT_MODIFIED);
     });
   });
 
@@ -237,10 +237,10 @@ describe("Request Integration Test", () => {
   });
 
   describe("approveRequest", () => {
-    it("should approve the request for valid approval details", async () => {
+    it("should approve the request and return OK for valid approval details", async () => {
       const approvalDetails = {
-        performedBy: 140001,
-        requestId: 1,
+        performedBy: 130002,
+        requestId: 26,
       };
 
       const response = await request(mockServer)
@@ -248,6 +248,7 @@ describe("Request Integration Test", () => {
         .send(approvalDetails);
 
       expect(response.status).toBe(200);
+      expect(response.text).toBe(HttpStatusResponse.OK);
     });
 
     it("should return an error if approval details are invalid", async () => {
@@ -275,6 +276,7 @@ describe("Request Integration Test", () => {
         .send(approvalDetails);
 
       expect(response.status).toBe(200);
+      expect(response.text).toBe(HttpStatusResponse.NOT_MODIFIED);
     });
   });
 
@@ -291,6 +293,7 @@ describe("Request Integration Test", () => {
         .send(rejectionDetails);
 
       expect(response.status).toBe(200);
+      expect(response.text).toBe(HttpStatusResponse.NOT_MODIFIED);
     });
 
     it("should return an error if rejection details are invalid", async () => {
@@ -304,7 +307,20 @@ describe("Request Integration Test", () => {
         .post("/api/v1/rejectRequest")
         .send(invalidRejectionDetails);
 
+      const expectedResponse = {
+        errMsg: {
+          _errors: [],
+          performedBy: {
+            _errors: ["Expected number, received string"],
+          },
+          requestId: {
+            _errors: ["Expected number, received null"],
+          },
+        },
+      };
+
       expect(response.status).toBe(200);
+      expect(JSON.parse(response.text)).toStrictEqual(expectedResponse);
     });
 
     it("should return NOT_MODIFIED if the request could not be rejected", async () => {
@@ -319,6 +335,7 @@ describe("Request Integration Test", () => {
         .send(rejectionDetails);
 
       expect(response.status).toBe(200);
+      expect(response.text).toBe(HttpStatusResponse.NOT_MODIFIED);
     });
   });
 
