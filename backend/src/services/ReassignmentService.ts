@@ -1,15 +1,7 @@
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
-import {
-  Action,
-  Dept,
-  EmailHeaders,
-  errMsg,
-  PerformedBy,
-  Request,
-  Status,
-} from "@/helpers";
-import { getDatesInRange } from "@/helpers/date";
+import { Action, Dept, errMsg, PerformedBy, Request, Status } from "@/helpers";
+import dayjs from "dayjs";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 import NotificationService from "./NotificationService";
@@ -40,6 +32,15 @@ class ReassignmentService {
   ): Promise<any> {
     const { staffId, tempReportingManagerId, startDate, endDate } =
       reassignmentRequest;
+
+    const now = dayjs().utc(true);
+    const startDateUTC = dayjs(startDate).utc(true);
+    if (startDateUTC.isBefore(now, "day")) {
+      return errMsg.PAST_DATE_NOT_ALLOWED;
+    } else if (startDateUTC.isSame(now, "day")) {
+      return errMsg.CURRENT_DATE_NOT_ALLOWED;
+    }
+
     const currentManager = await this.employeeService.getEmployee(staffId);
     const tempReportingManager = await this.employeeService.getEmployee(
       tempReportingManagerId,
@@ -57,6 +58,10 @@ class ReassignmentService {
       return errMsg.NON_REJECTED_REASSIGNMENT;
     }
 
+    if (currentManager!.role !== tempReportingManager!.role) {
+      return errMsg.SAME_ROLE_REASSIGNMENT;
+    }
+
     const request = {
       ...reassignmentRequest,
       staffName: `${currentManager!.staffFName} ${currentManager!.staffLName}`,
@@ -67,26 +72,29 @@ class ReassignmentService {
     };
 
     await this.reassignmentDb.insertReassignmentRequest(request);
+    const dayjsStartDate = dayjs(startDate);
+    const formattedStartDate = dayjsStartDate.format("YYYY-MM-DD");
+    const dayjsEndDate = dayjs(endDate);
+    const formattedEndDate = dayjsEndDate.format("YYYY-MM-DD");
 
-    const datesInBetween = getDatesInRange(startDate, endDate);
-
-    await this.notificationService.pushRequestSentNotification(
-      EmailHeaders.REASSIGNMENT_SENT,
-      currentManager!.email,
-      tempReportingManager!.staffId,
-      Request.REASSIGNMENT,
-      [[datesInBetween, "-"]],
-      "-",
-    );
-
-    const emailSubject = `[${Request.REASSIGNMENT}] Pending Reassignment Request`;
-    const emailContent = `You have a pending reassignment request from ${managerName} and requires your approval. Please login to the portal to approve the request.`;
+    let emailSubject = `[${Request.REASSIGNMENT}] Pending Reassignment Request`;
+    let emailContent = `You have a pending reassignment request from ${managerName}, ${currentManager!.email} (${currentManager!.dept} - ${currentManager!.position}) and requires your approval. Please login to the portal to approve the request.`;
     await this.notificationService.notify(
       tempReportingManager!.email,
       emailSubject,
       emailContent,
-      [startDate, endDate],
-      null
+      [formattedStartDate, formattedEndDate],
+      null,
+    );
+
+    emailSubject = `[${Request.REASSIGNMENT}] Pending Reassignment Request`;
+    emailContent = `Your reassignment request for the following dates have been sent to ${tempReportingManager?.staffFName} ${tempReportingManager?.staffLName}, ${tempReportingManager?.email} (${tempReportingManager?.dept} - ${tempReportingManager?.position}).`;
+    await this.notificationService.notify(
+      currentManager!.email,
+      emailSubject,
+      emailContent,
+      [formattedStartDate, formattedEndDate],
+      null,
     );
 
     /**
@@ -143,7 +151,6 @@ class ReassignmentService {
 
     return await this.reassignmentDb.getTempMgrReassignmentRequest(staffId);
   }
-
 
   public async setActiveReassignmentPeriod(): Promise<void> {
     const isActiveUpdated =
@@ -229,6 +236,38 @@ class ReassignmentService {
       reassignmentId,
       newStatus,
     );
+
+    const requestedManager = await this.employeeService.getEmployee(
+      reassignment[0].staffId,
+    );
+    const currentManager = await this.employeeService.getEmployee(staffId);
+    if (requestedManager && currentManager) {
+      const reassignmentAction =
+        action === Action.APPROVE ? "Approved" : "Rejected";
+      const dayjsStartDate = dayjs(reassignment[0].startDate);
+      const formattedStartDate = dayjsStartDate.format("YYYY-MM-DD");
+      const dayjsEndDate = dayjs(reassignment[0].endDate);
+      const formattedEndDate = dayjsEndDate.format("YYYY-MM-DD");
+
+      const emailSubject = `[${Request.REASSIGNMENT}] Reassignment ${reassignmentAction}`;
+      const emailContent = `Your reassignment request has been ${reassignmentAction.toLowerCase()} by ${currentManager.staffFName} ${currentManager.staffLName}, ${currentManager.email} (${currentManager.dept} - ${currentManager.position}). Please login to the portal to view the reassignment request.`;
+      await this.notificationService.notify(
+        requestedManager.email,
+        emailSubject,
+        emailContent,
+        [formattedStartDate, formattedEndDate],
+        null,
+      );
+
+      await this.logService.logRequestHelper({
+        performedBy: staffId,
+        requestType: Request.REASSIGNMENT,
+        action: action,
+        staffName: `${currentManager.staffFName} ${currentManager.staffLName}`,
+        dept: currentManager.dept as Dept,
+        position: currentManager.position,
+      });
+    }
   }
 
   public async getSubordinateRequestsForTempManager(staffId: number) {
@@ -244,7 +283,10 @@ class ReassignmentService {
 
     // filter approved requests based on reassignment dates
     return subordinateRequests.filter((request) => {
-      if (request.status === Status.APPROVED || request.status === Status.REJECTED) {
+      if (
+        request.status === Status.APPROVED ||
+        request.status === Status.REJECTED
+      ) {
         const requestDate = new Date(request.requestedDate);
         const reassignmentStartDate = new Date(reassignment.startDate);
         const reassignmentEndDate = new Date(reassignment.endDate);
