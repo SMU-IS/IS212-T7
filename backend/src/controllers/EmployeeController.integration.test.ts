@@ -80,7 +80,7 @@ describe('Employee Integration Tests', () => {
     it('should return error for non-existent user', async () => {
       const requestBody = {
         staffEmail: 'nonexistent@lurence.org',
-        staffPassword: 'test-password'
+        staffPassword: 'password123'
       };
 
       const expectedResponse = {
@@ -91,7 +91,7 @@ describe('Employee Integration Tests', () => {
         .post("/api/v1/login")
         .send(requestBody)
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(404);
       expect(response.body).toStrictEqual(expectedResponse);
     });
 
@@ -109,7 +109,24 @@ describe('Employee Integration Tests', () => {
         .post("/api/v1/login")
         .send(requestBody)
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual(expectedResponse);
+    });
+
+    it('should return error for missing parameters', async () => {
+      const requestBody = {
+        staffEmail: 'jack.sim@allinone.com.sg'
+      };
+
+      const expectedResponse = {
+        "error": errMsg.MISSING_PARAMETERS
+      };
+
+      const response = await request(mockServer)
+        .post("/api/v1/login")
+        .send(requestBody)
+
+      expect(response.status).toBe(400);
       expect(response.body).toStrictEqual(expectedResponse);
     });
   });
@@ -145,22 +162,21 @@ describe('Employee Integration Tests', () => {
       const response = await request(mockServer)
         .get('/api/v1/getEmployee')
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(400);
       expect(response.body).toStrictEqual(expectedResponse);
     });
 
     it("should return error for invalid staffId", async () => {
       const staffId = 130001;
 
-      // TODO: Check if ticket needs to be reopened for this edge case.
       const expectedResponse = {
-        // "error": errMsg.USER_DOES_NOT_EXIST
+        "error": errMsg.USER_DOES_NOT_EXIST
       };
 
       const response = await request(mockServer)
         .get(`/api/v1/getEmployee?staffId=${staffId}`)
 
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(404);
       expect(response.body).toStrictEqual(expectedResponse);
     })
   });
@@ -189,7 +205,7 @@ describe('Employee Integration Tests', () => {
       const response = await request(mockServer)
         .get('/api/v1/getRoleOneOrThreeEmployees')
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(400);
       expect(response.body).toStrictEqual(expectedResponse);
     });
   });
